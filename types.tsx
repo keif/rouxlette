@@ -25,6 +25,7 @@ export type RootStackScreenProps<Screen extends keyof RootStackParamList> = Nati
 >;
 
 export type RootTabParamList = {
+  Search: undefined;
   TabOne: undefined;
   TabTwo: undefined;
 };
