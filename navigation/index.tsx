@@ -58,12 +58,12 @@ function BottomTabNavigator() {
 
   return (
     <BottomTab.Navigator
-      initialRouteName="Home"
+      initialRouteName="Search"
       screenOptions={{
         tabBarActiveTintColor: Colors[colorScheme].tint,
       }}>
       <BottomTab.Screen
-        name="Home"
+        name="Search"
         component={SearchScreen}
         options={({ navigation }: RootTabScreenProps<"Search">) => ({
           title: "Rouxlette",
@@ -88,7 +88,7 @@ function BottomTabNavigator() {
         name="ResultsShow"
         component={ResultsShowScreen}
         options={{
-          title: "Results Show",
+          title: "Details",
           tabBarIcon: ({ color }) => <TabBarIcon name="food-fork-drink" color={color} />,
         }}
       />

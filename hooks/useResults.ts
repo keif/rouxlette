@@ -1,14 +1,54 @@
 import { useEffect, useState } from "react";
 import yelp from "../api/yelp";
+import { AxiosResponse } from "axios";
+
+export interface Result {
+  alias:         string;
+  categories:    Category[];
+  coordinates:   Coordinates;
+  display_phone: string;
+  distance:      number;
+  id:            string;
+  image_url:     string;
+  is_closed:     boolean;
+  location:      Location;
+  name:          string;
+  phone:         string;
+  price:         string;
+  rating:        number;
+  review_count:  number;
+  transactions:  string[];
+  url:           string;
+}
+
+export interface Category {
+  alias: string;
+  title: string;
+}
+
+export interface Coordinates {
+  latitude:  number;
+  longitude: number;
+}
+
+export interface Location {
+  address1:        string;
+  address2:        null;
+  address3:        string;
+  city:            string;
+  country:         string;
+  display_address: string[];
+  state:           string;
+  zip_code:        string;
+}
 
 export default () => {
-  const [errorMessage, setErrorMessage] = useState(``);
-  const [results, setResults] = useState([]);
+  const [errorMessage, setErrorMessage] = useState<string>(``);
+  const [results, setResults] = useState<Array<Result> | []>([]);
 
-  const searchApi = async (searchTerm, location = `columbus`) => {
-    console.log(`searchApi: :: searchTerm: ${searchTerm} :: location: ${location}`)
+  const searchApi = async (searchTerm: string, location = `columbus`) => {
     try {
-      const response = await yelp.get(`/search`, {
+      const response: AxiosResponse = await yelp.get(`/search`, {
         params: {
           limit: 50,
           location: location,
@@ -18,7 +58,6 @@ export default () => {
 
       setResults(response.data.businesses);
     } catch (err) {
-      console.warn(`Results Error:`, err);
       setErrorMessage(`There was an error, please try again`);
       setTimeout(() => setErrorMessage(``), 3000);
     }
@@ -30,5 +69,5 @@ export default () => {
     setErrorMessage(``);
   }, []);
 
-  return [errorMessage, results, searchApi];
+  return [errorMessage, results, searchApi] as const;
 }

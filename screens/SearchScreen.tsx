@@ -1,58 +1,48 @@
-import { useEffect, useState } from "react";
-import useResults from "../hooks/useResults";
-import useLocation from "../hooks/useLocation";
-import { ScrollView, StyleSheet } from "react-native";
-import { Text, View } from "../components/Themed";
-import ResultsList from "../components/ResultsList";
-import SearchBar from "../components/SearchBar";
+import React, { useEffect, useState } from "react";
+import { Result } from "../hooks/useResults";
+import { StyleSheet } from "react-native";
+import { View } from "../components/Themed";
+import SearchInput from "../components/SearchInput";
+import LocationInput from "../components/LocationInput";
+import FilteredOutput from "../components/FilteredOutput";
 
-function LocationInput(props: { onLocationChange: (value: (((prevState: string) => string) | string)) => void, location: string, onLocationSubmit: () => Promise<void> }) {
-  return null;
-}
-
-const SearchScreen = (props) => {
-  const [term, setTerm] = useState(``);
-  const [location, setLocation] = useState(``);
-  const [errorMessage, results, searchApi] = useResults();
-  const [locationErrorMessage, city, locationResults, searchLocation] = useLocation();
-
-  const filterResultsByPrice = (price) => results.filter(result => result.price === price);
-
-  const titles = {
-    "$": `Cost Effective`,
-    "$$": `Bit Pricier`,
-    "$$$": `Big Spender`,
-    "$$$$": `Richie Rich Spender`,
-  };
+const SearchScreen = () => {
+  const [term, setTerm] = useState<string>(``);
+  const [filterTerm, setFilterTerm] = useState<string>(``);
+  const [location, setLocation] = useState<string>(``);
+  const [searchResults, setSearchResults] = useState<Array<Result>>([]);
+  const [filterResults, setFilterResults] = useState<Array<Result>>([]);
+  const [city, setCity] = useState<string>(``);
 
   useEffect(() => {
     setLocation(city);
-  }, []);
+  }, [city]);
 
   return (
     <View style={styles.container}>
-      <SearchBar
+      <SearchInput
+        icon={`search`}
         location={location}
         onTermChange={setTerm}
-        onTermSubmit={(term, location) => searchApi(term, location)}
+        placeholder={`What are you craving?`}
+        setResults={setSearchResults}
         term={term}
       />
-      <LocationInput
-        onLocationChange={setLocation}
-        onLocationSubmit={() => searchLocation(location)}
+      <SearchInput
+        icon={`filter`}
         location={location}
+        onTermChange={setFilterTerm}
+        placeholder={`…but you don't want?`}
+        setResults={setFilterResults}
+        term={filterTerm}
       />
-      {errorMessage !== `` ? <Text>{errorMessage}</Text> : null}
-      {locationErrorMessage !== `` ? <Text>{locationErrorMessage}</Text> : null}
-      <ScrollView>
-        {
-          [`$`, `$$`, `$$$`, `$$$$`].map(pricePoint => <ResultsList
-            key={pricePoint}
-            results={filterResultsByPrice(pricePoint)}
-            title={titles[pricePoint]}
-          />)
-        }
-      </ScrollView>
+      <LocationInput
+        location={location}
+        onLocationChange={setLocation}
+        setCity={setCity}
+      />
+      <FilteredOutput term={term} filterTerm={filterTerm} searchResults={searchResults}
+                      filteredResults={filterResults} />
     </View>
   );
 };

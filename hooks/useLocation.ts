@@ -2,32 +2,44 @@ import { useEffect, useState } from "react";
 import Geocoder from "react-native-geocoding";
 import * as Location from "expo-location";
 import { GOOGLE_API_KEY } from '@env';
+import GeocoderResponse = Geocoder.GeocoderResponse;
+
+interface useLocationProps {
+
+}
+
+interface latLong {
+  latitude: number;
+  longitude: number;
+}
 
 export default () => {
-  const [city, setCity] = useState(``);
-  const [locationErrorMessage, setLocationErrorMessage] = useState(``);
-  const [locationResults, setLocationResults] = useState({});
+  const [city, setCity] = useState<string>(``);
+  const [locationErrorMessage, setLocationErrorMessage] = useState<string>(``);
+  const [locationResults, setLocationResults] = useState<GeocoderResponse | {}>({});
 
   Geocoder.init(GOOGLE_API_KEY, {
     language: "en",
   });
 
-  const handleError = err => {
-    console.warn(err);
+  const handleError = (err: string) => {
+    console.warn(`Location Error:`, err);
     setLocationErrorMessage(`We're having trouble finding you...`);
   };
 
-  const getCity = async ({ latitude, longitude }) => {
-    Geocoder.from(`${latitude}, ${longitude}`)
-      .then(json => {
-        const locality = json.results[0].address_components.filter(component => component.types[0] === `locality`);
-        const city = locality[0].long_name;
-        setCity(city);
-      })
-      .catch(handleError);
+  const getCity = async ({ latitude, longitude }: latLong) => {
+    try {
+      const response: GeocoderResponse = await Geocoder.from(`${latitude}, ${longitude}`);
+      const locality = response.results[0].address_components.filter(component => component.types[0] === `locality`);
+      const city: string = locality[0].long_name;
+      setLocationResults(response.results);
+      setCity(city);
+    } catch (err) {
+      handleError(err);
+    }
   };
 
-  const searchLocation = async (searchLocation) => {
+  const searchLocation = async (searchLocation: string) => {
     let { status } = await Location.requestForegroundPermissionsAsync();
     if (status !== "granted") {
       setLocationErrorMessage("Permission to access location was denied");
@@ -52,5 +64,5 @@ export default () => {
     searchLocation(``);
   }, []);
 
-  return [locationErrorMessage, city, locationResults, searchLocation];
+  return [locationErrorMessage, city, locationResults, searchLocation] as const;
 }
