@@ -8,30 +8,30 @@ import { CompositeScreenProps, NavigatorScreenParams } from "@react-navigation/n
 import { NativeStackScreenProps } from "@react-navigation/native-stack";
 
 declare global {
-  namespace ReactNavigation {
-    interface RootParamList extends RootStackParamList {
-    }
-  }
+	namespace ReactNavigation {
+		interface RootParamList extends RootStackParamList {
+		}
+	}
 }
 
 export type RootStackParamList = {
-  Root: NavigatorScreenParams<RootTabParamList> | undefined;
-  Modal: undefined;
-  NotFound: undefined;
+	Root: NavigatorScreenParams<RootTabParamList> | undefined;
+	Modal: undefined;
+	NotFound: undefined;
 };
 
 export type RootStackScreenProps<Screen extends keyof RootStackParamList> = NativeStackScreenProps<RootStackParamList,
-  Screen>;
+	Screen>;
 
 export type RootTabParamList = {
-  Search: undefined;
-  ResultsShow: { id: string };
+	Search: undefined;
+	ResultsShow: { id: string };
 };
 
 export type RootTabScreenProps<Screen extends keyof RootTabParamList> = CompositeScreenProps<BottomTabScreenProps<RootTabParamList, Screen>,
-  NativeStackScreenProps<RootStackParamList>>;
+	NativeStackScreenProps<RootStackParamList>>;
 
 export type ResultsShowScreenProps<T extends keyof RootTabParamList> =
-  CompositeScreenProps<BottomTabScreenProps<RootTabParamList, T>,
-    RootStackScreenProps<keyof RootStackParamList>>;
+	CompositeScreenProps<BottomTabScreenProps<RootTabParamList, T>,
+		RootStackScreenProps<keyof RootStackParamList>>;
 

@@ -20,13 +20,13 @@ import SearchScreen from "../screens/SearchScreen";
 import ResultsShowScreen from "../screens/ResultsShowScreen";
 
 export default function Navigation({ colorScheme }: { colorScheme: ColorSchemeName }) {
-  return (
-    <NavigationContainer
-      linking={LinkingConfiguration}
-      theme={colorScheme === "dark" ? DarkTheme : DefaultTheme}>
-      <RootNavigator />
-    </NavigationContainer>
-  );
+	return (
+		<NavigationContainer
+			linking={LinkingConfiguration}
+			theme={colorScheme === "dark" ? DarkTheme : DefaultTheme}>
+			<RootNavigator />
+		</NavigationContainer>
+	);
 }
 
 /**
@@ -36,15 +36,15 @@ export default function Navigation({ colorScheme }: { colorScheme: ColorSchemeNa
 const Stack = createNativeStackNavigator<RootStackParamList>();
 
 function RootNavigator() {
-  return (
-    <Stack.Navigator>
-      <Stack.Screen name="Root" component={BottomTabNavigator} options={{ headerShown: false }} />
-      <Stack.Screen name="NotFound" component={NotFoundScreen} options={{ title: "Oops!" }} />
-      <Stack.Group screenOptions={{ presentation: "modal" }}>
-        <Stack.Screen name="Modal" component={ModalScreen} />
-      </Stack.Group>
-    </Stack.Navigator>
-  );
+	return (
+		<Stack.Navigator>
+			<Stack.Screen name="Root" component={BottomTabNavigator} options={{ headerShown: false }} />
+			<Stack.Screen name="NotFound" component={NotFoundScreen} options={{ title: "Oops!" }} />
+			<Stack.Group screenOptions={{ presentation: "modal" }}>
+				<Stack.Screen name="Modal" component={ModalScreen} />
+			</Stack.Group>
+		</Stack.Navigator>
+	);
 }
 
 /**
@@ -54,54 +54,54 @@ function RootNavigator() {
 const BottomTab = createBottomTabNavigator<RootTabParamList>();
 
 function BottomTabNavigator() {
-  const colorScheme = useColorScheme();
+	const colorScheme = useColorScheme();
 
-  return (
-    <BottomTab.Navigator
-      initialRouteName="Search"
-      screenOptions={{
-        tabBarActiveTintColor: Colors[colorScheme].tint,
-      }}>
-      <BottomTab.Screen
-        name="Search"
-        component={SearchScreen}
-        options={({ navigation }: RootTabScreenProps<"Search">) => ({
-          title: "Rouxlette",
-          tabBarIcon: ({ color }) => <TabBarIcon name="food-fork-drink" color={color} />,
-          headerRight: () => (
-            <Pressable
-              onPress={() => navigation.navigate("Modal")}
-              style={({ pressed }) => ({
-                opacity: pressed ? 0.5 : 1,
-              })}>
-              <FontAwesome
-                name="info-circle"
-                size={25}
-                color={Colors[colorScheme].text}
-                style={{ marginRight: 15 }}
-              />
-            </Pressable>
-          ),
-        })}
-      />
-      <BottomTab.Screen
-        name="ResultsShow"
-        component={ResultsShowScreen}
-        options={{
-          title: "Details",
-          tabBarIcon: ({ color }) => <TabBarIcon name="food-fork-drink" color={color} />,
-        }}
-      />
-    </BottomTab.Navigator>
-  );
+	return (
+		<BottomTab.Navigator
+			initialRouteName="Search"
+			screenOptions={{
+				tabBarActiveTintColor: Colors[colorScheme].tint,
+			}}>
+			<BottomTab.Screen
+				name="Search"
+				component={SearchScreen}
+				options={({ navigation }: RootTabScreenProps<"Search">) => ({
+					title: "Rouxlette",
+					tabBarIcon: ({ color }) => <TabBarIcon name="food-fork-drink" color={color} />,
+					headerRight: () => (
+						<Pressable
+							onPress={() => navigation.navigate("Modal")}
+							style={({ pressed }) => ({
+								opacity: pressed ? 0.5 : 1,
+							})}>
+							<FontAwesome
+								name="info-circle"
+								size={25}
+								color={Colors[colorScheme].text}
+								style={{ marginRight: 15 }}
+							/>
+						</Pressable>
+					),
+				})}
+			/>
+			<BottomTab.Screen
+				name="ResultsShow"
+				component={ResultsShowScreen}
+				options={{
+					title: "Details",
+					tabBarIcon: ({ color }) => <TabBarIcon name="food-fork-drink" color={color} />,
+				}}
+			/>
+		</BottomTab.Navigator>
+	);
 }
 
 /**
  * You can explore the built-in icon families and icons on the web at https://icons.expo.fyi/
  */
 function TabBarIcon(props: {
-  name: React.ComponentProps<typeof MaterialCommunityIcons>["name"];
-  color: string;
+	name: React.ComponentProps<typeof MaterialCommunityIcons>["name"];
+	color: string;
 }) {
-  return <MaterialCommunityIcons size={30} style={{ marginBottom: -3 }} {...props} />;
+	return <MaterialCommunityIcons size={30} style={{ marginBottom: -3 }} {...props} />;
 }

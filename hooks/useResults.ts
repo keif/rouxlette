@@ -1,73 +1,83 @@
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import yelp from "../api/yelp";
 import { AxiosResponse } from "axios";
+import useStorage from "./useStorage";
 
 export interface Result {
-  alias:         string;
-  categories:    Category[];
-  coordinates:   Coordinates;
-  display_phone: string;
-  distance:      number;
-  id:            string;
-  image_url:     string;
-  is_closed:     boolean;
-  location:      Location;
-  name:          string;
-  phone:         string;
-  price:         string;
-  rating:        number;
-  review_count:  number;
-  transactions:  string[];
-  url:           string;
+	alias: string;
+	categories: Category[];
+	coordinates: Coordinates;
+	display_phone: string;
+	distance: number;
+	id: string;
+	image_url: string;
+	is_closed: boolean;
+	location: Location;
+	name: string;
+	phone: string;
+	photos: string[];
+	price: string;
+	rating: number;
+	review_count: number;
+	transactions: string[];
+	url: string;
 }
 
 export interface Category {
-  alias: string;
-  title: string;
+	alias: string;
+	title: string;
 }
 
 export interface Coordinates {
-  latitude:  number;
-  longitude: number;
+	latitude: number;
+	longitude: number;
 }
 
 export interface Location {
-  address1:        string;
-  address2:        null;
-  address3:        string;
-  city:            string;
-  country:         string;
-  display_address: string[];
-  state:           string;
-  zip_code:        string;
+	address1: string;
+	address2: null;
+	address3: string;
+	city: string;
+	country: string;
+	display_address: string[];
+	state: string;
+	zip_code: string;
 }
 
 export default () => {
-  const [errorMessage, setErrorMessage] = useState<string>(``);
-  const [results, setResults] = useState<Array<Result> | []>([]);
+	const [errorMessage, setErrorMessage] = useState<string>(``);
+	const [results, setResults] = useState<Array<Result> | []>([]);
+	const [deleteItem, getAllItems, getItem, setItem] = useStorage();
 
-  const searchApi = async (searchTerm: string, location = `columbus`) => {
-    try {
-      const response: AxiosResponse = await yelp.get(`/search`, {
-        params: {
-          limit: 50,
-          location: location,
-          term: searchTerm,
-        },
-      });
+	const searchApi = async (searchTerm: string, location = `columbus`) => {
+		console.log(`searchApi: searchTerm: ${searchTerm} location: ${location}`);
+		const key = `${searchTerm}:${location}`;
 
-      setResults(response.data.businesses);
-    } catch (err) {
-      setErrorMessage(`There was an error, please try again`);
-      setTimeout(() => setErrorMessage(``), 3000);
-    }
-  };
+		try {
+			const cache = await getItem(key)
 
-  // Call searchApi when component is first rendered
-  useEffect(() => {
-    searchApi(``);
-    setErrorMessage(``);
-  }, []);
+			if (cache) {
+				setResults(cache)
+			} else {
+				const response: AxiosResponse = await yelp.get(`/search`, {
+					params: {
+						limit: 50,
+						location: location,
+						term: searchTerm,
+					},
+				});
 
-  return [errorMessage, results, searchApi] as const;
+				console.log(`searchApi: response.data.businesses.length: ${response.data.businesses.length}`);
+				const jsonValue = JSON.stringify(response.data.businesses);
+				await setItem(key, jsonValue);
+				setResults(response.data.businesses);
+			}
+		} catch (err) {
+			console.error(`searchApi: error:`, err);
+			setErrorMessage(`There was an error, please try again`);
+			setTimeout(() => setErrorMessage(``), 3000);
+		}
+	};
+
+	return [errorMessage, results, searchApi] as const;
 }
