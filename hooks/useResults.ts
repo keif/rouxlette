@@ -50,32 +50,42 @@ export default () => {
 	const [deleteItem, getAllItems, getItem, setItem] = useStorage();
 
 	const searchApi = async (searchTerm: string, location = `columbus`) => {
-		console.log(`searchApi: searchTerm: ${searchTerm} location: ${location}`);
+		console.group(`useResults`);
+		console.group(`searchApi: searchTerm: ${searchTerm}`);
+		console.groupEnd()
 		const key = `${searchTerm}:${location}`;
 
-		try {
-			const cache = await getItem(key)
+		if (searchTerm.trim() !== `` && location.trim() !== ``) {
+			try {
+				console.group(`useResults`);
+				console.log(`cache key: ${key}`);
+				const cache = await getItem(key);
 
-			if (cache) {
-				setResults(cache)
-			} else {
-				const response: AxiosResponse = await yelp.get(`/search`, {
-					params: {
-						limit: 50,
-						location: location,
-						term: searchTerm,
-					},
-				});
+				if (cache) {
+					console.log(`cache found, use cache`);
+					console.groupEnd();
+					setResults(JSON.parse(cache));
+				} else {
+					console.log(`not cached, do call`);
+					console.groupEnd();
+					const response: AxiosResponse = await yelp.get(`/search`, {
+						params: {
+							limit: 50,
+							location: location,
+							term: searchTerm,
+						},
+					});
 
-				console.log(`searchApi: response.data.businesses.length: ${response.data.businesses.length}`);
-				const jsonValue = JSON.stringify(response.data.businesses);
-				await setItem(key, jsonValue);
-				setResults(response.data.businesses);
+					console.log(`searchApi: response.data.businesses.length: ${response.data.businesses.length}`);
+					const jsonValue = JSON.stringify(response.data.businesses);
+					await setItem(key, jsonValue);
+					setResults(response.data.businesses);
+				}
+			} catch (err) {
+				console.error(`searchApi: error:`, err);
+				setErrorMessage(`There was an error, please try again`);
+				setTimeout(() => setErrorMessage(``), 3000);
 			}
-		} catch (err) {
-			console.error(`searchApi: error:`, err);
-			setErrorMessage(`There was an error, please try again`);
-			setTimeout(() => setErrorMessage(``), 3000);
 		}
 	};
 
