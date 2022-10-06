@@ -25,6 +25,7 @@ export default () => {
 	};
 
 	const getCity = async (searchLocation: string, latLong: LocationObjectCoords) => {
+		console.log(`getCity`);
 		const key = `${searchLocation}`;
 		const { latitude, longitude } = latLong;
 
@@ -32,6 +33,7 @@ export default () => {
 			const response: GeocoderResponse = await Geocoder.from(`${latitude}, ${longitude}`);
 			const locality = response.results[0].address_components.filter(component => component.types[0] === `locality`);
 			const city: string = locality[0].long_name;
+			console.log(`getCity: city: ${city}`);
 			setLocationResults(response.results);
 			setCity(city);
 			await setItem(key, city);
@@ -43,22 +45,23 @@ export default () => {
 	};
 
 	const searchLocation = async (searchLocation: string) => {
+		console.log(`searchLocation: searchLocation1: ${searchLocation}`);
 		let { status } = await Location.requestForegroundPermissionsAsync();
 		if (status !== "granted") {
 			setLocationErrorMessage("Permission to access location was denied");
 			return;
 		}
 
-		console.log(`searchLocation: ${searchLocation}`);
+		console.log(`searchLocation: searchLocation2: ${searchLocation}`);
 		const key = searchLocation;
 		try {
 			const cache = await getItem(key)
 
 			if (cache) {
-				console.log(`cache found, use cache: ${cache}`);
+				console.log(`${key} cache found, use cache: ${cache}`);
 				setCity(JSON.parse(cache))
 			} else {
-				console.log(`not cached, do call`);
+				console.log(`${key} not cached, do call`);
 				const location = await Location.getCurrentPositionAsync(
 					{
 						accuracy: Location.Accuracy.High,

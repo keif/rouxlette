@@ -21,7 +21,10 @@ export default function App() {
 			<SafeAreaProvider>
 				<RootContext.Provider value={{ state, dispatch }}>
 					<Navigation colorScheme={colorScheme} />
-					<StatusBar />
+					<StatusBar
+						backgroundColor="transparent"
+						translucent
+					/>
 				</RootContext.Provider>
 			</SafeAreaProvider>
 		);

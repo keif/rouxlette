@@ -21,12 +21,11 @@ const FilteredOutput = ({ term, filterTerm, searchResults, filteredResults }: Fi
 		);
 	}
 	let filterResults;
-	console.group(`Component: FilteredOutput`);
-	console.log(`term: ${term}`);
-	console.log(`filterTerm: ${filterTerm}`);
-	console.log(`searchResults:`, searchResults.length);
-	console.log(`filteredResults:`, typeof filteredResults, filteredResults.length);
-	console.groupEnd();
+	console.log(`Component: FilteredOutput`);
+	console.log(`Component: FilteredOutput: term: ${term}`);
+	console.log(`Component: FilteredOutput: filterTerm: ${filterTerm}`);
+	console.log(`Component: FilteredOutput: searchResults:`, searchResults.length);
+	console.log(`Component: FilteredOutput: filteredResults:`, typeof filteredResults, filteredResults.length);
 
 	if (filteredResults?.length === 0) {
 		filterResults = searchResults.filter(searchRes => !filteredResults.find(filteredRes => filteredRes.id === searchRes.id));

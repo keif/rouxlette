@@ -18,17 +18,14 @@ const SearchScreen = () => {
 	console.log(`SearchScreen: state:`, state);
 
 	useEffect(() => {
-		console.group(`SearchScreen`)
-		console.group(`useEffect`)
+		console.log(`SearchScreen`);
+		console.log(`SearchScreen: useEffect`);
 		console.log(`city: ${city}`);
-		console.groupEnd()
-		console.groupEnd()
 		setCity(city);
 	}, [city]);
 
-	console.group(`SearchScreen`)
-	console.log(`city: ${city}`);
-	console.groupEnd()
+	console.log(`SearchScreen`);
+	console.log(`SearchScreen: city: ${city}`);
 	return (
 		<View style={styles.container}>
 			<SearchInput
@@ -60,6 +57,7 @@ const SearchScreen = () => {
 
 const styles = StyleSheet.create({
 	container: {
+		backgroundColor: "rgb(242, 242, 242)",
 		flex: 1,
 	},
 });
