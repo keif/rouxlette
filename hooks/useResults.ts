@@ -50,21 +50,15 @@ export default () => {
 	const [deleteItem, getAllItems, getItem, setItem] = useStorage();
 
 	const searchApi = async (searchTerm: string, location = `columbus`) => {
-		console.log(`searchApi`);
-		console.log(`searchApi: searchTerm: ${searchTerm}`);
 		const key = `${searchTerm}:${location}`;
 
 		if (searchTerm.trim() !== `` && location.trim() !== ``) {
 			try {
-				console.log(`searchApi: try`);
-				console.log(`cache key: ${key}`);
 				const cache = await getItem(key);
 
 				if (cache) {
-					console.log(`${key} cache found, use cache`);
-					setResults(JSON.parse(cache));
+					setResults(cache);
 				} else {
-					console.log(`${key} not cached, do call`);
 					const response: AxiosResponse = await yelp.get(`/search`, {
 						params: {
 							limit: 50,
@@ -73,7 +67,6 @@ export default () => {
 						},
 					});
 
-					console.log(`searchApi: response.data.businesses.length: ${response.data.businesses.length}`);
 					const jsonValue = JSON.stringify(response.data.businesses);
 					await setItem(key, jsonValue);
 					setResults(response.data.businesses);

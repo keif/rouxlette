@@ -1,12 +1,12 @@
 import { useContext, useEffect, useState } from "react";
 import Geocoder from "react-native-geocoding";
 import * as Location from "expo-location";
-import { GOOGLE_API_KEY } from "@env";
-import GeocoderResponse = Geocoder.GeocoderResponse;
-import useStorage from "./useStorage";
 import { LocationObjectCoords } from "expo-location";
+import { GOOGLE_API_KEY } from "@env";
+import useStorage from "./useStorage";
 import { RootContext } from "../context/RootContext";
 import { setLocation } from "../context/reducer";
+import GeocoderResponse = Geocoder.GeocoderResponse;
 
 export default () => {
 	const [city, setCity] = useState<string>(``);
@@ -22,10 +22,10 @@ export default () => {
 	const handleError = (err: string) => {
 		console.warn(`Location Error:`, err);
 		setLocationErrorMessage(`We're having trouble finding you...`);
+		setTimeout(() => setLocationErrorMessage(``), 3000);
 	};
 
 	const getCity = async (searchLocation: string, latLong: LocationObjectCoords) => {
-		console.log(`getCity`);
 		const key = `${searchLocation}`;
 		const { latitude, longitude } = latLong;
 
@@ -33,7 +33,6 @@ export default () => {
 			const response: GeocoderResponse = await Geocoder.from(`${latitude}, ${longitude}`);
 			const locality = response.results[0].address_components.filter(component => component.types[0] === `locality`);
 			const city: string = locality[0].long_name;
-			console.log(`getCity: city: ${city}`);
 			setLocationResults(response.results);
 			setCity(city);
 			await setItem(key, city);
@@ -45,23 +44,19 @@ export default () => {
 	};
 
 	const searchLocation = async (searchLocation: string) => {
-		console.log(`searchLocation: searchLocation1: ${searchLocation}`);
 		let { status } = await Location.requestForegroundPermissionsAsync();
 		if (status !== "granted") {
 			setLocationErrorMessage("Permission to access location was denied");
 			return;
 		}
 
-		console.log(`searchLocation: searchLocation2: ${searchLocation}`);
 		const key = searchLocation;
 		try {
-			const cache = await getItem(key)
+			const cache = await getItem(key);
 
 			if (cache) {
-				console.log(`${key} cache found, use cache: ${cache}`);
-				setCity(JSON.parse(cache))
+				setCity(cache);
 			} else {
-				console.log(`${key} not cached, do call`);
 				const location = await Location.getCurrentPositionAsync(
 					{
 						accuracy: Location.Accuracy.High,

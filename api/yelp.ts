@@ -11,7 +11,6 @@ const yelp = axios.create({
 });
 
 yelp.interceptors.request.use(function (config) {
-	console.log(`pre yelp call`)
 	return config;
 }, function (error) {
 	return Promise.reject(error);

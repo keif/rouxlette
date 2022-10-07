@@ -18,19 +18,14 @@ const LocationInput = ({ setCity }: LocationInputProps) => {
 
 	const handleEndEditing = async () => {
 		const loc = await searchLocation(locale);
-		console.log(`LocationInput:`)
-		console.log(`LocationInput: handleEndEditing:`, loc);
 		setCity(city);
 		setLocale(city);
 		dispatch(setLocation(city));
 	};
 
 	useEffect(() => {
-		console.log(`useEffect: fetchLocation PRE: city: ${city}`);
 		const fetchLocation = async () => {
-			console.log(`useEffect: fetchLocation CALL: city: ${city}`);
 			const loc = await searchLocation(``);
-			console.log(`useEffect: fetchLocation AWAIT: loc: ${loc}`);
 			setCity(city);
 			setLocale(city);
 			dispatch(setLocation(city));
@@ -40,7 +35,6 @@ const LocationInput = ({ setCity }: LocationInputProps) => {
 	}, []);
 
 	useEffect(() => {
-		console.log(`useEffect: city: ${city}`);
 		setCity(city);
 		setLocale(city);
 		dispatch(setLocation(city));

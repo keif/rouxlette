@@ -15,17 +15,10 @@ const SearchScreen = () => {
 	const [city, setCity] = useState<string>(``);
 	const { state } = useContext(RootContext);
 
-	console.log(`SearchScreen: state:`, state);
-
 	useEffect(() => {
-		console.log(`SearchScreen`);
-		console.log(`SearchScreen: useEffect`);
-		console.log(`city: ${city}`);
 		setCity(city);
 	}, [city]);
 
-	console.log(`SearchScreen`);
-	console.log(`SearchScreen: city: ${city}`);
 	return (
 		<View style={styles.container}>
 			<SearchInput

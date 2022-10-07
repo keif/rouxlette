@@ -12,7 +12,6 @@ const google = axios.create({
 })
 
 google.interceptors.request.use(function (config) {
-    console.log(`pre google call`)
     return config;
 }, function (error) {
     return Promise.reject(error);

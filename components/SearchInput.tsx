@@ -16,14 +16,9 @@ interface SearchBarProps {
 }
 
 const SearchInput = ({ icon, city, location, onTermChange, placeholder, setResults, term }: SearchBarProps) => {
-	console.log(`SearchInput`);
-	console.log(`SearchInput: city: ${city}`);
-	console.log(`SearchInput: ${placeholder}: ${term}`);
 	const [errorMessage, results, searchApi] = useResults();
 
 	const handleDoneEditing = async (term: string, city: string) => {
-		console.log(`SearchInput: handleDoneEditing`);
-		console.log(`SearchInput: handleDoneEditing: term: ${term}, city: ${city}`);
 		await searchApi(term, city);
 		setResults(results);
 	};

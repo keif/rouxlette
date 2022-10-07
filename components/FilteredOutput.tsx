@@ -13,7 +13,7 @@ interface FilteredOutputProps {
 
 const FilteredOutput = ({ term, filterTerm, searchResults, filteredResults }: FilteredOutputProps) => {
 	if (searchResults?.length === 0) {
-		console.log(`no search results`);
+		console.warn(`no search results`);
 		return (
 			<View>
 				<Text>Search for something!</Text>
@@ -21,11 +21,6 @@ const FilteredOutput = ({ term, filterTerm, searchResults, filteredResults }: Fi
 		);
 	}
 	let filterResults;
-	console.log(`Component: FilteredOutput`);
-	console.log(`Component: FilteredOutput: term: ${term}`);
-	console.log(`Component: FilteredOutput: filterTerm: ${filterTerm}`);
-	console.log(`Component: FilteredOutput: searchResults:`, searchResults.length);
-	console.log(`Component: FilteredOutput: filteredResults:`, typeof filteredResults, filteredResults.length);
 
 	if (filteredResults?.length === 0) {
 		filterResults = searchResults.filter(searchRes => !filteredResults.find(filteredRes => filteredRes.id === searchRes.id));
