@@ -46,6 +46,7 @@ const ResultsList = ({ horizontal = false, results, title }: ResultsListProps) =
 const styles = StyleSheet.create({
 	container: {
 		marginBottom: 10,
+		paddingLeft: 8,
 	},
 	title: {
 		fontSize: 18,

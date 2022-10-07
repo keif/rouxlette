@@ -4,6 +4,7 @@ import { Pressable, StyleSheet, TextInput } from "react-native";
 import { Text, View } from "./Themed";
 import useResults, { Result } from "../hooks/useResults";
 import Config from "../Config";
+import AppStyles from "../AppStyles";
 
 interface SearchBarProps {
 	icon: any;
@@ -67,47 +68,25 @@ const SearchInput = ({ icon, city, location, onTermChange, placeholder, setResul
 
 const styles = StyleSheet.create({
 	view: {
-		backgroundColor: `#F0EEEE`,
+		backgroundColor: AppStyles.color.background,
 		flexDirection: `row`,
 		paddingLeft: 8,
 		paddingTop: 12,
 		paddingBottom: 10,
 	},
 	button: {
-		alignSelf: `center`,
-		backgroundColor: '#54D3C2',
-		borderRadius: 36,
-		color: `#fff`,
-		fontSize: 30,
-		marginRight: 12,
-		padding: 16,
-		shadowColor: '#333',
-		shadowOffset: {
-			width: 0,
-			height: 4,
-		},
-		shadowOpacity: 0.3,
-		shadowRadius: 4.65,
+		backgroundColor: AppStyles.color.primary,
+		color: AppStyles.color.black,
+		shadowColor: AppStyles.input.shadow,
+		...AppStyles.Button
 	},
 	icon: {
 		fontSize: 16,
 	},
 	input: {
-		backgroundColor: '#fff',
-		borderRadius: 32,
-		elevation: 8,
-		flex: 1,
-		fontSize: 18,
-		marginRight: 16,
-		paddingHorizontal: 16,
-		paddingVertical: 12,
-		shadowColor: '#333',
-		shadowOffset: {
-			width: 0,
-			height: 4,
-		},
-		shadowOpacity: 0.3,
-		shadowRadius: 4.65,
+		backgroundColor: AppStyles.color.white,
+		shadowColor: AppStyles.input.shadow,
+		...AppStyles.TextInput
 	},
 });
 

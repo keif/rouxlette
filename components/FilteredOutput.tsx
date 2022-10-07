@@ -15,8 +15,8 @@ const FilteredOutput = ({ term, filterTerm, searchResults, filteredResults }: Fi
 	if (searchResults?.length === 0) {
 		console.warn(`no search results`);
 		return (
-			<View>
-				<Text>Search for something!</Text>
+			<View style={styles.container}>
+				<Text style={styles.title}>Search for something!</Text>
 			</View>
 		);
 	}
@@ -30,8 +30,8 @@ const FilteredOutput = ({ term, filterTerm, searchResults, filteredResults }: Fi
 
 	if (filterResults.length === 0) {
 		return (
-			<View>
-				<Text>We couldn't find anything :(</Text>
+			<View style={styles.container}>
+				<Text style={styles.title}>We couldn't find anything :(</Text>
 			</View>
 		);
 	}
@@ -50,9 +50,7 @@ const FilteredOutput = ({ term, filterTerm, searchResults, filteredResults }: Fi
 
 const styles = StyleSheet.create({
 	container: {
-		marginRight: 10,
-		marginBottom: 10,
-		marginLeft: 10,
+		padding: 12,
 	},
 	title: {
 		fontStyle: `italic`,

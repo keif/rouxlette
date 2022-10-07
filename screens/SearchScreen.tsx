@@ -50,7 +50,6 @@ const SearchScreen = () => {
 
 const styles = StyleSheet.create({
 	container: {
-		backgroundColor: "rgb(242, 242, 242)",
 		flex: 1,
 	},
 });
