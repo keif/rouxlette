@@ -21,12 +21,15 @@ const SearchInput = ({ icon, city, location, onTermChange, placeholder, setResul
 
 	const handleDoneEditing = async (term: string, city: string) => {
 		await searchApi(term, city);
-		setResults(results);
 	};
 
 	useEffect(() => {
 		handleDoneEditing(term, city);
 	}, [city]);
+
+	useEffect(() => {
+		setResults(results);
+	}, [results])
 
 	return (
 		<View>
@@ -47,8 +50,7 @@ const SearchInput = ({ icon, city, location, onTermChange, placeholder, setResul
 						styles.button,
 						{ opacity: !Config.isAndroid && pressed ? 0.6 : 1 },
 					]}
-					onPress={() => {
-					}}
+					onPress={(props) => handleDoneEditing(term, city)}
 					android_ripple={{
 						color: "grey",
 						radius: 28,

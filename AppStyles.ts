@@ -13,9 +13,13 @@ const AppStyles = {
 	},
 	color: {
 		background: `#F0EEEE`,
-		primary: `#33b249`,
 		black: `#000`,
+		primary: `#33b249`,
+		shadow: `#333`,
 		white: `#fff`,
+	},
+	fonts: {
+		// placeholder
 	},
 	input: {
 		shadow: `#333`,

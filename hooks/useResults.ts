@@ -57,7 +57,11 @@ export default () => {
 				const cache = await getItem(key);
 
 				if (cache) {
-					setResults(cache);
+					if (typeof cache === `string`) {
+						setResults(JSON.parse(cache));
+					} else {
+						setResults(cache);
+					}
 				} else {
 					const response: AxiosResponse = await yelp.get(`/search`, {
 						params: {
@@ -67,8 +71,7 @@ export default () => {
 						},
 					});
 
-					const jsonValue = JSON.stringify(response.data.businesses);
-					await setItem(key, jsonValue);
+					await setItem(key, response.data.businesses);
 					setResults(response.data.businesses);
 				}
 			} catch (err) {

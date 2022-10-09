@@ -1,4 +1,4 @@
-import { Entypo, Feather } from "@expo/vector-icons";
+import { Entypo } from "@expo/vector-icons";
 import React, { Dispatch, SetStateAction, useContext, useEffect, useState } from "react";
 import { Pressable, StyleSheet, TextInput, View } from "react-native";
 import useLocation from "../hooks/useLocation";
@@ -9,11 +9,12 @@ import Config from "../Config";
 import AppStyles from "../AppStyles";
 
 interface LocationInputProps {
+	location: string;
 	setCity: Dispatch<SetStateAction<string>>;
 }
 
-const LocationInput = ({ setCity }: LocationInputProps) => {
-	const { dispatch }  = useContext(RootContext)
+const LocationInput = ({ location, setCity }: LocationInputProps) => {
+	const { state, dispatch } = useContext(RootContext);
 	const [locationErrorMessage, city, locationResults, searchLocation] = useLocation();
 	const [locale, setLocale] = useState<string>(``);
 
@@ -30,7 +31,7 @@ const LocationInput = ({ setCity }: LocationInputProps) => {
 			setCity(city);
 			setLocale(city);
 			dispatch(setLocation(city));
-		}
+		};
 
 		fetchLocation().catch(console.error);
 	}, []);
@@ -39,7 +40,13 @@ const LocationInput = ({ setCity }: LocationInputProps) => {
 		setCity(city);
 		setLocale(city);
 		dispatch(setLocation(city));
-	}, [city])
+	}, [city]);
+
+	useEffect(() => {
+		setCity(location);
+		setLocale(location);
+		dispatch(setLocation(location));
+	}, [location]);
 
 	return (
 		<View>
@@ -52,7 +59,7 @@ const LocationInput = ({ setCity }: LocationInputProps) => {
 					placeholder={locale ? locale : `Current Location`}
 					placeholderTextColor="#999"
 					style={styles.input}
-					value={locale}
+					value={locale ?? location}
 				/>
 				<Pressable
 					style={({ pressed }) => [
@@ -90,7 +97,7 @@ const styles = StyleSheet.create({
 		backgroundColor: AppStyles.color.primary,
 		color: AppStyles.color.black,
 		shadowColor: AppStyles.input.shadow,
-		...AppStyles.Button
+		...AppStyles.Button,
 	},
 	icon: {
 		fontSize: 16,
@@ -98,7 +105,7 @@ const styles = StyleSheet.create({
 	input: {
 		backgroundColor: AppStyles.color.white,
 		shadowColor: AppStyles.input.shadow,
-		...AppStyles.TextInput
+		...AppStyles.TextInput,
 	},
 });
 

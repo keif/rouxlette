@@ -13,7 +13,7 @@ interface FilteredOutputProps {
 
 const FilteredOutput = ({ term, filterTerm, searchResults, filteredResults }: FilteredOutputProps) => {
 	if (searchResults?.length === 0) {
-		console.warn(`no search results`);
+		console.debug(`no results`);
 		return (
 			<View style={styles.container}>
 				<Text style={styles.title}>Search for something!</Text>
@@ -22,26 +22,19 @@ const FilteredOutput = ({ term, filterTerm, searchResults, filteredResults }: Fi
 	}
 	let filterResults;
 
-	if (filteredResults?.length === 0) {
+	if (filteredResults?.length > 0) {
 		filterResults = searchResults.filter(searchRes => !filteredResults.find(filteredRes => filteredRes.id === searchRes.id));
 	} else {
 		filterResults = searchResults;
 	}
 
-	if (filterResults.length === 0) {
-		return (
-			<View style={styles.container}>
-				<Text style={styles.title}>We couldn't find anything :(</Text>
-			</View>
-		);
-	}
 	return (
 		<View style={styles.container}>
-			<Text style={styles.title}>We're looking
-				for {term}{filterTerm !== `` ? `, but we don't want ${filterTerm}` : null}</Text>
 			<ResultsList
+				filterTerm={filterTerm}
 				horizontal={false}
 				results={filterResults}
+				term={term}
 				title={`Maybe try...`}
 			/>
 		</View>
@@ -50,7 +43,7 @@ const FilteredOutput = ({ term, filterTerm, searchResults, filteredResults }: Fi
 
 const styles = StyleSheet.create({
 	container: {
-		padding: 12,
+		paddingHorizontal: 12,
 	},
 	title: {
 		fontStyle: `italic`,
