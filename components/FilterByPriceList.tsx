@@ -1,6 +1,6 @@
 import { ScrollView } from "react-native";
 import { Text } from "./Themed";
-import ResultsList from "./ResultsList";
+import ResultsList from "./results/ResultsList";
 import React from "react";
 import { Result } from "../hooks/useResults";
 

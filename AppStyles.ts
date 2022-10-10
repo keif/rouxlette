@@ -14,9 +14,13 @@ const AppStyles = {
 	color: {
 		background: `#F0EEEE`,
 		black: `#000`,
+		closed: `#a7171a`,
+		open: `#71C562`,
+		phone: `#71C562`,
 		primary: `#33b249`,
 		shadow: `#333`,
 		white: `#fff`,
+		yelp: `#c41200`,
 	},
 	fonts: {
 		// placeholder

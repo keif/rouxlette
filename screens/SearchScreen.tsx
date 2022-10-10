@@ -2,9 +2,9 @@ import React, { useContext, useEffect, useState } from "react";
 import { Result } from "../hooks/useResults";
 import { LayoutAnimation, Platform, StyleSheet, UIManager } from "react-native";
 import { Text, View } from "../components/Themed";
-import SearchInput from "../components/SearchInput";
-import LocationInput from "../components/LocationInput";
-import FilteredOutput from "../components/FilteredOutput";
+import SearchInput from "../components/search/SearchInput";
+import LocationInput from "../components/search/LocationInput";
+import FilteredOutput from "../components/search/FilteredOutput";
 import { RootContext } from "../context/RootContext";
 import useLocation from "../hooks/useLocation";
 
@@ -34,7 +34,8 @@ const SearchScreen = () => {
 	}, [searchResults]);
 
 	return (
-		<View style={{ ...styles.container, flexDirection: toggleStyle }}>
+		// @ts-ignore
+		<View style={[styles.container, { flexDirection: toggleStyle }]}>
 			<View style={styles.controller}>
 				<SearchInput
 					icon={`search`}

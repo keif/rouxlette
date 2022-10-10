@@ -1,8 +1,8 @@
-import { Text, View } from "./Themed";
+import { Text, View } from "../Themed";
 import React from "react";
-import { Result } from "../hooks/useResults";
+import { Result } from "../../hooks/useResults";
 import { StyleSheet } from "react-native";
-import ResultsList from "./ResultsList";
+import ResultsList from "../results/ResultsList";
 
 interface FilteredOutputProps {
 	term: string;
@@ -13,7 +13,6 @@ interface FilteredOutputProps {
 
 const FilteredOutput = ({ term, filterTerm, searchResults, filteredResults }: FilteredOutputProps) => {
 	if (searchResults?.length === 0) {
-		console.debug(`no results`);
 		return (
 			<View style={styles.container}>
 				<Text style={styles.title}>Search for something!</Text>

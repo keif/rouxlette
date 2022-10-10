@@ -1,12 +1,12 @@
 import { Entypo } from "@expo/vector-icons";
 import React, { Dispatch, SetStateAction, useContext, useEffect, useState } from "react";
 import { Pressable, StyleSheet, TextInput, View } from "react-native";
-import useLocation from "../hooks/useLocation";
-import { Text } from "./Themed";
-import { RootContext } from "../context/RootContext";
-import { setLocation } from "../context/reducer";
-import Config from "../Config";
-import AppStyles from "../AppStyles";
+import useLocation from "../../hooks/useLocation";
+import { Text } from "../Themed";
+import { RootContext } from "../../context/RootContext";
+import { setLocation } from "../../context/reducer";
+import Config from "../../Config";
+import AppStyles from "../../AppStyles";
 
 interface LocationInputProps {
 	location: string;

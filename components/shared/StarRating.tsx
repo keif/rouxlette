@@ -1,6 +1,7 @@
 import { StyleSheet, View } from "react-native";
 import { MaterialIcons } from "@expo/vector-icons";
 import React from "react";
+import AppStyles from "../../AppStyles";
 
 interface StarRatingProps {
 	rating: number;
@@ -24,6 +25,7 @@ const StarRating = ({ rating }: StarRatingProps) => {
 				return (
 					<MaterialIcons
 						key={index}
+						// @ts-ignore
 						name={name}
 						size={20}
 						style={starStyle}
@@ -34,16 +36,26 @@ const StarRating = ({ rating }: StarRatingProps) => {
 	);
 };
 
+const starStyle = {
+	textShadowColor: AppStyles.color.black,
+	textShadowOffset: {
+		height: 1,
+		width: 1
+	},
+	textShadowRadius: 2,
+}
 const styles = StyleSheet.create({
 	stars: {
 		display: "flex",
 		flexDirection: "row",
 	},
-	starUnselected: {
-		color: "#aaa",
-	},
 	starSelected: {
+		...starStyle,
 		color: "#ffb300",
+	},
+	starUnselected: {
+		...starStyle,
+		color: "#aaa",
 	},
 });
 

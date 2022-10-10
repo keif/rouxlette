@@ -1,9 +1,9 @@
 import { FlatList, StyleSheet, TouchableOpacity } from "react-native";
 
-import ResultsDetail from "./ResultsDetail";
+import ResultsDetailListItem from "./ResultsDetailListItem";
 import { useNavigation } from "@react-navigation/native";
-import { Text, View } from "./Themed";
-import { Result } from "../hooks/useResults";
+import { Text, View } from "../Themed";
+import { Result } from "../../hooks/useResults";
 import React from "react";
 
 interface ResultsListProps {
@@ -33,7 +33,7 @@ const ResultsList = ({ filterTerm, horizontal = false, results, term, title }: R
 				});
 			}}
 		>
-			<ResultsDetail index={index} result={item} />
+			<ResultsDetailListItem index={index} result={item} />
 		</TouchableOpacity>
 	);
 
