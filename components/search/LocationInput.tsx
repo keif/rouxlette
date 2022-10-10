@@ -51,34 +51,36 @@ const LocationInput = ({ location, setCity }: LocationInputProps) => {
 	return (
 		<View>
 			<View style={styles.view}>
-				<TextInput
-					autoCapitalize={`none`}
-					autoCorrect={false}
-					onChangeText={setLocation}
-					onEndEditing={handleEndEditing}
-					placeholder={locale ? locale : `Current Location`}
-					placeholderTextColor="#999"
-					style={styles.input}
-					value={locale ?? location}
-				/>
-				<Pressable
-					style={({ pressed }) => [
-						styles.button,
-						{ opacity: !Config.isAndroid && pressed ? 0.6 : 1 },
-					]}
-					onPress={() => {
-					}}
-					android_ripple={{
-						color: "grey",
-						radius: 28,
-						borderless: true,
-					}}
-				>
-					<Entypo
-						name="location-pin"
-						style={styles.icon}
+				<View style={styles.inputWrapper}>
+					<TextInput
+						autoCapitalize={`none`}
+						autoCorrect={false}
+						onChangeText={setLocation}
+						onEndEditing={handleEndEditing}
+						placeholder={locale ? locale : `Current Location`}
+						placeholderTextColor="#999"
+						style={styles.input}
+						value={locale ?? location}
 					/>
-				</Pressable>
+					<Pressable
+						style={({ pressed }) => [
+							styles.button,
+							{ opacity: !Config.isAndroid && pressed ? 0.6 : 1 },
+						]}
+						onPress={() => {
+						}}
+						android_ripple={{
+							color: "grey",
+							radius: 28,
+							borderless: true,
+						}}
+					>
+						<Entypo
+							name="location-pin"
+							style={styles.icon}
+						/>
+					</Pressable>
+				</View>
 			</View>
 			{locationErrorMessage !== `` ? <Text>{`${locationErrorMessage}`}</Text> : null}
 		</View>
@@ -96,6 +98,7 @@ const styles = StyleSheet.create({
 	button: {
 		backgroundColor: AppStyles.color.primary,
 		color: AppStyles.color.black,
+		marginLeft: `auto`,
 		shadowColor: AppStyles.input.shadow,
 		...AppStyles.Button,
 	},
@@ -103,10 +106,14 @@ const styles = StyleSheet.create({
 		fontSize: 16,
 	},
 	input: {
+		fontSize: 18,
+	},
+	inputWrapper: {
 		backgroundColor: AppStyles.color.white,
+		flexDirection: `row`,
 		shadowColor: AppStyles.input.shadow,
 		...AppStyles.TextInput,
-	},
+	}
 });
 
 export default LocationInput;

@@ -19,6 +19,7 @@ import AppStyles from "../AppStyles";
 import { View } from "../components/Themed";
 import StarRating from "../components/shared/StarRating";
 import Config from "../Config";
+import OpenSign from "../components/results/OpenSign";
 
 const ResultsShowScreen = ({ navigation, route }: ResultsShowScreenProps<`ResultsShow`>) => {
 	const [result, setResult] = useState<Result>();
@@ -62,33 +63,6 @@ const ResultsShowScreen = ({ navigation, route }: ResultsShowScreenProps<`Result
 		return null;
 	}
 
-	let resultArr = [];
-
-	const generateElement = (key: string, value: string) => <Text key={resultArr.length}><Text
-		style={{ fontWeight: `bold` }}>{`${key}:`}</Text>{`${value}`}</Text>;
-	const canPrint = [`string`, `boolean`, `number`];
-	for (let key in result) {
-		// @ts-ignore
-		if (canPrint.indexOf(typeof result[key]) > -1) {
-			// @ts-ignore
-			resultArr.push(generateElement(key, result[key]));
-		} else {
-			// is object or array
-			// @ts-ignore
-			if (result[key].length) {
-				// @ts-ignore
-				result[key].forEach(value => generateElement(key, value));
-			} else {
-				// @ts-ignore
-				for (let sKey in result[key]) {
-					// @ts-ignore
-					resultArr.push(generateElement(sKey, result[key][sKey]));
-				}
-			}
-
-		}
-	}
-
 	const handleIconPress = () => {
 		Linking
 			.openURL(result.url)
@@ -122,8 +96,9 @@ const ResultsShowScreen = ({ navigation, route }: ResultsShowScreenProps<`Result
 					snapToInterval={Dimensions.get("window").width}
 				/>
 				<Text style={styles.title}>{result.name}</Text>
+				<Text style={styles.price}><OpenSign is_open_now={result.hours[0].is_open_now}/></Text>
 				<View style={styles.starRating}>
-					<StarRating rating={result.rating} />
+					<StarRating rating={result.rating} shadow />
 					<Text>{result.review_count} Review{result.review_count > 1 ? `s` : null}</Text>
 				</View>
 			</View>
@@ -202,6 +177,11 @@ const styles = StyleSheet.create({
 	image: {
 		height: 200,
 		width: 300,
+	},
+	price: {
+		position: `absolute`,
+		right: 12,
+		top: 12,
 	},
 	starRating: {
 		backgroundColor: `transparent`,

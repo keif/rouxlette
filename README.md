@@ -1,0 +1,24 @@
+# Rouxlette
+
+## _The mobile app to help you choose what you want to eat._
+
+The main problem I have with "finding food" is always the inevitable conversation of "I'm hungry, but I don't want _X_."
+So I decided made an app for that - utilizing React Native/Expo to modernize the tech stack, and in its infancy, the
+goal is to be as low requirement as possible.
+
+Current State:
+
+- Utilizes the Yelp and Google APIs
+- Only uses localStorage for cache
+- Not 100% perfect, little glaring errors and broken functionality. It's a personal project, you aren't paying for this.
+
+Future State:
+
+- local profiles (create one for you/your usual lunch crowds and their food preferences)
+- save preferences
+- hide restaurants by search (make it easier to filter down)
+- sharing suggestions
+- map integration
+- additional API integrations (whatever I can find - tying to delivery apps, etc.)
+- basically, all the issues I've had with Yelp over the years that they haven't fixed as I dive more into their API and
+  others.

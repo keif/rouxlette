@@ -5,6 +5,7 @@ import { useNavigation } from "@react-navigation/native";
 import { Text, View } from "../Themed";
 import { Result } from "../../hooks/useResults";
 import React from "react";
+import AppStyles from "../../AppStyles";
 
 interface ResultsListProps {
 	filterTerm: string;
@@ -39,9 +40,7 @@ const ResultsList = ({ filterTerm, horizontal = false, results, term, title }: R
 
 	return (
 		<View style={styles.container}>
-			<Text style={styles.title}>We found {results.length} results
-				for {term}{filterTerm !== `` ? `, without ${filterTerm}` : null}</Text>
-			<Text style={styles.subTitle}>{title}</Text>
+			<Text style={styles.titleCount}>{results.length} for {term}{filterTerm !== `` ? `, without ${filterTerm}` : null}</Text>
 			<FlatList
 				data={results}
 				horizontal={horizontal}
@@ -70,6 +69,10 @@ const styles = StyleSheet.create({
 		fontSize: 18,
 		fontWeight: `bold`,
 		marginBottom: 5,
+	},
+	titleCount: {
+		fontSize: 16,
+		fontFamily: 'WorkSans-Regular',
 	},
 });
 

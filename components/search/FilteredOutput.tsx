@@ -12,13 +12,6 @@ interface FilteredOutputProps {
 }
 
 const FilteredOutput = ({ term, filterTerm, searchResults, filteredResults }: FilteredOutputProps) => {
-	if (searchResults?.length === 0) {
-		return (
-			<View style={styles.container}>
-				<Text style={styles.title}>Search for something!</Text>
-			</View>
-		);
-	}
 	let filterResults;
 
 	if (filteredResults?.length > 0) {
@@ -34,7 +27,6 @@ const FilteredOutput = ({ term, filterTerm, searchResults, filteredResults }: Fi
 				horizontal={false}
 				results={filterResults}
 				term={term}
-				title={`Maybe try...`}
 			/>
 		</View>
 	);

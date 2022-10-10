@@ -5,10 +5,24 @@ import AppStyles from "../../AppStyles";
 
 interface StarRatingProps {
 	rating: number;
+	shadow?: boolean;
 }
 
-const StarRating = ({ rating }: StarRatingProps) => {
+let starStyle = {};
+
+const StarRating = ({ rating, shadow = false }: StarRatingProps) => {
 	const starRatingOptions = [1, 2, 3, 4, 5];
+
+	if (shadow) {
+		starStyle = {
+			textShadowColor: AppStyles.color.black,
+			textShadowOffset: {
+				height: 1,
+				width: 1
+			},
+			textShadowRadius: 2,
+		}
+	}
 
 	return (
 		<View style={styles.stars}>
@@ -36,14 +50,6 @@ const StarRating = ({ rating }: StarRatingProps) => {
 	);
 };
 
-const starStyle = {
-	textShadowColor: AppStyles.color.black,
-	textShadowOffset: {
-		height: 1,
-		width: 1
-	},
-	textShadowRadius: 2,
-}
 const styles = StyleSheet.create({
 	stars: {
 		display: "flex",

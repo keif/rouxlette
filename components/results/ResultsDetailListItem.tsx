@@ -12,7 +12,7 @@ interface ResultsDetailProps {
 
 const ResultsDetailListItem = ({ index, result }: ResultsDetailProps) => {
 	console.log(`result:`, result);
-	const { categories, image_url, is_closed, location, name, price, rating, review_count } = result;
+	const { categories, hours, image_url, is_closed, location, name, price, rating, review_count } = result;
 	const { width } = useWindowDimensions();
 	const translateY = useRef<Animated.Value>(new Animated.Value(50)).current;
 	const opacity = useRef<Animated.Value>(new Animated.Value(0)).current;
@@ -34,17 +34,6 @@ const ResultsDetailListItem = ({ index, result }: ResultsDetailProps) => {
 		]).start();
 	});
 
-	const openSign = () => {
-		if (is_closed) {
-			return (
-				<Text style={styles.closed}>Closed</Text>
-			);
-		}
-
-		return (
-			<Text style={styles.open}>Open</Text>
-		);
-	};
 	const imageSize = width - 24;
 	return (
 		<Animated.View
@@ -76,7 +65,7 @@ const ResultsDetailListItem = ({ index, result }: ResultsDetailProps) => {
 						{categories.map(cat => cat.title).join(`, `)}
 						<View style={{ width: 4 }} />
 						<Icon name="location-pin" size={12} color={AppStyles.color.primary} />
-						{location.city} - {openSign()}
+						{location.city}
 					</Text>
 				</View>
 				<View style={{ flexDirection: "row", marginTop: 4 }}>
@@ -96,6 +85,8 @@ const styles = StyleSheet.create({
 	closed: {
 		color: AppStyles.color.closed,
 		fontWeight: `bold`,
+		...AppStyles.textShadow,
+		textShadowColor: `#fff`,
 	},
 	container: {
 		backgroundColor: AppStyles.color.white,
@@ -161,6 +152,7 @@ const styles = StyleSheet.create({
 	open: {
 		color: AppStyles.color.open,
 		fontWeight: `bold`,
+		...AppStyles.textShadow,
 	},
 	subText: {
 		...textStyle,

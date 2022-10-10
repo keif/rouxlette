@@ -9,6 +9,7 @@ export interface Result {
 	coordinates: Coordinates;
 	display_phone: string;
 	distance: number;
+	hours?: Hours[];
 	id: string;
 	image_url: string;
 	is_closed: boolean;
@@ -31,6 +32,19 @@ export interface Category {
 export interface Coordinates {
 	latitude: number;
 	longitude: number;
+}
+
+export interface Hours {
+	hours_type: string;
+	is_open_now: boolean;
+	open: Open[]
+}
+
+export interface Open {
+	day: number;
+	end: string;
+	is_overnight: boolean;
+	start: string;
 }
 
 export interface Location {

@@ -29,39 +29,41 @@ const SearchInput = ({ icon, city, location, onTermChange, placeholder, setResul
 
 	useEffect(() => {
 		setResults(results);
-	}, [results])
+	}, [results]);
 
 	return (
 		<View>
 			<View style={styles.view}>
-				<TextInput
-					autoCapitalize={`none`}
-					autoCorrect={false}
-					onChangeText={term => onTermChange(term)}
-					onEndEditing={(props) => handleDoneEditing(term, city)}
-					placeholder={placeholder}
-					placeholderTextColor="#999"
-					selectionColor="#54D3C2"
-					style={styles.input}
-					value={term}
-				/>
-				<Pressable
-					style={({ pressed }) => [
-						styles.button,
-						{ opacity: !Config.isAndroid && pressed ? 0.6 : 1 },
-					]}
-					onPress={(props) => handleDoneEditing(term, city)}
-					android_ripple={{
-						color: "grey",
-						radius: 28,
-						borderless: true,
-					}}
-				>
-					<Feather
-						name={icon}
-						style={styles.icon}
+				<View style={styles.inputWrapper}>
+					<TextInput
+						autoCapitalize={`none`}
+						autoCorrect={false}
+						onChangeText={term => onTermChange(term)}
+						onEndEditing={(props) => handleDoneEditing(term, city)}
+						placeholder={placeholder}
+						placeholderTextColor="#999"
+						selectionColor="#54D3C2"
+						style={styles.input}
+						value={term}
 					/>
-				</Pressable>
+					<Pressable
+						style={({ pressed }) => [
+							styles.button,
+							{ opacity: !Config.isAndroid && pressed ? 0.6 : 1 },
+						]}
+						onPress={(props) => handleDoneEditing(term, city)}
+						android_ripple={{
+							color: "grey",
+							radius: 28,
+							borderless: true,
+						}}
+					>
+						<Feather
+							name={icon}
+							style={styles.icon}
+						/>
+					</Pressable>
+				</View>
 			</View>
 			{errorMessage !== `` ? <Text>{`${errorMessage}`}</Text> : null}
 		</View>
@@ -79,17 +81,22 @@ const styles = StyleSheet.create({
 	button: {
 		backgroundColor: AppStyles.color.primary,
 		color: AppStyles.color.black,
+		marginLeft: `auto`,
 		shadowColor: AppStyles.input.shadow,
-		...AppStyles.Button
+		...AppStyles.Button,
 	},
 	icon: {
 		fontSize: 16,
 	},
 	input: {
-		backgroundColor: AppStyles.color.white,
-		shadowColor: AppStyles.input.shadow,
-		...AppStyles.TextInput
+		fontSize: 18,
 	},
+	inputWrapper: {
+		backgroundColor: AppStyles.color.white,
+		flexDirection: `row`,
+		shadowColor: AppStyles.input.shadow,
+		...AppStyles.TextInput,
+	}
 });
 
 export default SearchInput;
