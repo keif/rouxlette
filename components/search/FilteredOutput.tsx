@@ -35,6 +35,7 @@ const FilteredOutput = ({ term, filterTerm, searchResults, filteredResults }: Fi
 const styles = StyleSheet.create({
 	container: {
 		paddingHorizontal: 12,
+		paddingVertical: 8,
 	},
 	title: {
 		fontStyle: `italic`,
