@@ -8,6 +8,7 @@ import { useReducer } from "react";
 import { appReducer } from "./context/reducer";
 import { initialAppState } from "./context/state";
 import { RootContext } from "./context/RootContext";
+import "expo-dev-menu";
 
 export default function App() {
 	const isLoadingComplete = useCachedResources();
