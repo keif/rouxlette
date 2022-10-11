@@ -18,22 +18,16 @@ const LocationInput = ({ location, setCity }: LocationInputProps) => {
 	const [locationErrorMessage, city, locationResults, searchLocation] = useLocation();
 	const [locale, setLocale] = useState<string>(``);
 
+	const fetchLocation = async (location: string) => {
+		await searchLocation(location);
+	};
+
 	const handleEndEditing = async () => {
-		const loc = await searchLocation(locale);
-		setCity(city);
-		setLocale(city);
-		dispatch(setLocation(city));
+		await fetchLocation(locale);
 	};
 
 	useEffect(() => {
-		const fetchLocation = async () => {
-			const loc = await searchLocation(``);
-			setCity(city);
-			setLocale(city);
-			dispatch(setLocation(city));
-		};
-
-		fetchLocation().catch(console.error);
+		fetchLocation(``).catch(console.error);
 	}, []);
 
 	useEffect(() => {
