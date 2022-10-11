@@ -92,6 +92,7 @@ const styles = StyleSheet.create({
 		backgroundColor: AppStyles.color.white,
 		borderRadius: 16,
 		elevation: 8,
+		marginHorizontal: 12,
 		marginVertical: 12,
 		shadowColor: AppStyles.color.shadow,
 		shadowOffset: {

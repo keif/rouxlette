@@ -27,7 +27,7 @@ const ResultsShowScreen = ({ navigation, route }: ResultsShowScreenProps<`Result
 	const { width } = useWindowDimensions();
 	const translateY = useRef<Animated.Value>(new Animated.Value(50)).current;
 	const opacity = useRef<Animated.Value>(new Animated.Value(0)).current;
-
+	const is_open_now = result?.hours && result.hours[0].is_open_now || false;
 	useEffect(() => {
 		const getResult = async (id: string) => {
 			try {
@@ -96,7 +96,7 @@ const ResultsShowScreen = ({ navigation, route }: ResultsShowScreenProps<`Result
 					snapToInterval={Dimensions.get("window").width}
 				/>
 				<Text style={styles.title}>{result.name}</Text>
-				<Text style={styles.price}><OpenSign is_open_now={result.hours[0].is_open_now}/></Text>
+				<Text style={styles.price}><OpenSign is_open_now={is_open_now} /></Text>
 				<View style={styles.starRating}>
 					<StarRating rating={result.rating} shadow />
 					<Text>{result.review_count} Review{result.review_count > 1 ? `s` : null}</Text>

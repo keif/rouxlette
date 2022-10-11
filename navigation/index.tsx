@@ -60,12 +60,16 @@ function BottomTabNavigator() {
 		<BottomTab.Navigator
 			initialRouteName="Search"
 			screenOptions={{
+				// headerShown: false,
 				tabBarActiveTintColor: Colors[colorScheme].tint,
 			}}>
 			<BottomTab.Screen
 				name="Search"
 				component={SearchScreen}
 				options={({ navigation }: RootTabScreenProps<"Search">) => ({
+					headerStyle: {
+						height: 56, // Specify the height of your custom header
+					},
 					title: "Rouxlette",
 					tabBarIcon: ({ color }) => <TabBarIcon name="food-fork-drink" color={color} />,
 					headerRight: () => (
