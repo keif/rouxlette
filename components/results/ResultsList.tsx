@@ -36,8 +36,12 @@ const ResultsList = ({ filterTerm, horizontal = false, results, term }: ResultsL
 	const renderItem = ({ item, index }: { item: Result, index: number }) => (
 		<TouchableOpacity
 			onPress={() => {
-				navigation.navigate(`ResultsShow`, {
+				// navigation.navigate(`ResultsShow`, {
+				// 	id: item.id,
+				// });
+				navigation.navigate(`Modal`, {
 					id: item.id,
+					name: item.name,
 				});
 			}}
 		>

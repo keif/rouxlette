@@ -23,11 +23,11 @@ import OpenSign from "../components/results/OpenSign";
 
 const ResultsShowScreen = ({ navigation, route }: ResultsShowScreenProps<`ResultsShow`>) => {
 	const [result, setResult] = useState<Result>();
-	const { id } = route.params;
 	const { width } = useWindowDimensions();
 	const translateY = useRef<Animated.Value>(new Animated.Value(50)).current;
 	const opacity = useRef<Animated.Value>(new Animated.Value(0)).current;
 	const is_open_now = result?.hours && result.hours[0].is_open_now || false;
+
 	useEffect(() => {
 		const getResult = async (id: string) => {
 			try {
@@ -39,8 +39,10 @@ const ResultsShowScreen = ({ navigation, route }: ResultsShowScreenProps<`Result
 			}
 		};
 
-		getResult(id);
-	}, []);
+		if (route?.params?.id) {
+			getResult(route.params.id);
+		}
+	}, [route?.params?.id]);
 
 	useEffect(() => {
 		Animated.parallel([
