@@ -9,11 +9,9 @@ import Config from "../../Config";
 import AppStyles from "../../AppStyles";
 
 interface LocationInputProps {
-	location: string;
-	setCity: Dispatch<SetStateAction<string>>;
 }
 
-const LocationInput = ({ location, setCity }: LocationInputProps) => {
+const LocationInput = ({}: LocationInputProps) => {
 	const { state, dispatch } = useContext(RootContext);
 	const [locationErrorMessage, city, locationResults, searchLocation] = useLocation();
 	const [locale, setLocale] = useState<string>(``);
@@ -22,7 +20,7 @@ const LocationInput = ({ location, setCity }: LocationInputProps) => {
 		await searchLocation(location);
 	};
 
-	const handleEndEditing = async () => {
+	const handleEndEditing = async (locale: string) => {
 		await fetchLocation(locale);
 	};
 
@@ -31,50 +29,43 @@ const LocationInput = ({ location, setCity }: LocationInputProps) => {
 	}, []);
 
 	useEffect(() => {
-		setCity(city);
+		console.log(`locationResults:`, locationResults);
 		setLocale(city);
 		dispatch(setLocation(city));
 	}, [city]);
 
-	useEffect(() => {
-		setCity(location);
-		setLocale(location);
-		dispatch(setLocation(location));
-	}, [location]);
-
 	return (
-		<View>
-			<View style={styles.view}>
-				<View style={styles.inputWrapper}>
-					<TextInput
-						autoCapitalize={`none`}
-						autoCorrect={false}
-						onChangeText={setLocation}
-						onEndEditing={handleEndEditing}
-						placeholder={locale ? locale : `Current Location`}
-						placeholderTextColor="#999"
-						style={styles.input}
-						value={locale ?? location}
+		<View style={styles.view}>
+			<View style={styles.inputWrapper}>
+				<TextInput
+					autoCapitalize={`none`}
+					autoCorrect={false}
+					onChangeText={(text) => setLocale(text)}
+					onEndEditing={() => handleEndEditing(locale)}
+					placeholder={`Current Location`}
+					placeholderTextColor="#999"
+					style={styles.input}
+					value={locale}
+				/>
+				<Pressable
+					style={({ pressed }) => [
+						styles.button,
+						{ opacity: !Config.isAndroid && pressed ? 0.6 : 1 },
+					]}
+					onPress={() => {
+						handleEndEditing(locale)
+					}}
+					android_ripple={{
+						color: "grey",
+						radius: 28,
+						borderless: true,
+					}}
+				>
+					<Entypo
+						name="location-pin"
+						style={styles.icon}
 					/>
-					<Pressable
-						style={({ pressed }) => [
-							styles.button,
-							{ opacity: !Config.isAndroid && pressed ? 0.6 : 1 },
-						]}
-						onPress={() => {
-						}}
-						android_ripple={{
-							color: "grey",
-							radius: 28,
-							borderless: true,
-						}}
-					>
-						<Entypo
-							name="location-pin"
-							style={styles.icon}
-						/>
-					</Pressable>
-				</View>
+				</Pressable>
 			</View>
 			{locationErrorMessage !== `` ? <Text>{`${locationErrorMessage}`}</Text> : null}
 		</View>
@@ -107,7 +98,7 @@ const styles = StyleSheet.create({
 		flexDirection: `row`,
 		shadowColor: AppStyles.input.shadow,
 		...AppStyles.TextInput,
-	}
+	},
 });
 
 export default LocationInput;
