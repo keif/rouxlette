@@ -32,38 +32,36 @@ const SearchInput = ({ icon, city, location, onTermChange, placeholder, setResul
 	}, [results]);
 
 	return (
-		<View>
-			<View style={styles.view}>
-				<View style={styles.inputWrapper}>
-					<TextInput
-						autoCapitalize={`none`}
-						autoCorrect={false}
-						onChangeText={term => onTermChange(term)}
-						onEndEditing={(props) => handleDoneEditing(term, city)}
-						placeholder={placeholder}
-						placeholderTextColor="#999"
-						selectionColor="#54D3C2"
-						style={styles.input}
-						value={term}
+		<View style={styles.view}>
+			<View style={styles.inputWrapper}>
+				<TextInput
+					autoCapitalize={`none`}
+					autoCorrect={false}
+					onChangeText={onTermChange}
+					onEndEditing={(props) => handleDoneEditing(term, city)}
+					placeholder={placeholder}
+					placeholderTextColor="#999"
+					selectionColor="#54D3C2"
+					style={styles.input}
+					value={term}
+				/>
+				<Pressable
+					style={({ pressed }) => [
+						styles.button,
+						{ opacity: !Config.isAndroid && pressed ? 0.6 : 1 },
+					]}
+					onPress={(props) => handleDoneEditing(term, city)}
+					android_ripple={{
+						color: "grey",
+						radius: 28,
+						borderless: true,
+					}}
+				>
+					<Feather
+						name={icon}
+						style={styles.icon}
 					/>
-					<Pressable
-						style={({ pressed }) => [
-							styles.button,
-							{ opacity: !Config.isAndroid && pressed ? 0.6 : 1 },
-						]}
-						onPress={(props) => handleDoneEditing(term, city)}
-						android_ripple={{
-							color: "grey",
-							radius: 28,
-							borderless: true,
-						}}
-					>
-						<Feather
-							name={icon}
-							style={styles.icon}
-						/>
-					</Pressable>
-				</View>
+				</Pressable>
 			</View>
 			{errorMessage !== `` ? <Text>{`${errorMessage}`}</Text> : null}
 		</View>
@@ -96,7 +94,7 @@ const styles = StyleSheet.create({
 		flexDirection: `row`,
 		shadowColor: AppStyles.input.shadow,
 		...AppStyles.TextInput,
-	}
+	},
 });
 
 export default SearchInput;
