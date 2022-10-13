@@ -22,3 +22,9 @@ Future State:
 - additional API integrations (whatever I can find - tying to delivery apps, etc.)
 - basically, all the issues I've had with Yelp over the years that they haven't fixed as I dive more into their API and
   others.
+- Pricing per person or overall cost
+- Removing certain cuisines-i want Mexican I don’t want sushi
+- Distance?
+- Ratings by other users (ie. I only want 4stars and above)
+- A way to track where I’ve gone and then filter by “new to me”
+- Also see if you can access the open table or resy or toast api

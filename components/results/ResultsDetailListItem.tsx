@@ -11,7 +11,6 @@ interface ResultsDetailProps {
 }
 
 const ResultsDetailListItem = ({ index, result }: ResultsDetailProps) => {
-	console.log(`result:`, result);
 	const { categories, hours, image_url, is_closed, location, name, price, rating, review_count } = result;
 	const { width } = useWindowDimensions();
 	const translateY = useRef<Animated.Value>(new Animated.Value(50)).current;
