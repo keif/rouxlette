@@ -1,4 +1,4 @@
-import { Result } from "../hooks/useResults";
+import { Category, Result } from "../hooks/useResults";
 
 export enum ActionType {
 	SetCategories,
@@ -6,11 +6,12 @@ export enum ActionType {
 	SetFilter,
 	SetLocation,
 	SetResults,
+	SetShowFilter,
 }
 
 export interface SetCategories {
 	type: ActionType.SetCategories;
-	payload: { categories: string[] }
+	payload: { categories: Category[] }
 }
 
 export interface SetDetail {
@@ -33,4 +34,9 @@ export interface SetResults {
 	payload: { results: Result[] };
 }
 
-export type AppActions = SetCategories | SetDetail | SetFilter | SetLocation | SetResults;
+export interface SetShowFilter {
+	type: ActionType.SetShowFilter;
+	payload: { showFilter: boolean; };
+}
+
+export type AppActions = SetCategories | SetDetail | SetFilter | SetLocation | SetResults | SetShowFilter;

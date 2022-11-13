@@ -1,23 +1,17 @@
-/**
- * If you are not familiar with React Navigation, refer to the "Fundamentals" guide:
- * https://reactnavigation.org/docs/getting-started
- *
- */
-import { FontAwesome, MaterialCommunityIcons } from "@expo/vector-icons";
-import { createBottomTabNavigator } from "@react-navigation/bottom-tabs";
 import { DarkTheme, DefaultTheme, NavigationContainer } from "@react-navigation/native";
 import { createNativeStackNavigator } from "@react-navigation/native-stack";
 import * as React from "react";
 import { ColorSchemeName, Pressable } from "react-native";
-
-import Colors from "../constants/Colors";
 import useColorScheme from "../hooks/useColorScheme";
 import ModalScreen from "../screens/ModalScreen";
 import NotFoundScreen from "../screens/NotFoundScreen";
 import { RootStackParamList, RootTabParamList, RootTabScreenProps } from "../types";
 import LinkingConfiguration from "./LinkingConfiguration";
 import SearchScreen from "../screens/SearchScreen";
-import ResultsShowScreen from "../screens/ResultsShowScreen";
+import { createMaterialTopTabNavigator } from "@react-navigation/material-top-tabs";
+import AppStyles from "../AppStyles";
+import { FontAwesome } from "@expo/vector-icons";
+import Colors from "../constants/Colors";
 
 export default function Navigation({ colorScheme }: { colorScheme: ColorSchemeName }) {
 	return (
@@ -36,9 +30,11 @@ export default function Navigation({ colorScheme }: { colorScheme: ColorSchemeNa
 const Stack = createNativeStackNavigator<RootStackParamList>();
 
 function RootNavigator() {
+	const colorScheme = useColorScheme();
+
 	return (
 		<Stack.Navigator>
-			<Stack.Screen name="Root" component={BottomTabNavigator} options={{ headerShown: false }} />
+			<Stack.Screen name="Root" component={TopTabNavigator} options={{ headerShown: false }} />
 			<Stack.Screen name="NotFound" component={NotFoundScreen} options={{ title: "Oops!" }} />
 			<Stack.Group screenOptions={{ presentation: "modal" }}>
 				<Stack.Screen name="Modal" component={ModalScreen} />
@@ -51,61 +47,32 @@ function RootNavigator() {
  * A bottom tab navigator displays tab buttons on the bottom of the display to switch screens.
  * https://reactnavigation.org/docs/bottom-tab-navigator
  */
-const BottomTab = createBottomTabNavigator<RootTabParamList>();
+const Tabs = createMaterialTopTabNavigator<RootTabParamList>();
 
-function BottomTabNavigator() {
+function TopTabNavigator() {
 	const colorScheme = useColorScheme();
 
 	return (
-		<BottomTab.Navigator
-			initialRouteName="Search"
+		<Tabs.Navigator
+			initialRouteName={"Search"}
 			screenOptions={{
-				// headerShown: false,
-				tabBarActiveTintColor: Colors[colorScheme].tint,
-			}}>
-			<BottomTab.Screen
-				name="Search"
+				tabBarActiveTintColor: "#e91e63",
+				tabBarStyle: { backgroundColor: AppStyles.color.black },
+			}}
+		>
+			<Tabs.Screen
 				component={SearchScreen}
+				name="Search"
 				options={({ navigation }: RootTabScreenProps<"Search">) => ({
 					headerStyle: {
-						height: 56, // Specify the height of your custom header
+						height: 0,
+					},
+					style: {
+						height: 0,
 					},
 					title: "Rouxlette",
-					tabBarIcon: ({ color }) => <TabBarIcon name="food-fork-drink" color={color} />,
-					headerRight: () => (
-						<Pressable
-							onPress={() => navigation.navigate("Modal")}
-							style={({ pressed }) => ({
-								opacity: pressed ? 0.5 : 1,
-							})}>
-							<FontAwesome
-								name="info-circle"
-								size={25}
-								color={Colors[colorScheme].text}
-								style={{ marginRight: 15 }}
-							/>
-						</Pressable>
-					),
 				})}
 			/>
-			<BottomTab.Screen
-				name="ResultsShow"
-				component={ResultsShowScreen}
-				options={{
-					title: "Details",
-					tabBarIcon: ({ color }) => <TabBarIcon name="food-fork-drink" color={color} />,
-				}}
-			/>
-		</BottomTab.Navigator>
+		</Tabs.Navigator>
 	);
-}
-
-/**
- * You can explore the built-in icon families and icons on the web at https://icons.expo.fyi/
- */
-function TabBarIcon(props: {
-	name: React.ComponentProps<typeof MaterialCommunityIcons>["name"];
-	color: string;
-}) {
-	return <MaterialCommunityIcons size={30} style={{ marginBottom: -3 }} {...props} />;
 }

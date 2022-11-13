@@ -30,7 +30,15 @@ const linking: LinkingOptions<RootStackParamList> = {
           },
         },
       },
-      Modal: 'modal',
+      Modal: {
+        screens: {
+          ModalScreen: 'modal',
+        },
+        parse: {
+          id: String,
+          name: String,
+        }
+      },
       NotFound: '*',
     },
   },

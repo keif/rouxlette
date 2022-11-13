@@ -1,33 +1,47 @@
 import { AppState } from "./state";
-import { ActionType, AppActions, SetCategories, SetDetail, SetFilter, SetLocation, SetResults } from "./actions";
-import { Result } from "../hooks/useResults";
+import {
+	ActionType,
+	AppActions,
+	SetCategories,
+	SetDetail,
+	SetFilter,
+	SetLocation,
+	SetResults,
+	SetShowFilter,
+} from "./actions";
+import { Category, Result } from "../hooks/useResults";
 
 export function appReducer(state: AppState, action: AppActions): AppState {
 	switch (action.type) {
 		case ActionType.SetCategories:
 			return {
 				...state,
-				categories: state.categories,
-			}
+				categories: action.payload.categories,
+			};
 		case ActionType.SetDetail:
 			return {
 				...state,
-				detail: state.detail,
+				detail: action.payload.detail,
 			};
 		case ActionType.SetFilter:
 			return {
 				...state,
-				filter: state.filter,
-			}
+				filter: action.payload.filter,
+			};
 		case ActionType.SetLocation:
 			return {
 				...state,
-				location: state.location,
+				location: action.payload.location,
 			};
 		case ActionType.SetResults:
 			return {
 				...state,
-				results: state.results,
+				results: action.payload.results,
+			};
+		case ActionType.SetShowFilter:
+			return {
+				...state,
+				showFilter: action.payload.showFilter,
 			};
 		default:
 			return state;
@@ -35,7 +49,7 @@ export function appReducer(state: AppState, action: AppActions): AppState {
 }
 
 // helper functions to simplify the caller
-export const setCategories = (categories: string[]): SetCategories => ({
+export const setCategories = (categories: Category[]): SetCategories => ({
 	type: ActionType.SetCategories,
 	payload: { categories },
 });
@@ -48,7 +62,7 @@ export const setDetail = (detail: Result): SetDetail => ({
 export const setFilter = (filter: string): SetFilter => ({
 	type: ActionType.SetFilter,
 	payload: { filter },
-})
+});
 export const setLocation = (location: string): SetLocation => ({
 	type: ActionType.SetLocation,
 	payload: { location },
@@ -57,4 +71,9 @@ export const setLocation = (location: string): SetLocation => ({
 export const setResults = (results: Result[]): SetResults => ({
 	type: ActionType.SetResults,
 	payload: { results },
+});
+
+export const setShowFilter = (showFilter: boolean): SetShowFilter => ({
+	type: ActionType.SetShowFilter,
+	payload: { showFilter },
 });
