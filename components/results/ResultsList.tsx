@@ -1,14 +1,18 @@
-import { FlatList, Pressable, StyleSheet, TouchableOpacity } from "react-native";
+import { FlatList, Platform, Pressable, StyleSheet, TouchableOpacity } from "react-native";
 
 import ResultsDetailListItem from "./ResultsDetailListItem";
 import { useNavigation } from "@react-navigation/native";
 import { Text, View } from "../Themed";
 import { Result } from "../../hooks/useResults";
-import React, { useEffect, useState } from "react";
+import React, { useContext, useEffect, useState } from "react";
 import AppStyles from "../../AppStyles";
 import Icon from "react-native-vector-icons/MaterialIcons";
 import { MaterialIcons } from "@expo/vector-icons";
 import Config from "../../Config";
+import { setShowFilter } from "../../context/reducer";
+import { RootContext } from "../../context/RootContext";
+import { StatusBar } from "expo-status-bar";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 interface ResultsListProps {
 	filterTerm: string;
@@ -18,9 +22,10 @@ interface ResultsListProps {
 }
 
 const ResultsList = ({ filterTerm, horizontal = false, results, term }: ResultsListProps) => {
-	const [searchTerm, setSearchTerm] = useState(term);
 	const navigation = useNavigation();
+	const inset = useSafeAreaInsets();
 
+	console.log(`inset.bottom:`, inset.bottom);
 	if (results.length === 0) {
 		return (
 			<View style={styles.container}>
@@ -29,16 +34,9 @@ const ResultsList = ({ filterTerm, horizontal = false, results, term }: ResultsL
 		);
 	}
 
-	const handleFilterPress = () => {
-		console.log(`filter`);
-	}
-
 	const renderItem = ({ item, index }: { item: Result, index: number }) => (
 		<TouchableOpacity
 			onPress={() => {
-				// navigation.navigate(`ResultsShow`, {
-				// 	id: item.id,
-				// });
 				navigation.navigate(`Modal`, {
 					id: item.id,
 					name: item.name,
@@ -49,74 +47,33 @@ const ResultsList = ({ filterTerm, horizontal = false, results, term }: ResultsL
 		</TouchableOpacity>
 	);
 
-	useEffect(() => {
-		setSearchTerm(term);
-	}, [results]);
-
 	return (
 		<View style={styles.container}>
-			<View style={{ flexDirection: `row`, marginHorizontal: 12, }}>
-				<Text
-					style={styles.titleCount}>{results.length} for {searchTerm}{filterTerm !== `` ? `, without ${filterTerm}` : null}</Text>
-				<Pressable
-					style={({ pressed }) => [
-						styles.button,
-						{ opacity: !Config.isAndroid && pressed ? 0.6 : 1 },
-					]}
-					onPress={handleFilterPress}
-					android_ripple={{
-						color: "grey",
-						radius: 28,
-						borderless: true,
-					}}
-				>
-					<Text
-						style={styles.filterText}>Filters/Don't want?
-					</Text>
-					<Icon name={`filter-list`} size={20} color={AppStyles.color.primary} />
-				</Pressable>
-			</View>
 			<FlatList
+				contentContainerStyle={styles.contentContainer}
 				data={results}
 				horizontal={horizontal}
 				keyExtractor={(result) => result.id}
 				renderItem={renderItem}
 				showsHorizontalScrollIndicator={false}
 			/>
+			<StatusBar style={Platform.OS === "ios" ? "light" : "auto"} style={{ height: 600 }}/>
 		</View>
 	);
 };
 
 const styles = StyleSheet.create({
 	container: {
+		// flex: 1,
 		marginBottom: 10,
 	},
-	button: {
-		marginLeft: `auto`,
-		flexDirection: `row`,
-	},
-	filterText: {
-		fontSize: 16,
-		fontFamily: "WorkSans-Regular",
-		marginLeft: `auto`,
-	},
-	subTitle: {
-		borderBottomColor: `#000`,
-		borderBottomWidth: 1,
-		fontSize: 16,
-		fontStyle: `italic`,
-		fontWeight: `bold`,
-		marginBottom: 5,
-		paddingBottom: 5,
+	contentContainer: {
+		paddingBottom: 420,
 	},
 	title: {
 		fontSize: 18,
 		fontWeight: `bold`,
 		marginBottom: 5,
-	},
-	titleCount: {
-		fontSize: 16,
-		fontFamily: "WorkSans-Regular",
 	},
 });
 
