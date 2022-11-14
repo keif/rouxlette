@@ -8,7 +8,7 @@ import Icon from "react-native-vector-icons/MaterialIcons";
 import AppStyles from "../../AppStyles";
 import { setShowFilter } from "../../context/reducer";
 import { RootContext } from "../../context/RootContext";
-import FilterModal from "../FilterModal";
+import FilterModal from "../filter/FilterModal";
 
 interface FilteredOutputProps {
 	term: string;

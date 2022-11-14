@@ -1,16 +1,10 @@
-import { FlatList, Platform, Pressable, StyleSheet, TouchableOpacity } from "react-native";
+import { FlatList, Platform, StyleSheet, TouchableOpacity } from "react-native";
 
 import ResultsDetailListItem from "./ResultsDetailListItem";
 import { useNavigation } from "@react-navigation/native";
 import { Text, View } from "../Themed";
 import { Result } from "../../hooks/useResults";
-import React, { useContext, useEffect, useState } from "react";
-import AppStyles from "../../AppStyles";
-import Icon from "react-native-vector-icons/MaterialIcons";
-import { MaterialIcons } from "@expo/vector-icons";
-import Config from "../../Config";
-import { setShowFilter } from "../../context/reducer";
-import { RootContext } from "../../context/RootContext";
+import React from "react";
 import { StatusBar } from "expo-status-bar";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 
@@ -25,7 +19,6 @@ const ResultsList = ({ filterTerm, horizontal = false, results, term }: ResultsL
 	const navigation = useNavigation();
 	const inset = useSafeAreaInsets();
 
-	console.log(`inset.bottom:`, inset.bottom);
 	if (results.length === 0) {
 		return (
 			<View style={styles.container}>
@@ -57,7 +50,7 @@ const ResultsList = ({ filterTerm, horizontal = false, results, term }: ResultsL
 				renderItem={renderItem}
 				showsHorizontalScrollIndicator={false}
 			/>
-			<StatusBar style={Platform.OS === "ios" ? "light" : "auto"} style={{ height: 600 }}/>
+			<StatusBar style={Platform.OS === "ios" ? "light" : "auto"} />
 		</View>
 	);
 };

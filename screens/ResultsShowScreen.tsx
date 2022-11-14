@@ -33,7 +33,6 @@ const ResultsShowScreen = ({ navigation, route }: ResultsShowScreenProps<`Result
 			try {
 				const response = await yelp.get(`/${id}`);
 				setResult(response.data);
-				console.debug(`ResultsShowScreen: response.data:`, response.data);
 			} catch (err) {
 				console.warn(err);
 			}

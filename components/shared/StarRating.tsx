@@ -18,16 +18,17 @@ const StarRating = ({ rating, shadow = false }: StarRatingProps) => {
 			textShadowColor: AppStyles.color.black,
 			textShadowOffset: {
 				height: 1,
-				width: 1
+				width: 1,
 			},
 			textShadowRadius: 2,
-		}
+		};
 	}
 
 	return (
 		<View style={styles.stars}>
 			{starRatingOptions.map((option, index) => {
-				let name = `star-border`;
+				type IconType = `star-border` | `star` | `star-half`
+				let name = `star-border` as IconType;
 				let starStyle = styles.starUnselected;
 				if (rating >= option) {
 					name = `star`;
@@ -39,7 +40,6 @@ const StarRating = ({ rating, shadow = false }: StarRatingProps) => {
 				return (
 					<MaterialIcons
 						key={index}
-						// @ts-ignore
 						name={name}
 						size={20}
 						style={starStyle}

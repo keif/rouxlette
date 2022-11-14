@@ -29,7 +29,6 @@ const LocationInput = ({}: LocationInputProps) => {
 	}, []);
 
 	useEffect(() => {
-		console.log(`locationResults:`, locationResults);
 		setLocale(city);
 		dispatch(setLocation(city));
 	}, [city]);

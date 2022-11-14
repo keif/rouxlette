@@ -10,7 +10,6 @@ import useLocation from "../hooks/useLocation";
 import AppStyles from "../AppStyles";
 import { StatusBar } from "expo-status-bar";
 import { setCategories } from "../context/reducer";
-import { SearchBar } from "@rneui/base";
 import { SafeAreaProvider } from "react-native-safe-area-context";
 
 if (Platform.OS === "android" && UIManager.setLayoutAnimationEnabledExperimental) {
@@ -23,13 +22,13 @@ const SearchScreen = () => {
 	const [filterTerm, setFilterTerm] = useState<string>(``);
 	const [searchResults, setSearchResults] = useState<Array<Result>>([]);
 	const [filterResults, setFilterResults] = useState<Array<Result>>([]);
-	const [toggleStyle, setToggleStyle] = useState(`row`);
+	const [toggleStyle, setToggleStyle] = useState(true);
 	const [locationErrorMessage, city, locationResults, searchLocation] = useLocation();
 
 	useEffect(() => {
 		LayoutAnimation.configureNext(LayoutAnimation.Presets.easeInEaseOut);
 		if (searchResults.length > 0) {
-			setToggleStyle(`column`);
+			setToggleStyle(false);
 			// generate list of category objects
 			const categories: Category[] = searchResults.reduce<Category[]>((acc, curr) => {
 				acc.push(...curr.categories);
@@ -48,14 +47,11 @@ const SearchScreen = () => {
 	}, [searchResults]);
 
 	return (
-		// @ts-ignore
 		<SafeAreaProvider>
-			<View style={[styles.container, { flexDirection: toggleStyle }]}>
+			<View style={[styles.container, toggleStyle ? styles.containerRow : styles.containerColumn]}>
 				<View style={styles.controller}>
 					<SearchInput
-						icon={`search`}
 						city={city}
-						location={city}
 						onTermChange={setTerm}
 						placeholder={`What are you craving?`}
 						setResults={setSearchResults}
@@ -64,15 +60,6 @@ const SearchScreen = () => {
 					{
 						searchResults.length ? (
 							<View>
-								{/*<SearchInput*/}
-								{/*	icon={`filter`}*/}
-								{/*	city={city}*/}
-								{/*	location={city}*/}
-								{/*	onTermChange={setFilterTerm}*/}
-								{/*	placeholder={`…but you don't want?`}*/}
-								{/*	setResults={setFilterResults}*/}
-								{/*	term={filterTerm}*/}
-								{/*/>*/}
 								<LocationInput />
 								<FilteredOutput term={term} filterTerm={filterTerm} searchResults={searchResults}
 												filteredResults={filterResults} />
@@ -80,7 +67,7 @@ const SearchScreen = () => {
 						) : null
 					}
 				</View>
-				<StatusBar style={Platform.OS === "ios" ? "light" : "auto"} style={{ height: 80 }} />
+				<StatusBar style={Platform.OS === "ios" ? "light" : "auto"} />
 			</View>
 		</SafeAreaProvider>
 	);
@@ -93,6 +80,12 @@ const styles = StyleSheet.create({
 		flex: 1,
 		justifyContent: "center",
 		overflow: "hidden",
+	},
+	containerColumn: {
+		flexDirection: `column`,
+	},
+	containerRow: {
+		flexDirection: `row`,
 	},
 	controller: {
 		flex: 1,

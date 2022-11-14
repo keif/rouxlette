@@ -7,16 +7,14 @@ import Config from "../../Config";
 import AppStyles from "../../AppStyles";
 
 interface SearchBarProps {
-	icon: any;
 	city: string;
-	location: string;
 	onTermChange: Dispatch<SetStateAction<string>>;
 	placeholder: string;
 	setResults: Dispatch<SetStateAction<Array<Result>>>;
 	term: string;
 }
 
-const SearchInput = ({ icon, city, location, onTermChange, placeholder, setResults, term }: SearchBarProps) => {
+const SearchInput = ({ city, onTermChange, placeholder, setResults, term }: SearchBarProps) => {
 	const [errorMessage, results, searchApi] = useResults();
 
 	const handleDoneEditing = async (term: string, city: string) => {
@@ -58,7 +56,7 @@ const SearchInput = ({ icon, city, location, onTermChange, placeholder, setResul
 					}}
 				>
 					<Feather
-						name={icon}
+						name={`search`}
 						style={styles.icon}
 					/>
 				</Pressable>
