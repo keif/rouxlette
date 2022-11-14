@@ -1,4 +1,5 @@
 import { Category, Result } from "../hooks/useResults";
+import { Filter } from "./state";
 
 export enum ActionType {
 	SetCategories,
@@ -21,7 +22,7 @@ export interface SetDetail {
 
 export interface SetFilter {
 	type: ActionType.SetFilter;
-	payload: { filter: string }
+	payload: { filter: Filter }
 }
 
 export interface SetLocation {

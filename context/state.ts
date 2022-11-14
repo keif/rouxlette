@@ -18,7 +18,7 @@ export interface Filter {
 export const initialAppState: AppState = {
 	categories: [],
 	detail: null,
-	filter: null,
+	filter: {} as Filter,
 	location: ``,
 	results: [],
 	showFilter: false,

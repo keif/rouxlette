@@ -37,9 +37,9 @@ export default () => {
 			setCity(city);
 			await setItem(key, city);
 			dispatch(setLocation(city));
-		} catch (err) {
+		} catch (err: unknown) {
 			console.error(`getCity: error:`, err);
-			handleError(err);
+			handleError(err as string);
 		}
 	};
 
@@ -66,9 +66,9 @@ export default () => {
 				);
 				await getCity(searchLocation, location.coords);
 			}
-		} catch (err) {
+		} catch (err: unknown) {
 			console.error(`searchLocation: error:`, err);
-			handleError(err);
+			handleError(err as string);
 		}
 	};
 

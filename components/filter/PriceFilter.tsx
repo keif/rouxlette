@@ -11,12 +11,11 @@ interface PriceFilterProps {
 }
 
 const PriceFilter = ({ priceFilter, setPriceFilter}: PriceFilterProps) => {
-	const pricing = [];
-	console.log(`priceFilter: ${priceFilter}`)
+	const pricing = [`Affordable`, `A little pricey`, `Getting expensive...`, `Daddy Warbucks`];
 	return (
 		<>
 			<View style={styles.sectionTitleWrapper}>
-				<Text style={styles.sectionTitle}>Price{priceFilter ?? ``}</Text>
+				<Text style={styles.sectionTitle}>Price{priceFilter ? `: ${pricing[Number(priceFilter)]}` : ``}</Text>
 			</View>
 			<View style={styles.priceRowContainer}>
 				{Array.from(Array(4).keys()).map(key => (

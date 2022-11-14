@@ -1,4 +1,4 @@
-import { AppState } from "./state";
+import { AppState, Filter } from "./state";
 import {
 	ActionType,
 	AppActions,
@@ -59,7 +59,7 @@ export const setDetail = (detail: Result): SetDetail => ({
 	payload: { detail },
 });
 
-export const setFilter = (filter: string): SetFilter => ({
+export const setFilter = (filter: Filter): SetFilter => ({
 	type: ActionType.SetFilter,
 	payload: { filter },
 });
