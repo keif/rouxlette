@@ -82,7 +82,7 @@ const styles = StyleSheet.create({
 	},
 	filterText: {
 		fontSize: 16,
-		fontFamily: "WorkSans-Regular",
+		fontFamily: AppStyles.fonts.regular,
 		marginLeft: `auto`,
 	},
 	subTitle: {
@@ -101,7 +101,7 @@ const styles = StyleSheet.create({
 	},
 	titleCount: {
 		fontSize: 16,
-		fontFamily: "WorkSans-Regular",
+		fontFamily: AppStyles.fonts.regular,
 	},
 });
 

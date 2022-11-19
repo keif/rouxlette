@@ -28,16 +28,27 @@ const PriceFilter = ({ }: PriceFilterProps) => {
 			// add if not
 			newFilter = {
 				...state?.filter,
-				price: (state?.filter?.price && state?.filter?.price.concat(key)),
+				price: (state?.filter?.price && state?.filter?.price.concat(key) || [key]),
 			};
 		}
 		dispatch(setFilter(newFilter));
 	};
 
+	const filterText = () => {
+		if (priceFilter) {
+			const highEnd = pricing[Number(priceFilter[priceFilter.length - 1])];
+			return (
+				<Text style={styles.sectionSubTitle}>: {highEnd}</Text>
+			)
+		}
+
+		return ``;
+	}
+
 	return (
 		<>
 			<View style={styles.sectionTitleWrapper}>
-				<Text style={styles.sectionTitle}>Price{priceFilter ? `: ${pricing[Number(priceFilter)]}` : ``}</Text>
+				<Text style={styles.sectionTitle}>Price{filterText()}</Text>
 			</View>
 			<View style={styles.priceRowContainer}>
 				{Array.from(Array(4).keys()).map(key => (
@@ -59,10 +70,13 @@ const styles = StyleSheet.create({
 	},
 	sectionTitle: {
 		color: AppStyles.color.black,
-		fontFamily: "WorkSans-Regular",
+		fontFamily: AppStyles.fonts.bold,
 		fontSize: 18,
-		fontWeight: `800`,
+		fontWeight: `400`,
 	},
+	sectionSubTitle: {
+		fontFamily: AppStyles.fonts.regular,
+	}
 });
 
 export default PriceFilter;

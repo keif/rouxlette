@@ -48,7 +48,7 @@ const styles = (selected: boolean) =>
 		filterBtnText: {
 			flexDirection: `row`,
 			fontSize: 12,
-			fontFamily: "WorkSans-SemiBold",
+			fontFamily: AppStyles.fonts.semiBold,
 			justifyContent: `space-evenly`,
 			paddingHorizontal: 18,
 			paddingVertical: 12,

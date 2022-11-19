@@ -24,7 +24,10 @@ const AppStyles = {
 		yelp: `#c41200`,
 	},
 	fonts: {
-		// placeholder
+		bold: "WorkSans-Bold",
+		medium: "WorkSans-Medium",
+		regular: "WorkSans-Regular",
+		semiBold: "WorkSans-SemiBold",
 	},
 	input: {
 		shadow: `#333`,

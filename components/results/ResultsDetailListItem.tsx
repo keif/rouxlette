@@ -55,7 +55,7 @@ const ResultsDetailListItem = ({ index, result }: ResultsDetailProps) => {
 			<View style={styles.detail}>
 				<View style={styles.detailHeader}>
 					<Text style={styles.name}>{name}</Text>
-					<Text style={{ fontSize: 22, fontFamily: "WorkSans-SemiBold" }}>
+					<Text style={{ fontSize: 22, fontFamily: AppStyles.fonts.semiBold, }}>
 						{price}
 					</Text>
 				</View>
@@ -78,7 +78,7 @@ const ResultsDetailListItem = ({ index, result }: ResultsDetailProps) => {
 
 const textStyle = {
 	color: "rgba(128,128,128, 0.80)",
-	fontFamily: "WorkSans-Regular",
+	fontFamily: AppStyles.fonts.regular,
 };
 const styles = StyleSheet.create({
 	closed: {
@@ -129,7 +129,7 @@ const styles = StyleSheet.create({
 	index: {
 		color: AppStyles.color.white,
 		fontSize: 22,
-		fontFamily: "WorkSans-SemiBold",
+		fontFamily: AppStyles.fonts.semiBold,
 		fontWeight: `bold`,
 		padding: 16,
 		position: "absolute",
@@ -145,7 +145,7 @@ const styles = StyleSheet.create({
 		color: AppStyles.color.black,
 		flex: 1,
 		fontSize: 22,
-		fontFamily: "WorkSans-SemiBold",
+		fontFamily: AppStyles.fonts.semiBold,
 		fontWeight: `bold`,
 		paddingBottom: 6,
 	},
