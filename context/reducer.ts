@@ -9,7 +9,7 @@ import {
 	SetResults,
 	SetShowFilter,
 } from "./actions";
-import { Category, Result } from "../hooks/useResults";
+import { CategoryProps, BusinessProps } from "../hooks/useResults";
 
 export function appReducer(state: AppState, action: AppActions): AppState {
 	switch (action.type) {
@@ -24,9 +24,13 @@ export function appReducer(state: AppState, action: AppActions): AppState {
 				detail: action.payload.detail,
 			};
 		case ActionType.SetFilter:
+			console.log(`SetFilter: `, action.type, `action.payload: `, action.payload);
 			return {
 				...state,
-				filter: action.payload.filter,
+				filter: {
+					...state.filter,
+					...action.payload.filter
+				},
 			};
 		case ActionType.SetLocation:
 			return {
@@ -49,12 +53,12 @@ export function appReducer(state: AppState, action: AppActions): AppState {
 }
 
 // helper functions to simplify the caller
-export const setCategories = (categories: Category[]): SetCategories => ({
+export const setCategories = (categories: CategoryProps[]): SetCategories => ({
 	type: ActionType.SetCategories,
 	payload: { categories },
 });
 
-export const setDetail = (detail: Result): SetDetail => ({
+export const setDetail = (detail: BusinessProps): SetDetail => ({
 	type: ActionType.SetDetail,
 	payload: { detail },
 });
@@ -63,12 +67,13 @@ export const setFilter = (filter: Filter): SetFilter => ({
 	type: ActionType.SetFilter,
 	payload: { filter },
 });
+
 export const setLocation = (location: string): SetLocation => ({
 	type: ActionType.SetLocation,
 	payload: { location },
 });
 
-export const setResults = (results: Result[]): SetResults => ({
+export const setResults = (results: BusinessProps[]): SetResults => ({
 	type: ActionType.SetResults,
 	payload: { results },
 });

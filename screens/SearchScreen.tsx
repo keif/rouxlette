@@ -1,5 +1,5 @@
 import React, { useContext, useEffect, useState } from "react";
-import { Category, Result } from "../hooks/useResults";
+import { CategoryProps, BusinessProps } from "../hooks/useResults";
 import { LayoutAnimation, Platform, StyleSheet, UIManager } from "react-native";
 import { View } from "../components/Themed";
 import SearchInput from "../components/search/SearchInput";
@@ -20,8 +20,8 @@ const SearchScreen = () => {
 	const { dispatch, state } = useContext(RootContext);
 	const [term, setTerm] = useState<string>(``);
 	const [filterTerm, setFilterTerm] = useState<string>(``);
-	const [searchResults, setSearchResults] = useState<Array<Result>>([]);
-	const [filterResults, setFilterResults] = useState<Array<Result>>([]);
+	const [searchResults, setSearchResults] = useState<Array<BusinessProps>>([]);
+	const [filterResults, setFilterResults] = useState<Array<BusinessProps>>([]);
 	const [toggleStyle, setToggleStyle] = useState(true);
 	const [locationErrorMessage, city, locationResults, searchLocation] = useLocation();
 
@@ -30,12 +30,12 @@ const SearchScreen = () => {
 		if (searchResults.length > 0) {
 			setToggleStyle(false);
 			// generate list of category objects
-			const categories: Category[] = searchResults.reduce<Category[]>((acc, curr) => {
+			const categories: CategoryProps[] = searchResults.reduce<CategoryProps[]>((acc, curr) => {
 				acc.push(...curr.categories);
 				return acc;
 			}, []);
 			// filter to uniques
-			const filteredCategories: Category[] = categories.reduce<Category[]>((acc, curr) => {
+			const filteredCategories: CategoryProps[] = categories.reduce<CategoryProps[]>((acc, curr) => {
 				if (!acc.find((item) => item.alias === curr.alias)) {
 					acc.push(curr);
 				}

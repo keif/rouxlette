@@ -1,18 +1,18 @@
-import { Category, Result } from "../hooks/useResults";
+import { CategoryProps, BusinessProps } from "../hooks/useResults";
 
 export interface AppState {
-	categories: Category[],
-	detail: Result | null;
+	categories: CategoryProps[],
+	detail: BusinessProps | null;
 	filter: Filter;
 	location: string;
-	results: Result[];
+	results: BusinessProps[];
 	showFilter: boolean;
 }
 
 export interface Filter {
-	category: Category[];
-	distance: string;
-	price: string;
+	category?: CategoryProps[];
+	distance?: string;
+	price?: number[];
 }
 
 export const initialAppState: AppState = {

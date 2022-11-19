@@ -2,7 +2,7 @@ import { Feather } from "@expo/vector-icons";
 import React, { Dispatch, SetStateAction, useEffect } from "react";
 import { Pressable, StyleSheet, TextInput } from "react-native";
 import { Text, View } from "../Themed";
-import useResults, { Result } from "../../hooks/useResults";
+import useResults, { BusinessProps } from "../../hooks/useResults";
 import Config from "../../Config";
 import AppStyles from "../../AppStyles";
 
@@ -10,7 +10,7 @@ interface SearchBarProps {
 	city: string;
 	onTermChange: Dispatch<SetStateAction<string>>;
 	placeholder: string;
-	setResults: Dispatch<SetStateAction<Array<Result>>>;
+	setResults: Dispatch<SetStateAction<Array<BusinessProps>>>;
 	term: string;
 }
 

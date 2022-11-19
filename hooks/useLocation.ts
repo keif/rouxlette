@@ -50,9 +50,8 @@ export default () => {
 			return;
 		}
 
-		const key = searchLocation;
 		try {
-			const cache = await getItem(key);
+			const cache = await getItem(searchLocation);
 
 			if (cache) {
 				setCity(cache);
@@ -73,7 +72,7 @@ export default () => {
 	};
 
 	useEffect(() => {
-		searchLocation(``);
+		searchLocation(``).catch(handleError);
 	}, []);
 
 	return [locationErrorMessage, city, locationResults, searchLocation] as const;

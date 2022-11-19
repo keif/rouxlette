@@ -1,4 +1,4 @@
-import { Category, Result } from "../hooks/useResults";
+import { CategoryProps, BusinessProps } from "../hooks/useResults";
 import { Filter } from "./state";
 
 export enum ActionType {
@@ -12,12 +12,12 @@ export enum ActionType {
 
 export interface SetCategories {
 	type: ActionType.SetCategories;
-	payload: { categories: Category[] }
+	payload: { categories: CategoryProps[] }
 }
 
 export interface SetDetail {
 	type: ActionType.SetDetail;
-	payload: { detail: Result };
+	payload: { detail: BusinessProps };
 }
 
 export interface SetFilter {
@@ -32,7 +32,7 @@ export interface SetLocation {
 
 export interface SetResults {
 	type: ActionType.SetResults;
-	payload: { results: Result[] };
+	payload: { results: BusinessProps[] };
 }
 
 export interface SetShowFilter {

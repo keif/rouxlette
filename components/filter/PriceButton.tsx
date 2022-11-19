@@ -6,12 +6,12 @@ import Config from "../../Config";
 
 interface PriceBtn {
 	idx: number;
-	selectedFilter: string;
+	selectedFilter: number;
 	onPress: () => void;
 }
 
 const PriceButton = ({ idx, selectedFilter, onPress }: PriceBtn) => {
-	const isSelected = selectedFilter === idx.toString();
+	const isSelected = selectedFilter === idx;
 	return (
 		<View style={styles(isSelected).filterBtnContainer}>
 			<Pressable

@@ -1,6 +1,6 @@
 import { Text, View } from "../Themed";
 import React, { useContext, useEffect, useState } from "react";
-import { Result } from "../../hooks/useResults";
+import { BusinessProps } from "../../hooks/useResults";
 import { Pressable, StyleSheet } from "react-native";
 import ResultsList from "../results/ResultsList";
 import Config from "../../Config";
@@ -13,8 +13,8 @@ import FilterModal from "../filter/FilterModal";
 interface FilteredOutputProps {
 	term: string;
 	filterTerm: string;
-	searchResults: Array<Result>;
-	filteredResults: Array<Result>;
+	searchResults: Array<BusinessProps>;
+	filteredResults: Array<BusinessProps>;
 }
 
 const FilteredOutput = ({ term, filterTerm, searchResults, filteredResults }: FilteredOutputProps) => {

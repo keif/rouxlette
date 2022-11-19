@@ -3,17 +3,17 @@ import yelp from "../api/yelp";
 import { AxiosResponse } from "axios";
 import useStorage from "./useStorage";
 
-export interface Result {
+export interface BusinessProps {
 	alias: string;
-	categories: Category[];
-	coordinates: Coordinates;
+	categories: CategoryProps[];
+	coordinates: CoordinatesProps;
 	display_phone: string;
 	distance: number;
-	hours?: Hours[];
+	hours?: HoursProps[];
 	id: string;
 	image_url: string;
 	is_closed: boolean;
-	location: Location;
+	location: LocationProps;
 	name: string;
 	phone: string;
 	photos: string[];
@@ -24,30 +24,30 @@ export interface Result {
 	url: string;
 }
 
-export interface Category {
+export interface CategoryProps {
 	alias: string;
 	title: string;
 }
 
-export interface Coordinates {
+export interface CoordinatesProps {
 	latitude: number;
 	longitude: number;
 }
 
-export interface Hours {
+export interface HoursProps {
 	hours_type: string;
 	is_open_now: boolean;
-	open: Open[]
+	open: OpenProps[]
 }
 
-export interface Open {
+export interface OpenProps {
 	day: number;
 	end: string;
 	is_overnight: boolean;
 	start: string;
 }
 
-export interface Location {
+export interface LocationProps {
 	address1: string;
 	address2: null;
 	address3: string;
@@ -60,7 +60,7 @@ export interface Location {
 
 export default () => {
 	const [errorMessage, setErrorMessage] = useState<string>(``);
-	const [results, setResults] = useState<Array<Result> | []>([]);
+	const [results, setResults] = useState<Array<BusinessProps> | []>([]);
 	const [deleteItem, getAllItems, getItem, setItem] = useStorage();
 
 	const searchApi = async (searchTerm: string, location = `columbus`) => {
@@ -85,8 +85,9 @@ export default () => {
 						},
 					});
 
-					await setItem(key, response.data.businesses);
-					setResults(response.data.businesses);
+					const onlyOpenBusinesses = response.data.businesses.filter((business: BusinessProps) => !business.is_closed);
+					await setItem(key, onlyOpenBusinesses);
+					setResults(onlyOpenBusinesses);
 				}
 			} catch (err) {
 				console.error(`searchApi: error:`, err);

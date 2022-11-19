@@ -1,13 +1,13 @@
 import React, { useEffect, useRef } from "react";
 import { Animated, Image, StyleSheet, Text, useWindowDimensions, View } from "react-native";
-import { Result } from "../../hooks/useResults";
+import { BusinessProps } from "../../hooks/useResults";
 import AppStyles from "../../AppStyles";
 import Icon from "react-native-vector-icons/MaterialIcons";
 import StarRating from "../shared/StarRating";
 
 interface ResultsDetailProps {
 	index: number;
-	result: Result;
+	result: BusinessProps;
 }
 
 const ResultsDetailListItem = ({ index, result }: ResultsDetailProps) => {

@@ -13,7 +13,7 @@ import {
 } from "react-native";
 import yelp from "../api/yelp";
 import { ResultsShowScreenProps } from "../types";
-import { Result } from "../hooks/useResults";
+import { BusinessProps } from "../hooks/useResults";
 import { FontAwesome, MaterialIcons } from "@expo/vector-icons";
 import AppStyles from "../AppStyles";
 import { View } from "../components/Themed";
@@ -22,7 +22,7 @@ import Config from "../Config";
 import OpenSign from "../components/results/OpenSign";
 
 const ResultsShowScreen = ({ navigation, route }: ResultsShowScreenProps<`ResultsShow`>) => {
-	const [result, setResult] = useState<Result>();
+	const [result, setResult] = useState<BusinessProps>();
 	const { width } = useWindowDimensions();
 	const translateY = useRef<Animated.Value>(new Animated.Value(50)).current;
 	const opacity = useRef<Animated.Value>(new Animated.Value(0)).current;

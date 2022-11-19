@@ -3,7 +3,7 @@ import { FlatList, Platform, StyleSheet, TouchableOpacity } from "react-native";
 import ResultsDetailListItem from "./ResultsDetailListItem";
 import { useNavigation } from "@react-navigation/native";
 import { Text, View } from "../Themed";
-import { Result } from "../../hooks/useResults";
+import { BusinessProps } from "../../hooks/useResults";
 import React from "react";
 import { StatusBar } from "expo-status-bar";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
@@ -11,7 +11,7 @@ import { useSafeAreaInsets } from "react-native-safe-area-context";
 interface ResultsListProps {
 	filterTerm: string;
 	horizontal?: boolean;
-	results: Array<Result>;
+	results: Array<BusinessProps>;
 	term: string;
 }
 
@@ -27,7 +27,7 @@ const ResultsList = ({ filterTerm, horizontal = false, results, term }: ResultsL
 		);
 	}
 
-	const renderItem = ({ item, index }: { item: Result, index: number }) => (
+	const renderItem = ({ item, index }: { item: BusinessProps, index: number }) => (
 		<TouchableOpacity
 			onPress={() => {
 				navigation.navigate(`Modal`, {
