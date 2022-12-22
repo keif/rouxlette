@@ -161,7 +161,7 @@ const styles = StyleSheet.create({
 		backgroundColor: `rgba(255, 255, 255, 0.69)`,
 		flexDirection: `row`,
 		shadowColor: AppStyles.input.shadow,
-		...AppStyles.Button,
+		...AppStyles.ButtonPressable,
 	},
 	codeblock: {
 		marginLeft: 10,

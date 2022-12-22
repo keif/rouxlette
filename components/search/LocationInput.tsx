@@ -84,7 +84,7 @@ const styles = StyleSheet.create({
 		color: AppStyles.color.black,
 		marginLeft: `auto`,
 		shadowColor: AppStyles.input.shadow,
-		...AppStyles.Button,
+		...AppStyles.ButtonPressable,
 	},
 	icon: {
 		fontSize: 16,

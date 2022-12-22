@@ -11,8 +11,6 @@ interface PriceFilterProps {
 
 const PriceFilter = ({ }: PriceFilterProps) => {
 	const { state, dispatch } = useContext(RootContext);
-	const priceFilter: number[] = state.filter.price ?? [];
-	const pricing = [`Affordable`, `A little pricey`, `Getting expensive...`, `Daddy Warbucks`];
 	const hasFilter = (key: number) => (state?.filter?.price && state?.filter?.price?.indexOf(key) > -1) ? key : -1;
 
 	const handleOnPress = (key: number) => {
@@ -34,21 +32,10 @@ const PriceFilter = ({ }: PriceFilterProps) => {
 		dispatch(setFilter(newFilter));
 	};
 
-	const filterText = () => {
-		if (priceFilter) {
-			const highEnd = pricing[Number(priceFilter[priceFilter.length - 1])];
-			return (
-				<Text style={styles.sectionSubTitle}>: {highEnd}</Text>
-			)
-		}
-
-		return ``;
-	}
-
 	return (
 		<>
 			<View style={styles.sectionTitleWrapper}>
-				<Text style={styles.sectionTitle}>Price{filterText()}</Text>
+				<Text style={styles.sectionTitle}>Price:</Text>
 			</View>
 			<View style={styles.priceRowContainer}>
 				{Array.from(Array(4).keys()).map(key => (
@@ -73,6 +60,7 @@ const styles = StyleSheet.create({
 		fontFamily: AppStyles.fonts.bold,
 		fontSize: 18,
 		fontWeight: `400`,
+		paddingVertical: 12,
 	},
 	sectionSubTitle: {
 		fontFamily: AppStyles.fonts.regular,

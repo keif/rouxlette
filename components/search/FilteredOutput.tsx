@@ -1,6 +1,6 @@
 import { Text, View } from "../Themed";
 import React, { useContext, useEffect, useState } from "react";
-import { BusinessProps } from "../../hooks/useResults";
+import { BusinessProps, ResultsProps } from "../../hooks/useResults";
 import { Pressable, StyleSheet } from "react-native";
 import ResultsList from "../results/ResultsList";
 import Config from "../../Config";
@@ -13,8 +13,8 @@ import FilterModal from "../filter/FilterModal";
 interface FilteredOutputProps {
 	term: string;
 	filterTerm: string;
-	searchResults: Array<BusinessProps>;
-	filteredResults: Array<BusinessProps>;
+	searchResults: ResultsProps;
+	filteredResults: ResultsProps;
 }
 
 const FilteredOutput = ({ term, filterTerm, searchResults, filteredResults }: FilteredOutputProps) => {
@@ -23,7 +23,8 @@ const FilteredOutput = ({ term, filterTerm, searchResults, filteredResults }: Fi
 	let filterResults;
 
 	if (filteredResults?.length > 0) {
-		filterResults = searchResults.filter(searchRes => !filteredResults.find(filteredRes => filteredRes.id === searchRes.id));
+		// filterResults = searchResults.filter(searchRes => !filteredResults.find(filteredRes => filteredRes.id !== searchRes.id));
+		filterResults = filteredResults;
 	} else {
 		filterResults = searchResults;
 	}
@@ -34,14 +35,14 @@ const FilteredOutput = ({ term, filterTerm, searchResults, filteredResults }: Fi
 
 	useEffect(() => {
 		setSearchTerm(term);
-	}, [filterResults]);
+	}, [filterResults.id]);
 
 	return (
 		<>
 			<View style={styles.container}>
 				<View style={{ flexDirection: `row`, marginHorizontal: 12 }}>
 					<Text
-						style={styles.titleCount}>{filterResults.length} for {term}{filterTerm !== `` ? `, without ${filterTerm}` : null}</Text>
+						style={styles.titleCount}>{filterResults.businesses.length} for {term}{filterTerm !== `` ? `, without ${filterTerm}` : null}</Text>
 					<Pressable
 						style={({ pressed }) => [
 							styles.button,

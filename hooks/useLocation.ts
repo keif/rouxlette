@@ -26,22 +26,28 @@ export default () => {
 	};
 
 	const getCity = async (searchLocation: string, latLong: LocationObjectCoords) => {
-		const key = `${searchLocation}`;
+		let key = `${searchLocation}`;
 		const { latitude, longitude } = latLong;
 
 		try {
 			const response: GeocoderResponse = await Geocoder.from(`${latitude}, ${longitude}`);
-			const locality = response.results[0].address_components.filter(component => component.types[0] === `locality`);
-			const city: string = locality[0].long_name;
+			const city = getResponseCity(response);
 			setLocationResults(response.results);
 			setCity(city);
-			await setItem(key, city);
+			key = (key.trim() !== ``) ? key : city;
+			await setItem(key, JSON.stringify(response.results));
 			dispatch(setLocation(city));
 		} catch (err: unknown) {
 			console.error(`getCity: error:`, err);
 			handleError(err as string);
 		}
 	};
+
+	const getResponseCity = (response: GeocoderResponse) => {
+		const locality = response.results[0].address_components.filter((component: any) => component.types[0] === `locality`);
+
+		return locality[0].long_name;
+	}
 
 	const searchLocation = async (searchLocation: string) => {
 		let { status } = await Location.requestForegroundPermissionsAsync();
@@ -54,7 +60,8 @@ export default () => {
 			const cache = await getItem(searchLocation);
 
 			if (cache) {
-				setCity(cache);
+				const city = getResponseCity(cache);
+				setCity(city);
 			} else {
 				const location = await Location.getCurrentPositionAsync(
 					{

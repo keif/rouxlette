@@ -1,5 +1,5 @@
 import React, { useContext, useEffect, useState } from "react";
-import { CategoryProps, BusinessProps } from "../hooks/useResults";
+import { CategoryProps, INIT_RESULTS, PRICE_OPTIONS, ResultsProps } from "../hooks/useResults";
 import { LayoutAnimation, Platform, StyleSheet, UIManager } from "react-native";
 import { View } from "../components/Themed";
 import SearchInput from "../components/search/SearchInput";
@@ -20,17 +20,18 @@ const SearchScreen = () => {
 	const { dispatch, state } = useContext(RootContext);
 	const [term, setTerm] = useState<string>(``);
 	const [filterTerm, setFilterTerm] = useState<string>(``);
-	const [searchResults, setSearchResults] = useState<Array<BusinessProps>>([]);
-	const [filterResults, setFilterResults] = useState<Array<BusinessProps>>([]);
+	const [searchResults, setSearchResults] = useState<ResultsProps>(INIT_RESULTS);
+	const [searchClicked, setSearchClicked] = useState<boolean>(false);
+	const [filterResults, setFilterResults] = useState<ResultsProps>(INIT_RESULTS);
 	const [toggleStyle, setToggleStyle] = useState(true);
 	const [locationErrorMessage, city, locationResults, searchLocation] = useLocation();
 
 	useEffect(() => {
 		LayoutAnimation.configureNext(LayoutAnimation.Presets.easeInEaseOut);
-		if (searchResults.length > 0) {
+		if (searchResults && searchResults.businesses.length > 0) {
 			setToggleStyle(false);
 			// generate list of category objects
-			const categories: CategoryProps[] = searchResults.reduce<CategoryProps[]>((acc, curr) => {
+			const categories: CategoryProps[] = searchResults.businesses.reduce<CategoryProps[]>((acc, curr) => {
 				acc.push(...curr.categories);
 				return acc;
 			}, []);
@@ -46,19 +47,33 @@ const SearchScreen = () => {
 		}
 	}, [searchResults]);
 
+	useEffect(() => {
+		if (state.filter?.price?.length) {
+			console.log(`filter by price`);
+			const filterPriceOpts = state.filter.price?.map(price => PRICE_OPTIONS[price]);
+			const filterByPriceResults = searchResults.businesses.filter((result) => filterPriceOpts.indexOf(result.price) > -1);
+			const finalResults = { id: searchResults.id, businesses: filterByPriceResults };
+			setFilterResults(finalResults);
+		} else {
+			setFilterResults(searchResults);
+		}
+	}, [state.filter]);
+
 	return (
 		<SafeAreaProvider>
 			<View style={[styles.container, toggleStyle ? styles.containerRow : styles.containerColumn]}>
 				<View style={styles.controller}>
 					<SearchInput
 						city={city}
-						onTermChange={setTerm}
 						placeholder={`What are you craving?`}
+						searchClicked={searchClicked}
 						setResults={setSearchResults}
+						setSearchClicked={setSearchClicked}
+						setTerm={setTerm}
 						term={term}
 					/>
 					{
-						searchResults.length ? (
+						searchResults && searchResults.businesses.length ? (
 							<View>
 								<LocationInput />
 								<FilteredOutput term={term} filterTerm={filterTerm} searchResults={searchResults}

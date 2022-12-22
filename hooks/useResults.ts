@@ -1,7 +1,16 @@
+import "react-native-get-random-values";
 import { useState } from "react";
 import yelp from "../api/yelp";
 import { AxiosResponse } from "axios";
 import useStorage from "./useStorage";
+import { v4 as uuid } from "uuid";
+
+export const PRICE_OPTIONS = [`$`, `$$`, `$$$`, `$$$$`];
+
+export interface ResultsProps {
+	id: string;
+	businesses: BusinessProps[];
+}
 
 export interface BusinessProps {
 	alias: string;
@@ -37,7 +46,7 @@ export interface CoordinatesProps {
 export interface HoursProps {
 	hours_type: string;
 	is_open_now: boolean;
-	open: OpenProps[]
+	open: OpenProps[];
 }
 
 export interface OpenProps {
@@ -58,9 +67,10 @@ export interface LocationProps {
 	zip_code: string;
 }
 
+export const INIT_RESULTS = { id: ``, businesses: [] };
 export default () => {
 	const [errorMessage, setErrorMessage] = useState<string>(``);
-	const [results, setResults] = useState<Array<BusinessProps> | []>([]);
+	const [results, setResults] = useState<ResultsProps | { id: string; businesses: [] }>(INIT_RESULTS);
 	const [deleteItem, getAllItems, getItem, setItem] = useStorage();
 
 	const searchApi = async (searchTerm: string, location = `columbus`) => {
@@ -72,9 +82,17 @@ export default () => {
 
 				if (cache) {
 					if (typeof cache === `string`) {
-						setResults(JSON.parse(cache));
+						const finalResults = {
+							id: uuid(),
+							businesses: [...JSON.parse(cache)],
+						};
+						setResults(finalResults);
 					} else {
-						setResults(cache);
+						const finalResults = {
+							id: uuid(),
+							businesses: [...cache],
+						};
+						setResults(finalResults);
 					}
 				} else {
 					const response: AxiosResponse = await yelp.get(`/search`, {
@@ -86,14 +104,20 @@ export default () => {
 					});
 
 					const onlyOpenBusinesses = response.data.businesses.filter((business: BusinessProps) => !business.is_closed);
+					const finalResults = {
+						id: uuid(),
+						businesses: [...onlyOpenBusinesses],
+					};
 					await setItem(key, onlyOpenBusinesses);
-					setResults(onlyOpenBusinesses);
+					setResults(finalResults);
 				}
 			} catch (err) {
 				console.error(`searchApi: error:`, err);
 				setErrorMessage(`There was an error, please try again`);
 				setTimeout(() => setErrorMessage(``), 3000);
 			}
+		} else {
+			setResults(INIT_RESULTS);
 		}
 	};
 
