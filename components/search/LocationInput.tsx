@@ -1,12 +1,12 @@
 import { Entypo } from "@expo/vector-icons";
-import React, { Dispatch, SetStateAction, useContext, useEffect, useState } from "react";
+import React, { useContext, useEffect, useState } from "react";
 import { Pressable, StyleSheet, TextInput, View } from "react-native";
 import useLocation from "../../hooks/useLocation";
-import { Text } from "../Themed";
 import { RootContext } from "../../context/RootContext";
 import { setLocation } from "../../context/reducer";
 import Config from "../../Config";
 import AppStyles from "../../AppStyles";
+import ErrorMessageView from "../shared/ErrorMessageView";
 
 interface LocationInputProps {
 }
@@ -52,7 +52,7 @@ const LocationInput = ({}: LocationInputProps) => {
 						{ opacity: !Config.isAndroid && pressed ? 0.6 : 1 },
 					]}
 					onPress={() => {
-						handleEndEditing(locale)
+						handleEndEditing(locale);
 					}}
 					android_ripple={{
 						color: "grey",
@@ -66,7 +66,9 @@ const LocationInput = ({}: LocationInputProps) => {
 					/>
 				</Pressable>
 			</View>
-			{locationErrorMessage !== `` ? <Text>{`${locationErrorMessage}`}</Text> : null}
+			{locationErrorMessage !== `` ?
+				<ErrorMessageView text={locationErrorMessage} />
+				: null}
 		</View>
 	);
 };

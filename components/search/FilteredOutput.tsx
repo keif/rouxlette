@@ -1,6 +1,6 @@
 import { Text, View } from "../Themed";
 import React, { useContext, useEffect, useState } from "react";
-import { BusinessProps, ResultsProps } from "../../hooks/useResults";
+import { ResultsProps } from "../../hooks/useResults";
 import { Pressable, StyleSheet } from "react-native";
 import ResultsList from "../results/ResultsList";
 import Config from "../../Config";
@@ -21,8 +21,9 @@ const FilteredOutput = ({ term, filterTerm, searchResults, filteredResults }: Fi
 	const { state, dispatch } = useContext(RootContext);
 	const [searchTerm, setSearchTerm] = useState(term);
 	let filterResults;
+	const hasSearchTerm = term.trim().length > 0;
 
-	if (filteredResults?.length > 0) {
+	if (filteredResults?.businesses.length > 0) {
 		// filterResults = searchResults.filter(searchRes => !filteredResults.find(filteredRes => filteredRes.id !== searchRes.id));
 		filterResults = filteredResults;
 	} else {
@@ -36,6 +37,10 @@ const FilteredOutput = ({ term, filterTerm, searchResults, filteredResults }: Fi
 	useEffect(() => {
 		setSearchTerm(term);
 	}, [filterResults.id]);
+
+	if (!hasSearchTerm) {
+		return null;
+	}
 
 	return (
 		<>

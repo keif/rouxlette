@@ -18,11 +18,12 @@ interface ResultsListProps {
 const ResultsList = ({ filterTerm, horizontal = false, results, term }: ResultsListProps) => {
 	const navigation = useNavigation();
 	const inset = useSafeAreaInsets();
+	const hasSearchTerm = term.trim().length > 0;
 
-	if (results.businesses.length === 0) {
+	if (hasSearchTerm && results.businesses.length === 0) {
 		return (
 			<View style={styles.container}>
-				<Text style={styles.title}>We couldn't find anything :(</Text>
+				<Text style={styles.title}>We couldn't find anything for {term} :(</Text>
 			</View>
 		);
 	}
@@ -40,7 +41,7 @@ const ResultsList = ({ filterTerm, horizontal = false, results, term }: ResultsL
 				<ResultsDetailListItem index={index} result={item} />
 			</TouchableOpacity>
 		);
-	}
+	};
 
 	return (
 		<View style={styles.container}>

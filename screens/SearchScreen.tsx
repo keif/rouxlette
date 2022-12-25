@@ -21,7 +21,6 @@ const SearchScreen = () => {
 	const [term, setTerm] = useState<string>(``);
 	const [filterTerm, setFilterTerm] = useState<string>(``);
 	const [searchResults, setSearchResults] = useState<ResultsProps>(INIT_RESULTS);
-	const [searchClicked, setSearchClicked] = useState<boolean>(false);
 	const [filterResults, setFilterResults] = useState<ResultsProps>(INIT_RESULTS);
 	const [toggleStyle, setToggleStyle] = useState(true);
 	const [locationErrorMessage, city, locationResults, searchLocation] = useLocation();
@@ -66,9 +65,7 @@ const SearchScreen = () => {
 					<SearchInput
 						city={city}
 						placeholder={`What are you craving?`}
-						searchClicked={searchClicked}
 						setResults={setSearchResults}
-						setSearchClicked={setSearchClicked}
 						setTerm={setTerm}
 						term={term}
 					/>

@@ -1,7 +1,7 @@
 const AppStyles = {
 	Button: {
 		fontSize: 30,
-		padding: 16,
+		paddingRight: 16,
 		shadowOffset: {
 			width: 0,
 			height: 4,
@@ -51,12 +51,19 @@ const AppStyles = {
 		textShadowRadius: 6,
 	},
 	TextInput: {
-		borderRadius: 32,
+		elevation: 8,
+		flex: 1,
+		fontSize: 18,
+		height: 20,
+	},
+	TextInputWrapper: {
+		borderRadius: 20,
 		elevation: 8,
 		flex: 1,
 		fontSize: 18,
 		marginRight: 16,
 		paddingLeft: 16,
+		paddingVertical: 16,
 		shadowOffset: {
 			width: 0,
 			height: 4,
