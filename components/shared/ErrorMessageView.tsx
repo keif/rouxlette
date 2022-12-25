@@ -9,7 +9,7 @@ interface ErrorMessageViewProps {
 const ErrorMessageView = ({ text }: ErrorMessageViewProps) => {
 	return (
 		<View style={styles.view}>
-			<Text>${text}</Text>
+			<Text>{text}</Text>
 		</View>
 	);
 };
