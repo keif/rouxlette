@@ -6,7 +6,6 @@ import SearchInput from "../components/search/SearchInput";
 import LocationInput from "../components/search/LocationInput";
 import FilteredOutput from "../components/search/FilteredOutput";
 import { RootContext } from "../context/RootContext";
-import useLocation from "../hooks/useLocation";
 import AppStyles from "../AppStyles";
 import { StatusBar } from "expo-status-bar";
 import { setCategories } from "../context/reducer";
@@ -23,7 +22,6 @@ const SearchScreen = () => {
 	const [searchResults, setSearchResults] = useState<ResultsProps>(INIT_RESULTS);
 	const [filterResults, setFilterResults] = useState<ResultsProps>(INIT_RESULTS);
 	const [toggleStyle, setToggleStyle] = useState(true);
-	const [locationErrorMessage, city, locationResults, searchLocation] = useLocation();
 
 	useEffect(() => {
 		LayoutAnimation.configureNext(LayoutAnimation.Presets.easeInEaseOut);
@@ -63,7 +61,6 @@ const SearchScreen = () => {
 			<View style={[styles.container, toggleStyle ? styles.containerRow : styles.containerColumn]}>
 				<View style={styles.controller}>
 					<SearchInput
-						city={city}
 						placeholder={`What are you craving?`}
 						setResults={setSearchResults}
 						setTerm={setTerm}

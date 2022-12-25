@@ -1,21 +1,22 @@
 import { Feather } from "@expo/vector-icons";
 import React, { Dispatch, SetStateAction, useEffect, useState } from "react";
-import { Pressable, StyleSheet, TextInput } from "react-native";
+import { StyleSheet, TextInput } from "react-native";
 import { View } from "../Themed";
 import useResults, { ResultsProps } from "../../hooks/useResults";
-import Config from "../../Config";
 import AppStyles from "../../AppStyles";
 import ErrorMessageView from "../shared/ErrorMessageView";
+import useLocation from "../../hooks/useLocation";
+import ClearButton from "./ClearButton";
 
 interface SearchBarProps {
-	city: string;
 	placeholder: string;
 	setResults: Dispatch<SetStateAction<ResultsProps>>;
 	setTerm: Dispatch<SetStateAction<string>>;
 	term: string;
 }
 
-const SearchInput = ({ city, setTerm, placeholder, setResults, term }: SearchBarProps) => {
+const SearchInput = ({ setTerm, placeholder, setResults, term }: SearchBarProps) => {
+	const [locationErrorMessage, city, locationResults, searchLocation] = useLocation();
 	const [errorMessage, results, searchApi] = useResults();
 	const [searchClicked, setSearchClick] = useState<boolean>(false);
 
@@ -34,7 +35,7 @@ const SearchInput = ({ city, setTerm, placeholder, setResults, term }: SearchBar
 	return (
 		<View>
 			<View style={styles.view}>
-				<View style={{ ...styles.inputWrapper }}>
+				<View style={styles.inputWrapper}>
 					<Feather
 						name={`search`}
 						style={styles.icon}
@@ -48,31 +49,17 @@ const SearchInput = ({ city, setTerm, placeholder, setResults, term }: SearchBar
 						onFocus={() => setSearchClick(true)}
 						placeholder={placeholder}
 						placeholderTextColor="#999"
-						selectionColor="#54D3C2"
 						style={styles.input}
 						value={term}
 					/>
-					{/* cross Icon, depending on whether the search bar is clicked or not */}
 					{searchClicked ? (
-						<Pressable
-							style={({ pressed }) => [
-								styles.buttonClear,
-								{ opacity: !Config.isAndroid && pressed ? 0.6 : 1 },
-							]}
-							onPress={(props) => handleDoneEditing(term, city)}
-							android_ripple={{
-								color: "grey",
-								borderless: true,
+						<ClearButton
+							onPress={() => {
+								handleDoneEditing(term, city);
+								setTerm(``);
 							}}
-						>
-							<Feather
-								name={`x`}
-								size={20}
-								color="black"
-								onPress={() => {
-									setTerm(``);
-								}} />
-						</Pressable>) : null}
+						/>
+					) : null}
 				</View>
 			</View>
 			{errorMessage !== `` ?
@@ -89,19 +76,6 @@ const styles = StyleSheet.create({
 		paddingLeft: 8,
 		paddingTop: 12,
 		paddingBottom: 10,
-	},
-	button: {
-		backgroundColor: AppStyles.color.primary,
-		color: AppStyles.color.black,
-		marginLeft: `auto`,
-		shadowColor: AppStyles.input.shadow,
-		...AppStyles.ButtonPressable,
-	},
-	buttonClear: {
-		color: AppStyles.color.black,
-		marginLeft: `auto`,
-		shadowColor: AppStyles.input.shadow,
-		...AppStyles.Button,
 	},
 	icon: {
 		fontSize: 16,
