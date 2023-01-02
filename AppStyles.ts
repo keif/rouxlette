@@ -1,3 +1,5 @@
+import { StyleSheet } from "react-native";
+
 const AppStyles = {
 	Button: {
 		fontSize: 30,
@@ -39,6 +41,10 @@ const AppStyles = {
 		regular: "WorkSans-Regular",
 		semiBold: "WorkSans-SemiBold",
 	},
+	icon: {
+		fontSize: 20,
+		paddingHorizontal: 12,
+	},
 	input: {
 		shadow: `#333`,
 	},
@@ -57,19 +63,10 @@ const AppStyles = {
 		height: 20,
 	},
 	TextInputWrapper: {
-		borderRadius: 20,
 		elevation: 8,
 		flex: 1,
 		fontSize: 18,
-		marginRight: 16,
-		paddingLeft: 16,
 		paddingVertical: 16,
-		shadowOffset: {
-			width: 0,
-			height: 4,
-		},
-		shadowOpacity: 0.3,
-		shadowRadius: 4.65,
 	},
 };
 

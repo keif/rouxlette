@@ -8,7 +8,7 @@ import React, { useState } from "react";
 const POPULAR_FILTER_LIST = [
 	{ titleTxt: "Offering a Deal", isSelected: false },
 	{ titleTxt: "Hot and New", isSelected: false },
-	{ titleTxt: "Offers Delivery", isSelected: true },
+	{ titleTxt: "Offers Delivery", isSelected: false },
 	{ titleTxt: "Open Now", isSelected: false },
 ];
 
@@ -16,42 +16,33 @@ const PopularFilter = () => {
 	const [popularFilterList, setPopularFilterList] = useState(POPULAR_FILTER_LIST);
 
 	// static for now until analytics in play
-	const buildPopularList = () => {
-		const listUI: JSX.Element[] = [];
-
-		for (let i = 0; i < popularFilterList.length; i += 1) {
-			const data = popularFilterList[i];
-			listUI.push(
-				<View
-					key={data.titleTxt}
-					style={styles.listItem}
-				>
-					<Pressable
-						style={({ pressed }) => [
-							styles.checkBoxBtn,
-							{ opacity: !Config.isAndroid && pressed ? 0.6 : 1 },
-						]}
-						android_ripple={{ color: AppStyles.color.greydark }}
-						onPress={() => {
-							data.isSelected = !data.isSelected;
-							setPopularFilterList([...popularFilterList]);
-						}}
-					>
-						<Text style={styles.checkBoxLabel}>
-							{data.titleTxt}
-						</Text>
-						<Icon
-							name={data.isSelected ? "check-box" : "check-box-outline-blank"}
-							size={25}
-							color={data.isSelected ? AppStyles.color.primary : AppStyles.color.greydark}
-						/>
-					</Pressable>
-				</View>,
-			);
-		}
-
-		return listUI;
-	};
+	const buildPopularList = () => popularFilterList.map(data => (
+		<View
+			key={data.titleTxt}
+			style={styles.listItem}
+		>
+			<Pressable
+				style={({ pressed }) => [
+					styles.checkBoxBtn,
+					{ opacity: !Config.isAndroid && pressed ? 0.6 : 1 },
+				]}
+				android_ripple={{ color: AppStyles.color.greydark }}
+				onPress={() => {
+					data.isSelected = !data.isSelected;
+					setPopularFilterList([...popularFilterList]);
+				}}
+			>
+				<Text style={styles.checkBoxLabel}>
+					{data.titleTxt}
+				</Text>
+				<Icon
+					name={data.isSelected ? "check-box" : "check-box-outline-blank"}
+					size={25}
+					color={data.isSelected ? AppStyles.color.primary : AppStyles.color.greydark}
+				/>
+			</Pressable>
+		</View>
+	));
 
 	return (
 		<>
