@@ -1,17 +1,18 @@
 import { Entypo } from "@expo/vector-icons";
-import React, { useContext, useEffect, useState } from "react";
+import React, { Dispatch, SetStateAction, useContext, useEffect, useState } from "react";
 import { StyleSheet, TextInput, View } from "react-native";
 import useLocation from "../../hooks/useLocation";
 import { RootContext } from "../../context/RootContext";
 import { setLocation } from "../../context/reducer";
 import AppStyles from "../../AppStyles";
-import ErrorMessageView from "../shared/ErrorMessageView";
 import ClearButton from "./ClearButton";
 
 interface LocationInputProps {
+	onFocus?: () => void;
+	setErrorMessage: Dispatch<SetStateAction<string>>;
 }
 
-const LocationInput = ({}: LocationInputProps) => {
+const LocationInput = ({ onFocus, setErrorMessage }: LocationInputProps) => {
 	const { state, dispatch } = useContext(RootContext);
 	const [locationErrorMessage, city, locationResults, searchLocation] = useLocation();
 	const [locale, setLocale] = useState<string>(``);
@@ -34,8 +35,20 @@ const LocationInput = ({}: LocationInputProps) => {
 		dispatch(setLocation(city));
 	}, [city]);
 
+	useEffect(() => {
+		setErrorMessage(locationErrorMessage);
+	}, [locationErrorMessage]);
 	return (
 		<View>
+			<View
+				style={{
+					borderBottomColor: AppStyles.color.greylight,
+					borderBottomWidth: 1,
+					marginLeft: `auto`,
+					marginRight: `auto`,
+					width: `80%`,
+				}}
+			/>
 			<View style={styles.view}>
 				<View style={styles.inputWrapper}>
 					<Entypo
@@ -48,7 +61,10 @@ const LocationInput = ({}: LocationInputProps) => {
 						onBlur={() => setSearchClick(false)}
 						onChangeText={(text) => setLocale(text)}
 						onEndEditing={() => handleEndEditing(locale)}
-						onFocus={() => setSearchClick(true)}
+						onFocus={() => {
+							if (onFocus) onFocus();
+							setSearchClick(true);
+						}}
 						placeholder={`Current Location`}
 						placeholderTextColor="#999"
 						style={styles.input}
@@ -63,9 +79,6 @@ const LocationInput = ({}: LocationInputProps) => {
 					) : null}
 				</View>
 			</View>
-			{locationErrorMessage !== `` ?
-				<ErrorMessageView text={locationErrorMessage} />
-				: null}
 		</View>
 	);
 };
@@ -73,31 +86,29 @@ const LocationInput = ({}: LocationInputProps) => {
 const styles = StyleSheet.create({
 	view: {
 		backgroundColor: AppStyles.color.background,
+		borderBottomStartRadius: 20,
+		borderBottomEndRadius: 20,
 		flexDirection: `row`,
-		paddingLeft: 8,
-		paddingTop: 12,
-		paddingBottom: 18,
+	},
+	inputWrapper: {
+		backgroundColor: AppStyles.color.white,
+		flexDirection: `row`,
+		...AppStyles.TextInputWrapper,
+		borderBottomStartRadius: 20,
+		borderBottomEndRadius: 20,
 	},
 	button: {
 		backgroundColor: AppStyles.color.primary,
 		color: AppStyles.color.black,
 		marginLeft: `auto`,
-		shadowColor: AppStyles.input.shadow,
 		...AppStyles.ButtonPressable,
 	},
 	icon: {
+		...AppStyles.icon,
 		color: AppStyles.color.primary,
-		fontSize: 16,
-		paddingRight: 12,
 	},
 	input: {
 		...AppStyles.TextInput,
-	},
-	inputWrapper: {
-		backgroundColor: AppStyles.color.white,
-		flexDirection: `row`,
-		shadowColor: AppStyles.input.shadow,
-		...AppStyles.TextInputWrapper,
 	},
 });
 

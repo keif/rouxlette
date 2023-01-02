@@ -4,18 +4,20 @@ import { StyleSheet, TextInput } from "react-native";
 import { View } from "../Themed";
 import useResults, { ResultsProps } from "../../hooks/useResults";
 import AppStyles from "../../AppStyles";
-import ErrorMessageView from "../shared/ErrorMessageView";
 import useLocation from "../../hooks/useLocation";
 import ClearButton from "./ClearButton";
 
 interface SearchBarProps {
+	onBlur?: () => void;
+	onFocus?: () => void;
 	placeholder: string;
+	setErrorMessage: Dispatch<SetStateAction<string>>;
 	setResults: Dispatch<SetStateAction<ResultsProps>>;
 	setTerm: Dispatch<SetStateAction<string>>;
 	term: string;
 }
 
-const SearchInput = ({ setTerm, placeholder, setResults, term }: SearchBarProps) => {
+const SearchInput = ({ onBlur, onFocus, placeholder, setErrorMessage, setResults, setTerm, term }: SearchBarProps) => {
 	const [locationErrorMessage, city, locationResults, searchLocation] = useLocation();
 	const [errorMessage, results, searchApi] = useResults();
 	const [searchClicked, setSearchClick] = useState<boolean>(false);
@@ -32,6 +34,10 @@ const SearchInput = ({ setTerm, placeholder, setResults, term }: SearchBarProps)
 		setResults(results);
 	}, [results.id]);
 
+	useEffect(() => {
+		setErrorMessage(errorMessage);
+	}, [errorMessage]);
+
 	return (
 		<View>
 			<View style={styles.view}>
@@ -43,10 +49,16 @@ const SearchInput = ({ setTerm, placeholder, setResults, term }: SearchBarProps)
 					<TextInput
 						autoCapitalize={`none`}
 						autoCorrect={false}
-						onBlur={() => setSearchClick(false)}
+						onBlur={() => {
+							if (onBlur) onBlur();
+							setSearchClick(false);
+						}}
 						onChangeText={setTerm}
 						onEndEditing={(props) => handleDoneEditing(term, city)}
-						onFocus={() => setSearchClick(true)}
+						onFocus={() => {
+							if (onFocus) onFocus();
+							setSearchClick(true);
+						}}
 						placeholder={placeholder}
 						placeholderTextColor="#999"
 						style={styles.input}
@@ -62,9 +74,6 @@ const SearchInput = ({ setTerm, placeholder, setResults, term }: SearchBarProps)
 					) : null}
 				</View>
 			</View>
-			{errorMessage !== `` ?
-				<ErrorMessageView text={errorMessage} />
-				: null}
 		</View>
 	);
 };
@@ -72,14 +81,12 @@ const SearchInput = ({ setTerm, placeholder, setResults, term }: SearchBarProps)
 const styles = StyleSheet.create({
 	view: {
 		backgroundColor: AppStyles.color.background,
+		borderTopStartRadius: 30,
+		borderTopEndRadius: 30,
 		flexDirection: `row`,
-		paddingLeft: 8,
-		paddingTop: 12,
-		paddingBottom: 10,
 	},
 	icon: {
-		fontSize: 16,
-		paddingRight: 12,
+		...AppStyles.icon,
 	},
 	input: {
 		...AppStyles.TextInput,
@@ -87,7 +94,6 @@ const styles = StyleSheet.create({
 	inputWrapper: {
 		backgroundColor: AppStyles.color.white,
 		flexDirection: `row`,
-		shadowColor: AppStyles.input.shadow,
 		...AppStyles.TextInputWrapper,
 	},
 });
