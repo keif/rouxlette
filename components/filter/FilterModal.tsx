@@ -9,6 +9,7 @@ import { Text } from "../Themed";
 import PriceFilter from "./PriceFilter";
 import PopularFilter from "./PopularFilter";
 import DistanceFilter from "./DistanceFilter";
+import Divider from "../shared/Divider";
 
 interface Props {
 }
@@ -42,7 +43,17 @@ const FilterModal: React.FC<Props> = () => {
 						</Pressable>
 					</View>
 					<Text style={styles.headerText}>Filters</Text>
-					<View style={{ flex: 1 }} />
+					<View style={{ flex: 1, alignItems: "flex-end" }}>
+						<Pressable
+							style={({ pressed }) => [
+								{ padding: 8, opacity: !Config.isAndroid && pressed ? 0.6 : 1 },
+							]}
+							onPress={() => handleShowFilter(false)}
+							android_ripple={{ color: "grey", radius: 20, borderless: true }}
+						>
+							<Text style={{ fontSize: 16, }}>Reset</Text>
+						</Pressable>
+					</View>
 				</View>
 				<View style={styles.headerShadow} />
 
@@ -52,19 +63,19 @@ const FilterModal: React.FC<Props> = () => {
 				>
 					<PriceFilter />
 
-					<View style={styles.divider} />
+					<Divider />
 
 					<PopularFilter />
 
-					<View style={styles.divider} />
+					<Divider />
 
 					<DistanceFilter />
 
-					<View style={styles.divider} />
+					<Divider />
 
 				</ScrollView>
 
-				<View style={styles.divider} />
+				<Divider />
 
 				<View style={styles.buttonContainer}>
 					<Pressable
@@ -94,10 +105,6 @@ const styles = StyleSheet.create({
 		backgroundColor: AppStyles.color.greydark,
 		elevation: 4,
 		height: Config.isAndroid ? 0.2 : 1,
-	},
-	divider: {
-		backgroundColor: AppStyles.color.greydark,
-		height: StyleSheet.hairlineWidth,
 	},
 	sectionTitleWrapper: {
 		paddingHorizontal: 16,
