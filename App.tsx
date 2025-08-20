@@ -1,3 +1,4 @@
+import "react-native-gesture-handler";
 import { SafeAreaProvider } from "react-native-safe-area-context";
 
 import useCachedResources from "./hooks/useCachedResources";

@@ -1,0 +1,97 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`renders FlipCard correctly 1`] = `
+<View
+  accessibilityHint="Flip card to see more details"
+  accessibilityRole="button"
+  accessible={true}
+  style={
+    [
+      {
+        "position": "relative",
+      },
+      undefined,
+    ]
+  }
+>
+  <View
+    style={
+      [
+        {
+          "height": "100%",
+          "position": "absolute",
+          "width": "100%",
+        },
+        {
+          "backfaceVisibility": "hidden",
+          "opacity": undefined,
+          "pointerEvents": "auto",
+          "transform": [
+            {
+              "perspective": 1000,
+            },
+            {
+              "rotateY": "undefineddeg",
+            },
+          ],
+        },
+      ]
+    }
+  >
+    <View
+      testID="front"
+    >
+      <Text>
+        Front Content
+      </Text>
+    </View>
+  </View>
+  <View
+    style={
+      [
+        {
+          "height": "100%",
+          "position": "absolute",
+          "width": "100%",
+        },
+        {
+          "backfaceVisibility": "hidden",
+          "opacity": undefined,
+          "pointerEvents": "none",
+          "transform": [
+            {
+              "perspective": 1000,
+            },
+            {
+              "rotateY": "undefineddeg",
+            },
+          ],
+        },
+      ]
+    }
+  >
+    <View
+      testID="back"
+    >
+      <Text>
+        Back Content
+      </Text>
+    </View>
+  </View>
+  <View
+    style={
+      {
+        "opacity": 0,
+      }
+    }
+  >
+    <View
+      testID="front"
+    >
+      <Text>
+        Front Content
+      </Text>
+    </View>
+  </View>
+</View>
+`;

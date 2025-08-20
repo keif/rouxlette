@@ -1,7 +1,6 @@
-import { FlatList, Platform, StyleSheet, TouchableOpacity } from "react-native";
+import { FlatList, Platform, StyleSheet } from "react-native";
 
-import ResultsDetailListItem from "./ResultsDetailListItem";
-import { useNavigation } from "@react-navigation/native";
+import RestaurantCard from "../search/RestaurantCard";
 import { Text, View } from "../Themed";
 import { BusinessProps, ResultsProps } from "../../hooks/useResults";
 import React from "react";
@@ -16,7 +15,6 @@ interface ResultsListProps {
 }
 
 const ResultsList = ({ filterTerm, horizontal = false, results, term }: ResultsListProps) => {
-	const navigation = useNavigation();
 	const inset = useSafeAreaInsets();
 	const hasSearchTerm = term.trim().length > 0;
 
@@ -29,18 +27,7 @@ const ResultsList = ({ filterTerm, horizontal = false, results, term }: ResultsL
 	}
 
 	const renderItem = ({ item, index }: { item: BusinessProps, index: number }) => {
-		return (
-			<TouchableOpacity
-				onPress={() => {
-					navigation.navigate(`Modal`, {
-						id: item.id,
-						name: item.name,
-					});
-				}}
-			>
-				<ResultsDetailListItem index={index} result={item} />
-			</TouchableOpacity>
-		);
+		return <RestaurantCard index={index} result={item} />;
 	};
 
 	return (

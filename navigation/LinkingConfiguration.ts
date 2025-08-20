@@ -20,24 +20,7 @@ const linking: LinkingOptions<RootStackParamList> = {
               SearchScreen: 'search',
             },
           },
-          ResultsShow: {
-            screens: {
-              ResultsShowScreen: 'results:id',
-            },
-            parse: {
-              id: String,
-            },
-          },
         },
-      },
-      Modal: {
-        screens: {
-          ModalScreen: 'modal',
-        },
-        parse: {
-          id: String,
-          name: String,
-        }
       },
       NotFound: '*',
     },
