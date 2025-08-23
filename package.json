@@ -59,7 +59,7 @@
   "devDependencies": {
     "@babel/core": "^7.12.9",
     "@testing-library/jest-native": "^5.4.3",
-    "@testing-library/react-native": "^13.3.1",
+    "@testing-library/react-native": "^12.4.5",
     "@types/react": "~18.0.14",
     "@types/react-native": "^0.70.4",
     "@types/uuid": "^9.0.0",
@@ -73,11 +73,9 @@
     "npm": ">=8.0.0"
   },
   "private": true,
-  "react-native": "0.70.8",
-  "react": "18.1.0",
-  "react-dom": "18.1.0",
-  "expo-asset": "~8.7.0",
-  "expo-linking": "~3.3.1",
-  "react-native-get-random-values": "~1.8.0",
-  "react-native-pager-view": "6.0.1"
+  "resolutions": {
+    "react-native": "0.70.8",
+    "react": "18.1.0",
+    "react-dom": "18.1.0"
+  }
 }

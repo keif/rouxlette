@@ -73,7 +73,9 @@ const LocationInput = ({ onFocus, setErrorMessage }: LocationInputProps) => {
 					{searchClicked ? (
 						<ClearButton
 							onPress={() => {
-								handleEndEditing(locale);
+								console.log('LocationInput: Clear button pressed');
+								setLocale(''); // Clear the input field
+								handleEndEditing(''); // Pass empty string to trigger reset
 							}}
 						/>
 					) : null}
