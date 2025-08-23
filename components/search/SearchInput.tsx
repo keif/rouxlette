@@ -18,17 +18,20 @@ interface SearchBarProps {
 }
 
 const SearchInput = ({ onBlur, onFocus, placeholder, setErrorMessage, setResults, setTerm, term }: SearchBarProps) => {
-	const [locationErrorMessage, city, locationResults, searchLocation] = useLocation();
+	const [locationErrorMessage, city, coords, locationResults, searchLocation, isLocationLoading] = useLocation();
 	const [errorMessage, results, searchApi] = useResults();
 	const [searchClicked, setSearchClick] = useState<boolean>(false);
 
 	const handleDoneEditing = async (term: string, city: string) => {
-		await searchApi(term, city);
+		if (__DEV__) {
+			console.log('[SearchInput] handleDoneEditing:', { term, city, coords });
+		}
+		await searchApi(term, city, coords);
 	};
 
 	useEffect(() => {
 		handleDoneEditing(term, city);
-	}, [city]);
+	}, [city, coords]);
 
 	useEffect(() => {
 		setResults(results);

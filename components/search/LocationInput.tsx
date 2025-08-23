@@ -14,7 +14,7 @@ interface LocationInputProps {
 
 const LocationInput = ({ onFocus, setErrorMessage }: LocationInputProps) => {
 	const { state, dispatch } = useContext(RootContext);
-	const [locationErrorMessage, city, locationResults, searchLocation] = useLocation();
+	const [locationErrorMessage, city, coords, locationResults, searchLocation, isLocationLoading] = useLocation();
 	const [locale, setLocale] = useState<string>(``);
 	const [searchClicked, setSearchClick] = useState<boolean>(false);
 

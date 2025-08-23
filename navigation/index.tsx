@@ -7,10 +7,11 @@ import NotFoundScreen from "../screens/NotFoundScreen";
 import { RootStackParamList, RootTabParamList, RootTabScreenProps } from "../types";
 import LinkingConfiguration from "./LinkingConfiguration";
 import SearchScreen from "../screens/SearchScreen";
+import HomeScreen from "../screens/HomeScreen";
+import FavoritesScreen from "../screens/FavoritesScreen";
 import { createMaterialTopTabNavigator } from "@react-navigation/material-top-tabs";
 import AppStyles from "../AppStyles";
-import { FontAwesome } from "@expo/vector-icons";
-import Colors from "../constants/Colors";
+import { Ionicons } from "@expo/vector-icons";
 
 export default function Navigation({ colorScheme }: { colorScheme: ColorSchemeName }) {
 	return (
@@ -50,24 +51,59 @@ function TopTabNavigator() {
 
 	return (
 		<Tabs.Navigator
-			initialRouteName={"Search"}
+			initialRouteName={"Home"}
 			screenOptions={{
-				tabBarActiveTintColor: "#e91e63",
-				tabBarStyle: { backgroundColor: AppStyles.color.black },
+				tabBarActiveTintColor: AppStyles.color.roulette.gold,
+				tabBarInactiveTintColor: AppStyles.color.greylight,
+				tabBarStyle: { 
+					backgroundColor: AppStyles.color.white,
+					borderBottomWidth: 1,
+					borderBottomColor: AppStyles.color.background,
+				},
+				tabBarIndicatorStyle: {
+					backgroundColor: AppStyles.color.roulette.gold,
+					height: 3,
+				},
+				tabBarLabelStyle: {
+					fontSize: 14,
+					fontFamily: AppStyles.fonts.semiBold,
+					textTransform: 'none',
+				},
+				tabBarShowIcon: true,
+				tabBarIconStyle: {
+					marginBottom: 4,
+				},
 			}}
 		>
 			<Tabs.Screen
+				component={HomeScreen}
+				name="Home"
+				options={{
+					title: "Home",
+					tabBarIcon: ({ color, focused }) => (
+						<Ionicons name={focused ? "home" : "home-outline"} size={20} color={color} />
+					),
+				}}
+			/>
+			<Tabs.Screen
 				component={SearchScreen}
 				name="Search"
-				options={({ navigation }: RootTabScreenProps<"Search">) => ({
-					headerStyle: {
-						height: 0,
-					},
-					style: {
-						height: 0,
-					},
-					title: "Rouxlette",
-				})}
+				options={{
+					title: "Search",
+					tabBarIcon: ({ color, focused }) => (
+						<Ionicons name={focused ? "search" : "search-outline"} size={20} color={color} />
+					),
+				}}
+			/>
+			<Tabs.Screen
+				component={FavoritesScreen}
+				name="Favorites"
+				options={{
+					title: "Favorites",
+					tabBarIcon: ({ color, focused }) => (
+						<Ionicons name={focused ? "heart" : "heart-outline"} size={20} color={color} />
+					),
+				}}
 			/>
 		</Tabs.Navigator>
 	);

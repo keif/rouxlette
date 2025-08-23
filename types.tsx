@@ -4,6 +4,7 @@
  */
 
 import { BottomTabScreenProps } from "@react-navigation/bottom-tabs";
+import { MaterialTopTabScreenProps } from "@react-navigation/material-top-tabs";
 import { CompositeScreenProps, NavigatorScreenParams } from "@react-navigation/native";
 import { NativeStackScreenProps } from "@react-navigation/native-stack";
 
@@ -23,9 +24,11 @@ export type RootStackScreenProps<Screen extends keyof RootStackParamList> = Nati
 	Screen>;
 
 export type RootTabParamList = {
+	Home: undefined;
 	Search: undefined;
+	Favorites: undefined;
 };
 
-export type RootTabScreenProps<Screen extends keyof RootTabParamList> = CompositeScreenProps<BottomTabScreenProps<RootTabParamList, Screen>,
+export type RootTabScreenProps<Screen extends keyof RootTabParamList> = CompositeScreenProps<MaterialTopTabScreenProps<RootTabParamList, Screen>,
 	NativeStackScreenProps<RootStackParamList>>;
 

@@ -1,4 +1,4 @@
-import { AppState, Filter } from "./state";
+import { AppState, Filter, SpinHistory } from "./state";
 import {
 	ActionType,
 	AppActions,
@@ -8,6 +8,9 @@ import {
 	SetLocation,
 	SetResults,
 	SetShowFilter,
+	AddFavorite,
+	RemoveFavorite,
+	AddSpinHistory,
 } from "./actions";
 import { CategoryProps, BusinessProps } from "../hooks/useResults";
 
@@ -47,6 +50,21 @@ export function appReducer(state: AppState, action: AppActions): AppState {
 				...state,
 				showFilter: action.payload.showFilter,
 			};
+		case ActionType.AddFavorite:
+			return {
+				...state,
+				favorites: [...state.favorites, action.payload.restaurant],
+			};
+		case ActionType.RemoveFavorite:
+			return {
+				...state,
+				favorites: state.favorites.filter(r => r.id !== action.payload.restaurantId),
+			};
+		case ActionType.AddSpinHistory:
+			return {
+				...state,
+				spinHistory: [action.payload.spin, ...state.spinHistory.slice(0, 9)], // Keep last 10
+			};
 		default:
 			return state;
 	}
@@ -81,4 +99,19 @@ export const setResults = (results: BusinessProps[]): SetResults => ({
 export const setShowFilter = (showFilter: boolean): SetShowFilter => ({
 	type: ActionType.SetShowFilter,
 	payload: { showFilter },
+});
+
+export const addFavorite = (restaurant: BusinessProps): AddFavorite => ({
+	type: ActionType.AddFavorite,
+	payload: { restaurant },
+});
+
+export const removeFavorite = (restaurantId: string): RemoveFavorite => ({
+	type: ActionType.RemoveFavorite,
+	payload: { restaurantId },
+});
+
+export const addSpinHistory = (spin: SpinHistory): AddSpinHistory => ({
+	type: ActionType.AddSpinHistory,
+	payload: { spin },
 });

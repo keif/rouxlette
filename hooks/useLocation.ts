@@ -1,4 +1,4 @@
-import { useContext, useEffect, useState } from "react";
+import { useContext, useEffect, useState, useRef } from "react";
 import Geocoder from "react-native-geocoding";
 import * as Location from "expo-location";
 import { LocationObjectCoords } from "expo-location";
@@ -19,41 +19,69 @@ interface LocationState {
 	coords: LocationObjectCoords | null;
 }
 
-export default () => {
+interface UseLocationReturn {
+	locationErrorMessage: string;
+	city: string;
+	coords: LocationObjectCoords | null;
+	locationResults: any[];
+	searchLocation: (query: string | null | undefined) => Promise<LocationResult | null>;
+	isLoading: boolean;
+}
+
+export default (): [string, string, LocationObjectCoords | null, any[], (query: string | null | undefined) => Promise<LocationResult | null>, boolean] => {
 	const [city, setCity] = useState<string>(``);
 	const [locationErrorMessage, setLocationErrorMessage] = useState<string>(``);
 	const [locationResults, setLocationResults] = useState<any[]>([]);
-	const [lastKnownCoords, setLastKnownCoords] = useState<LocationObjectCoords | null>(null);
+	const [currentCoords, setCurrentCoords] = useState<LocationObjectCoords | null>(null);
+	const [isLoading, setIsLoading] = useState<boolean>(false);
 	const [deleteItem, getAllItems, getItem, setItem] = useStorage();
 	const { dispatch } = useContext(RootContext);
+	const locationWatcher = useRef<Location.LocationSubscription | null>(null);
+
+	// Dev logging helper
+	const devLog = (message: string, ...args: any[]) => {
+		if (__DEV__) {
+			console.log(`[useLocation] ${message}`, ...args);
+		}
+	};
 
 	Geocoder.init(GOOGLE_API_KEY, {
 		language: "en",
 	});
 
 	const handleError = (err: string, details?: string) => {
-		console.warn(`Location Error:`, err, details ? `Details: ${details}` : '');
+		devLog(`Location Error:`, err, details ? `Details: ${details}` : '');
 		setLocationErrorMessage(err);
 		setTimeout(() => setLocationErrorMessage(``), 3000);
 	};
 
 	const clearLocationState = () => {
-		console.log('clearLocationState: Resetting location to unset state');
+		devLog('Clearing location state');
 		setCity('');
 		setLocationResults([]);
 		setLocationErrorMessage('');
+		setCurrentCoords(null);
 		dispatch(setLocation(''));
+	};
+
+	// Normalize coordinates to avoid cache thrashing
+	const normalizeCoords = (coords: LocationObjectCoords) => {
+		return {
+			lat: Math.round(coords.latitude * 10000) / 10000, // 4 decimal precision ~11m accuracy
+			lng: Math.round(coords.longitude * 10000) / 10000,
+		};
 	};
 
 	const setLocationFromCoords = async (coords: LocationObjectCoords): Promise<LocationResult | null> => {
 		try {
-			console.log('setLocationFromCoords: Using coordinates:', coords);
-			setLastKnownCoords(coords);
+			devLog('Setting location from coordinates:', coords);
+			setCurrentCoords(coords);
+			setIsLoading(true);
 			
 			const response = await reverseGeocode(coords.latitude, coords.longitude);
 			
 			if (!response.ok || !response.results?.length) {
-				console.error('setLocationFromCoords: Failed to reverse geocode coordinates');
+				console.error('Failed to reverse geocode coordinates');
 				handleError(humanizeGeocodeError(response));
 				return null;
 			}
@@ -68,13 +96,64 @@ export default () => {
 			setLocationResults(response.results);
 			dispatch(setLocation(result));
 			
-			console.log('setLocationFromCoords: Successfully set location to:', result);
+			devLog('Successfully set location to:', result, 'coords:', normalizeCoords(coords));
 			return locationResult;
 
 		} catch (error) {
-			console.error('setLocationFromCoords: Error:', error);
+			console.error('Error setting location from coordinates:', error);
 			handleError('Error getting location from coordinates');
 			return null;
+		} finally {
+			setIsLoading(false);
+		}
+	};
+
+	// Start location watching for live updates
+	const startLocationWatcher = async (): Promise<boolean> => {
+		try {
+			devLog('Starting location watcher');
+			
+			// Clean up existing watcher
+			if (locationWatcher.current) {
+				locationWatcher.current.remove();
+				locationWatcher.current = null;
+			}
+
+			const { status } = await Location.requestForegroundPermissionsAsync();
+			if (status !== 'granted') {
+				devLog('Location permission denied');
+				handleError('Location permission denied');
+				return false;
+			}
+
+			// Start watching location changes
+			locationWatcher.current = await Location.watchPositionAsync(
+				{
+					accuracy: Location.Accuracy.Balanced,
+					timeInterval: 5000, // Update every 5 seconds
+					distanceInterval: 50, // Update when moved 50 meters
+				},
+				(location) => {
+					devLog('Location updated via watcher:', location.coords);
+					setLocationFromCoords(location.coords);
+				}
+			);
+
+			devLog('Location watcher started successfully');
+			return true;
+		} catch (error) {
+			devLog('Failed to start location watcher:', error);
+			handleError('Failed to start location monitoring');
+			return false;
+		}
+	};
+
+	// Stop location watching
+	const stopLocationWatcher = () => {
+		if (locationWatcher.current) {
+			devLog('Stopping location watcher');
+			locationWatcher.current.remove();
+			locationWatcher.current = null;
 		}
 	};
 
@@ -176,7 +255,7 @@ export default () => {
 		const { latitude, longitude } = latLong;
 
 		try {
-			console.log(`Geocoding coordinates: ${latitude}, ${longitude}`);
+			devLog(`Geocoding coordinates: ${latitude}, ${longitude}`);
 			const response: GeocoderResponse = await Geocoder.from(`${latitude}, ${longitude}`);
 			
 			// Validate the response before processing
@@ -197,7 +276,7 @@ export default () => {
 			await setItem(key, JSON.stringify(results));
 			dispatch(setLocation(city));
 			
-			console.log(`Successfully geocoded to city: ${city}`);
+			devLog(`Successfully geocoded to city: ${city}`);
 			return validatedResult;
 
 		} catch (err: unknown) {
@@ -238,54 +317,51 @@ export default () => {
 	const searchLocation = async (query: string | null | undefined): Promise<LocationResult | null> => {
 		const q = (query ?? '').trim();
 		
-		// GUARD: Handle empty query - reset to device location or unset state
-		if (!q) {
-			console.log('searchLocation: Empty query detected, resetting location state');
-			
-			// If we have last known coordinates, use them
-			if (lastKnownCoords) {
-				console.log('searchLocation: Using last known coordinates');
-				return setLocationFromCoords(lastKnownCoords);
-			}
-
-			// Otherwise try to get current location if permissions allow
-			try {
+		devLog('searchLocation called with query:', q);
+		setIsLoading(true);
+		
+		try {
+			// GUARD: Handle empty query - use current location or start watcher
+			if (!q) {
+				devLog('Empty query - getting current location');
+				
 				const { status } = await Location.requestForegroundPermissionsAsync();
-				if (status === "granted") {
-					console.log('searchLocation: Getting current position for empty query');
-					const location = await Location.getCurrentPositionAsync({
-						accuracy: Location.Accuracy.Balanced,
-						timeInterval: 5000,
-						distanceInterval: 100,
-					});
-					return setLocationFromCoords(location.coords);
-				} else {
-					console.log('searchLocation: No permissions, clearing location state');
+				if (status !== 'granted') {
+					devLog('No location permissions');
+					handleError('Location permission required');
 					clearLocationState();
 					return null;
 				}
-			} catch (error) {
-				console.log('searchLocation: Could not get current location, clearing state');
-				clearLocationState();
+
+				// Get current position
+				const location = await Location.getCurrentPositionAsync({
+					accuracy: Location.Accuracy.Balanced,
+					timeInterval: 5000,
+					distanceInterval: 100,
+				});
+
+				devLog('Got current position:', location.coords);
+				
+				// Start location watcher for live updates
+				await startLocationWatcher();
+				
+				return setLocationFromCoords(location.coords);
+			}
+
+			// For non-empty queries, proceed with normal flow
+			const { status } = await Location.requestForegroundPermissionsAsync();
+			if (status !== "granted") {
+				const errorMsg = "Permission to access location was denied";
+				handleError(errorMsg);
+				devLog(errorMsg);
 				return null;
 			}
-		}
 
-		// For non-empty queries, proceed with normal flow
-		let { status } = await Location.requestForegroundPermissionsAsync();
-		if (status !== "granted") {
-			const errorMsg = "Permission to access location was denied";
-			handleError(errorMsg);
-			console.warn(errorMsg);
-			return null;
-		}
-
-		try {
 			// Check cache first for the specific query
 			const cache = await getItem(q);
 
 			if (cache) {
-				console.log('searchLocation: Using cached location data for:', q);
+				devLog('Using cached location data for:', q);
 				try {
 					const parsedCache = typeof cache === 'string' ? JSON.parse(cache) : cache;
 					const city = getResponseCity(parsedCache);
@@ -304,7 +380,7 @@ export default () => {
 			}
 
 			// Get fresh location data
-			console.log('searchLocation: Getting current position for query:', q);
+			devLog('Getting current position for query:', q);
 			const location = await Location.getCurrentPositionAsync({
 				accuracy: Location.Accuracy.High,
 				timeInterval: 1000,
@@ -312,7 +388,7 @@ export default () => {
 			});
 
 			// Store coordinates for future use
-			setLastKnownCoords(location.coords);
+			setCurrentCoords(location.coords);
 			
 			const result = await getCity(q, location.coords);
 			return result;
@@ -333,15 +409,26 @@ export default () => {
 				handleError('Unknown error while searching location');
 			}
 			return null;
+		} finally {
+			setIsLoading(false);
 		}
 	};
 
+	// Cleanup watcher on unmount
 	useEffect(() => {
+		return () => {
+			stopLocationWatcher();
+		};
+	}, []);
+
+	// Initialize location on mount
+	useEffect(() => {
+		devLog('useLocation initializing');
 		searchLocation(``).catch((error) => {
 			console.error('Initial location search failed:', error);
 			handleError('Failed to get initial location', String(error));
 		});
 	}, []);
 
-	return [locationErrorMessage, city, locationResults, searchLocation] as const;
+	return [locationErrorMessage, city, currentCoords, locationResults, searchLocation, isLoading] as const;
 }

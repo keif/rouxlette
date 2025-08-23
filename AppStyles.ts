@@ -34,6 +34,13 @@ const AppStyles = {
 		shadow: `#333`,
 		white: `#fff`,
 		yelp: `#c41200`,
+		// Roulette theme colors
+		roulette: {
+			gold: `#D4AF37`,
+			red: `#DC2626`,
+			green: `#059669`,
+			neutral: `#6B7280`,
+		},
 	},
 	fonts: {
 		bold: "WorkSans-Bold",

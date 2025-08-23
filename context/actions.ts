@@ -1,5 +1,5 @@
 import { CategoryProps, BusinessProps } from "../hooks/useResults";
-import { Filter } from "./state";
+import { Filter, SpinHistory } from "./state";
 
 export enum ActionType {
 	SetCategories,
@@ -8,6 +8,9 @@ export enum ActionType {
 	SetLocation,
 	SetResults,
 	SetShowFilter,
+	AddFavorite,
+	RemoveFavorite,
+	AddSpinHistory,
 }
 
 export interface SetCategories {
@@ -40,4 +43,19 @@ export interface SetShowFilter {
 	payload: { showFilter: boolean; };
 }
 
-export type AppActions = SetCategories | SetDetail | SetFilter | SetLocation | SetResults | SetShowFilter;
+export interface AddFavorite {
+	type: ActionType.AddFavorite;
+	payload: { restaurant: BusinessProps };
+}
+
+export interface RemoveFavorite {
+	type: ActionType.RemoveFavorite;
+	payload: { restaurantId: string };
+}
+
+export interface AddSpinHistory {
+	type: ActionType.AddSpinHistory;
+	payload: { spin: SpinHistory };
+}
+
+export type AppActions = SetCategories | SetDetail | SetFilter | SetLocation | SetResults | SetShowFilter | AddFavorite | RemoveFavorite | AddSpinHistory;

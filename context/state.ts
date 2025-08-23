@@ -1,5 +1,10 @@
 import { CategoryProps, BusinessProps } from "../hooks/useResults";
 
+export interface SpinHistory {
+	restaurant: BusinessProps;
+	timestamp: number;
+}
+
 export interface AppState {
 	categories: CategoryProps[],
 	detail: BusinessProps | null;
@@ -7,6 +12,8 @@ export interface AppState {
 	location: string;
 	results: BusinessProps[];
 	showFilter: boolean;
+	favorites: BusinessProps[];
+	spinHistory: SpinHistory[];
 }
 
 export interface Filter {
@@ -22,4 +29,6 @@ export const initialAppState: AppState = {
 	location: ``,
 	results: [],
 	showFilter: false,
+	favorites: [],
+	spinHistory: [],
 }
