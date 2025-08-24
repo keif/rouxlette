@@ -1,4 +1,5 @@
 import { CategoryProps, BusinessProps } from "../hooks/useResults";
+import { YelpBusiness } from "../types/yelp";
 
 export interface SpinHistory {
 	restaurant: BusinessProps;
@@ -14,6 +15,8 @@ export interface AppState {
 	showFilter: boolean;
 	favorites: BusinessProps[];
 	spinHistory: SpinHistory[];
+	selectedBusiness: YelpBusiness | null;
+	isBusinessModalOpen: boolean;
 }
 
 export interface Filter {
@@ -31,4 +34,6 @@ export const initialAppState: AppState = {
 	showFilter: false,
 	favorites: [],
 	spinHistory: [],
+	selectedBusiness: null,
+	isBusinessModalOpen: false,
 }
