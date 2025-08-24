@@ -1,9 +1,10 @@
 import React, { useState, useContext } from 'react';
-import { Modal, View, Pressable, Text } from 'react-native';
+import { Modal, View, Pressable, Text, StyleSheet, ScrollView } from 'react-native';
 import { RootContext } from '../../context/RootContext';
 import { hideBusinessModal } from '../../context/reducer';
 import { BusinessQuickInfo } from './BusinessQuickInfo';
 import { BusinessDetails } from './BusinessDetails';
+import AppStyles from '../../AppStyles';
 
 export function BusinessCardModal() {
   const { state, dispatch } = useContext(RootContext);
@@ -16,6 +17,16 @@ export function BusinessCardModal() {
   }
 
   const handleBackdropPress = () => {
+    setShowDetails(false); // Reset tab state when closing
+    dispatch(hideBusinessModal());
+  };
+
+  const handleDetailsPress = () => {
+    setShowDetails(true);
+  };
+
+  const handleClosePress = () => {
+    setShowDetails(false); // Reset tab state when closing
     dispatch(hideBusinessModal());
   };
 
@@ -27,67 +38,50 @@ export function BusinessCardModal() {
       onRequestClose={handleBackdropPress}
     >
       <Pressable
-        style={{ flex: 1, backgroundColor: 'rgba(0,0,0,0.5)' }}
+        style={styles.backdrop}
         onPress={handleBackdropPress}
         testID="modal-backdrop"
       >
-        <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
+        <View style={styles.modalContainer}>
           <Pressable onPress={(e) => e.stopPropagation()}>
-            <View style={{ 
-              backgroundColor: 'white', 
-              margin: 20, 
-              borderRadius: 10, 
-              padding: 20, 
-              minWidth: 300 
-            }}>
+            <View style={styles.modal}>
               {/* Tab buttons */}
-              <View style={{ flexDirection: 'row', marginBottom: 20 }}>
+              <View style={styles.tabContainer}>
                 <Pressable
                   onPress={() => setShowDetails(false)}
                   testID="quick-info-tab"
-                  style={{
-                    flex: 1,
-                    padding: 10,
-                    backgroundColor: !showDetails ? '#007AFF' : '#E5E5E7',
-                    borderRadius: 5,
-                    marginRight: 5,
-                  }}
+                  style={[styles.tab, !showDetails && styles.activeTab]}
                 >
-                  <Text style={{
-                    color: !showDetails ? 'white' : 'black',
-                    textAlign: 'center',
-                    fontWeight: !showDetails ? 'bold' : 'normal',
-                  }}>
+                  <Text style={[styles.tabText, !showDetails && styles.activeTabText]}>
                     Quick Info
                   </Text>
                 </Pressable>
                 <Pressable
                   onPress={() => setShowDetails(true)}
                   testID="details-tab"
-                  style={{
-                    flex: 1,
-                    padding: 10,
-                    backgroundColor: showDetails ? '#007AFF' : '#E5E5E7',
-                    borderRadius: 5,
-                    marginLeft: 5,
-                  }}
+                  style={[styles.tab, showDetails && styles.activeTab]}
                 >
-                  <Text style={{
-                    color: showDetails ? 'white' : 'black',
-                    textAlign: 'center',
-                    fontWeight: showDetails ? 'bold' : 'normal',
-                  }}>
+                  <Text style={[styles.tabText, showDetails && styles.activeTabText]}>
                     Details
                   </Text>
                 </Pressable>
               </View>
 
               {/* Content */}
-              {showDetails ? (
-                <BusinessDetails business={selectedBusiness} />
-              ) : (
-                <BusinessQuickInfo business={selectedBusiness} />
-              )}
+              <ScrollView style={styles.content} showsVerticalScrollIndicator={false}>
+                {showDetails ? (
+                  <BusinessDetails 
+                    business={selectedBusiness} 
+                    onClose={handleClosePress}
+                  />
+                ) : (
+                  <BusinessQuickInfo 
+                    business={selectedBusiness} 
+                    onDetails={handleDetailsPress}
+                    onClose={handleClosePress}
+                  />
+                )}
+              </ScrollView>
             </View>
           </Pressable>
         </View>
@@ -95,3 +89,58 @@ export function BusinessCardModal() {
     </Modal>
   );
 }
+
+const styles = StyleSheet.create({
+  backdrop: {
+    flex: 1,
+    backgroundColor: 'rgba(0,0,0,0.5)',
+  },
+  modalContainer: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    paddingHorizontal: 20,
+  },
+  modal: {
+    backgroundColor: AppStyles.color.white,
+    borderRadius: 12,
+    maxWidth: 400,
+    width: '100%',
+    maxHeight: '80%',
+    shadowColor: AppStyles.color.shadow,
+    shadowOffset: {
+      width: 0,
+      height: 8,
+    },
+    shadowOpacity: 0.3,
+    shadowRadius: 10,
+    elevation: 8,
+  },
+  tabContainer: {
+    flexDirection: 'row',
+    borderBottomWidth: 1,
+    borderBottomColor: AppStyles.color.greylight + '40',
+  },
+  tab: {
+    flex: 1,
+    paddingVertical: 16,
+    paddingHorizontal: 12,
+    alignItems: 'center',
+  },
+  activeTab: {
+    borderBottomWidth: 3,
+    borderBottomColor: AppStyles.color.roulette.gold,
+  },
+  tabText: {
+    fontSize: 16,
+    fontFamily: AppStyles.fonts.medium,
+    color: AppStyles.color.greylight,
+  },
+  activeTabText: {
+    color: AppStyles.color.roulette.gold,
+    fontFamily: AppStyles.fonts.bold,
+  },
+  content: {
+    maxHeight: '100%',
+  },
+});
