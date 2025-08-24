@@ -1,0 +1,339 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`BusinessCardModal snapshots should match snapshot for Details view 1`] = `
+<Modal
+  animationType="fade"
+  hardwareAccelerated={false}
+  onRequestClose={[Function]}
+  transparent={true}
+  visible={true}
+>
+  <View
+    accessible={true}
+    collapsable={false}
+    focusable={true}
+    onBlur={[Function]}
+    onClick={[Function]}
+    onFocus={[Function]}
+    onResponderGrant={[Function]}
+    onResponderMove={[Function]}
+    onResponderRelease={[Function]}
+    onResponderTerminate={[Function]}
+    onResponderTerminationRequest={[Function]}
+    onStartShouldSetResponder={[Function]}
+    style={
+      {
+        "backgroundColor": "rgba(0,0,0,0.5)",
+        "flex": 1,
+      }
+    }
+    testID="modal-backdrop"
+  >
+    <View
+      style={
+        {
+          "alignItems": "center",
+          "flex": 1,
+          "justifyContent": "center",
+        }
+      }
+    >
+      <View
+        accessible={true}
+        collapsable={false}
+        focusable={true}
+        onBlur={[Function]}
+        onClick={[Function]}
+        onFocus={[Function]}
+        onResponderGrant={[Function]}
+        onResponderMove={[Function]}
+        onResponderRelease={[Function]}
+        onResponderTerminate={[Function]}
+        onResponderTerminationRequest={[Function]}
+        onStartShouldSetResponder={[Function]}
+      >
+        <View
+          style={
+            {
+              "backgroundColor": "white",
+              "borderRadius": 10,
+              "margin": 20,
+              "minWidth": 300,
+              "padding": 20,
+            }
+          }
+        >
+          <View
+            style={
+              {
+                "flexDirection": "row",
+                "marginBottom": 20,
+              }
+            }
+          >
+            <View
+              accessible={true}
+              collapsable={false}
+              focusable={true}
+              onBlur={[Function]}
+              onClick={[Function]}
+              onFocus={[Function]}
+              onResponderGrant={[Function]}
+              onResponderMove={[Function]}
+              onResponderRelease={[Function]}
+              onResponderTerminate={[Function]}
+              onResponderTerminationRequest={[Function]}
+              onStartShouldSetResponder={[Function]}
+              style={
+                {
+                  "backgroundColor": "#E5E5E7",
+                  "borderRadius": 5,
+                  "flex": 1,
+                  "marginRight": 5,
+                  "padding": 10,
+                }
+              }
+              testID="quick-info-tab"
+            >
+              <Text
+                style={
+                  {
+                    "color": "black",
+                    "fontWeight": "normal",
+                    "textAlign": "center",
+                  }
+                }
+              >
+                Quick Info
+              </Text>
+            </View>
+            <View
+              accessible={true}
+              collapsable={false}
+              focusable={true}
+              onBlur={[Function]}
+              onClick={[Function]}
+              onFocus={[Function]}
+              onResponderGrant={[Function]}
+              onResponderMove={[Function]}
+              onResponderRelease={[Function]}
+              onResponderTerminate={[Function]}
+              onResponderTerminationRequest={[Function]}
+              onStartShouldSetResponder={[Function]}
+              style={
+                {
+                  "backgroundColor": "#007AFF",
+                  "borderRadius": 5,
+                  "flex": 1,
+                  "marginLeft": 5,
+                  "padding": 10,
+                }
+              }
+              testID="details-tab"
+            >
+              <Text
+                style={
+                  {
+                    "color": "white",
+                    "fontWeight": "bold",
+                    "textAlign": "center",
+                  }
+                }
+              >
+                Details
+              </Text>
+            </View>
+          </View>
+          <View>
+            <Text
+              testID="bd-title"
+            >
+              Test Restaurant
+            </Text>
+            <Text>
+              123 Main St, Columbus, OH 43215
+            </Text>
+            <Text>
+              (555) 123-4567
+            </Text>
+          </View>
+        </View>
+      </View>
+    </View>
+  </View>
+</Modal>
+`;
+
+exports[`BusinessCardModal snapshots should match snapshot for QuickInfo view 1`] = `
+<Modal
+  animationType="fade"
+  hardwareAccelerated={false}
+  onRequestClose={[Function]}
+  transparent={true}
+  visible={true}
+>
+  <View
+    accessible={true}
+    collapsable={false}
+    focusable={true}
+    onBlur={[Function]}
+    onClick={[Function]}
+    onFocus={[Function]}
+    onResponderGrant={[Function]}
+    onResponderMove={[Function]}
+    onResponderRelease={[Function]}
+    onResponderTerminate={[Function]}
+    onResponderTerminationRequest={[Function]}
+    onStartShouldSetResponder={[Function]}
+    style={
+      {
+        "backgroundColor": "rgba(0,0,0,0.5)",
+        "flex": 1,
+      }
+    }
+    testID="modal-backdrop"
+  >
+    <View
+      style={
+        {
+          "alignItems": "center",
+          "flex": 1,
+          "justifyContent": "center",
+        }
+      }
+    >
+      <View
+        accessible={true}
+        collapsable={false}
+        focusable={true}
+        onBlur={[Function]}
+        onClick={[Function]}
+        onFocus={[Function]}
+        onResponderGrant={[Function]}
+        onResponderMove={[Function]}
+        onResponderRelease={[Function]}
+        onResponderTerminate={[Function]}
+        onResponderTerminationRequest={[Function]}
+        onStartShouldSetResponder={[Function]}
+      >
+        <View
+          style={
+            {
+              "backgroundColor": "white",
+              "borderRadius": 10,
+              "margin": 20,
+              "minWidth": 300,
+              "padding": 20,
+            }
+          }
+        >
+          <View
+            style={
+              {
+                "flexDirection": "row",
+                "marginBottom": 20,
+              }
+            }
+          >
+            <View
+              accessible={true}
+              collapsable={false}
+              focusable={true}
+              onBlur={[Function]}
+              onClick={[Function]}
+              onFocus={[Function]}
+              onResponderGrant={[Function]}
+              onResponderMove={[Function]}
+              onResponderRelease={[Function]}
+              onResponderTerminate={[Function]}
+              onResponderTerminationRequest={[Function]}
+              onStartShouldSetResponder={[Function]}
+              style={
+                {
+                  "backgroundColor": "#007AFF",
+                  "borderRadius": 5,
+                  "flex": 1,
+                  "marginRight": 5,
+                  "padding": 10,
+                }
+              }
+              testID="quick-info-tab"
+            >
+              <Text
+                style={
+                  {
+                    "color": "white",
+                    "fontWeight": "bold",
+                    "textAlign": "center",
+                  }
+                }
+              >
+                Quick Info
+              </Text>
+            </View>
+            <View
+              accessible={true}
+              collapsable={false}
+              focusable={true}
+              onBlur={[Function]}
+              onClick={[Function]}
+              onFocus={[Function]}
+              onResponderGrant={[Function]}
+              onResponderMove={[Function]}
+              onResponderRelease={[Function]}
+              onResponderTerminate={[Function]}
+              onResponderTerminationRequest={[Function]}
+              onStartShouldSetResponder={[Function]}
+              style={
+                {
+                  "backgroundColor": "#E5E5E7",
+                  "borderRadius": 5,
+                  "flex": 1,
+                  "marginLeft": 5,
+                  "padding": 10,
+                }
+              }
+              testID="details-tab"
+            >
+              <Text
+                style={
+                  {
+                    "color": "black",
+                    "fontWeight": "normal",
+                    "textAlign": "center",
+                  }
+                }
+              >
+                Details
+              </Text>
+            </View>
+          </View>
+          <View>
+            <Text
+              testID="bqi-title"
+            >
+              Test Restaurant
+            </Text>
+            <Text>
+              4.5
+              ★ • 
+              128
+               reviews • 
+              $$
+            </Text>
+            <Text>
+              Italian, Pizza
+            </Text>
+            <Text
+              testID="bqi-today"
+            >
+              Today: 
+              9:00 AM–5:00 PM
+            </Text>
+          </View>
+        </View>
+      </View>
+    </View>
+  </View>
+</Modal>
+`;
