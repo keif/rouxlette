@@ -1,5 +1,5 @@
 import React, { useContext, useState } from 'react';
-import { StyleSheet, ScrollView, Text, Alert } from 'react-native';
+import { StyleSheet, ScrollView, Text } from 'react-native';
 import { SafeAreaProvider, SafeAreaView } from 'react-native-safe-area-context';
 import { StatusBar } from 'expo-status-bar';
 import { View } from '../components/Themed';
@@ -10,7 +10,7 @@ import ErrorMessageView from '../components/shared/ErrorMessageView';
 import DevLocationDebug from '../components/shared/DevLocationDebug';
 import AppStyles from '../AppStyles';
 import { RootContext } from '../context/RootContext';
-import { addSpinHistory } from '../context/reducer';
+import { addSpinHistory, setSelectedBusiness, showBusinessModal } from '../context/reducer';
 import { BusinessProps } from '../hooks/useResults';
 import useResults, { INIT_RESULTS } from '../hooks/useResults';
 import useLocation from '../hooks/useLocation';
@@ -51,14 +51,9 @@ const HomeScreen: React.FC = () => {
     };
     dispatch(addSpinHistory(spinEntry));
 
-    // Show the selected restaurant
-    Alert.alert(
-      '🎰 Roulette Result!',
-      `You should try: ${selectedRestaurant.name}\n\n` +
-      `📍 ${selectedRestaurant.location?.display_address?.join(', ') || 'Location not available'}\n` +
-      `⭐ ${selectedRestaurant.rating} stars`,
-      [{ text: 'Great Choice!', style: 'default' }]
-    );
+    // Show the selected restaurant in modal
+    dispatch(setSelectedBusiness(selectedRestaurant));
+    dispatch(showBusinessModal());
   };
 
   const handleSearch = async (term: string) => {
