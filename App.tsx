@@ -10,6 +10,7 @@ import { initialAppState } from "./context/state";
 import { RootContext } from "./context/RootContext";
 import "expo-dev-menu";
 import { StatusBar } from "expo-status-bar";
+import { BusinessCardModal } from "./components/shared/BusinessCardModal";
 
 export default function App() {
 	const isLoadingComplete = useCachedResources();
@@ -27,6 +28,7 @@ export default function App() {
 						backgroundColor="transparent"
 						translucent
 					/>
+					<BusinessCardModal />
 				</RootContext.Provider>
 			</SafeAreaProvider>
 		);
