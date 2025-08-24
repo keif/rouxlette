@@ -25,7 +25,15 @@ jest.mock('../../hooks/useBusinessHours', () => ({
   default: jest.fn(() => ({
     todayLabel: '9:00 AM–5:00 PM',
     isOpen: true,
-    weekly: 'Mock weekly hours'
+    weekly: [
+      { day: 'Monday', hours: '9:00 AM–5:00 PM' },
+      { day: 'Tuesday', hours: '9:00 AM–5:00 PM' },
+      { day: 'Wednesday', hours: '9:00 AM–5:00 PM' },
+      { day: 'Thursday', hours: '9:00 AM–5:00 PM' },
+      { day: 'Friday', hours: '9:00 AM–5:00 PM' },
+      { day: 'Saturday', hours: 'Closed' },
+      { day: 'Sunday', hours: 'Closed' }
+    ]
   }))
 }));
 
