@@ -1,5 +1,6 @@
 import { CategoryProps, BusinessProps } from "../hooks/useResults";
 import { Filter, SpinHistory } from "./state";
+import { YelpBusiness } from "../types/yelp";
 
 export enum ActionType {
 	SetCategories,
@@ -11,7 +12,15 @@ export enum ActionType {
 	AddFavorite,
 	RemoveFavorite,
 	AddSpinHistory,
+	SetSelectedBusiness,
+	ShowBusinessModal,
+	HideBusinessModal,
 }
+
+// String constants as requested
+export const SET_SELECTED_BUSINESS = 'SET_SELECTED_BUSINESS' as const;
+export const SHOW_BUSINESS_MODAL = 'SHOW_BUSINESS_MODAL' as const;
+export const HIDE_BUSINESS_MODAL = 'HIDE_BUSINESS_MODAL' as const;
 
 export interface SetCategories {
 	type: ActionType.SetCategories;
@@ -58,4 +67,17 @@ export interface AddSpinHistory {
 	payload: { spin: SpinHistory };
 }
 
-export type AppActions = SetCategories | SetDetail | SetFilter | SetLocation | SetResults | SetShowFilter | AddFavorite | RemoveFavorite | AddSpinHistory;
+export interface SetSelectedBusiness {
+	type: ActionType.SetSelectedBusiness;
+	payload: { business: YelpBusiness | null };
+}
+
+export interface ShowBusinessModal {
+	type: ActionType.ShowBusinessModal;
+}
+
+export interface HideBusinessModal {
+	type: ActionType.HideBusinessModal;
+}
+
+export type AppActions = SetCategories | SetDetail | SetFilter | SetLocation | SetResults | SetShowFilter | AddFavorite | RemoveFavorite | AddSpinHistory | SetSelectedBusiness | ShowBusinessModal | HideBusinessModal;

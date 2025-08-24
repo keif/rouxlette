@@ -11,8 +11,12 @@ import {
 	AddFavorite,
 	RemoveFavorite,
 	AddSpinHistory,
+	SetSelectedBusiness,
+	ShowBusinessModal,
+	HideBusinessModal,
 } from "./actions";
 import { CategoryProps, BusinessProps } from "../hooks/useResults";
+import { YelpBusiness } from "../types/yelp";
 
 export function appReducer(state: AppState, action: AppActions): AppState {
 	switch (action.type) {
@@ -65,6 +69,21 @@ export function appReducer(state: AppState, action: AppActions): AppState {
 				...state,
 				spinHistory: [action.payload.spin, ...state.spinHistory.slice(0, 9)], // Keep last 10
 			};
+		case ActionType.SetSelectedBusiness:
+			return {
+				...state,
+				selectedBusiness: action.payload.business,
+			};
+		case ActionType.ShowBusinessModal:
+			return {
+				...state,
+				isBusinessModalOpen: true,
+			};
+		case ActionType.HideBusinessModal:
+			return {
+				...state,
+				isBusinessModalOpen: false,
+			};
 		default:
 			return state;
 	}
@@ -114,4 +133,17 @@ export const removeFavorite = (restaurantId: string): RemoveFavorite => ({
 export const addSpinHistory = (spin: SpinHistory): AddSpinHistory => ({
 	type: ActionType.AddSpinHistory,
 	payload: { spin },
+});
+
+export const setSelectedBusiness = (business: YelpBusiness | null): SetSelectedBusiness => ({
+	type: ActionType.SetSelectedBusiness,
+	payload: { business },
+});
+
+export const showBusinessModal = (): ShowBusinessModal => ({
+	type: ActionType.ShowBusinessModal,
+});
+
+export const hideBusinessModal = (): HideBusinessModal => ({
+	type: ActionType.HideBusinessModal,
 });

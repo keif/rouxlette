@@ -22,3 +22,8 @@ web-build/
 
 # code coverage
 coverage/
+
+# Claude AI files
+.claude/
+CLAUDE.md
+end-session-*.md
