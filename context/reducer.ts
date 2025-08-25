@@ -1,10 +1,13 @@
-import { AppState, Filter, SpinHistory } from "./state";
+import { AppState, Filter, Filters, SpinHistory, initialFilters } from "./state";
 import {
 	ActionType,
 	AppActions,
 	SetCategories,
 	SetDetail,
 	SetFilter,
+	SetFilters,
+	ResetFilters,
+	HydrateFilters,
 	SetLocation,
 	SetResults,
 	SetShowFilter,
@@ -84,6 +87,24 @@ export function appReducer(state: AppState, action: AppActions): AppState {
 				...state,
 				isBusinessModalOpen: false,
 			};
+		case ActionType.SetFilters:
+			return {
+				...state,
+				filters: {
+					...state.filters,
+					...action.payload.filters,
+				},
+			};
+		case ActionType.ResetFilters:
+			return {
+				...state,
+				filters: initialFilters,
+			};
+		case ActionType.HydrateFilters:
+			return {
+				...state,
+				filters: action.payload.filters,
+			};
 		default:
 			return state;
 	}
@@ -146,4 +167,18 @@ export const showBusinessModal = (): ShowBusinessModal => ({
 
 export const hideBusinessModal = (): HideBusinessModal => ({
 	type: ActionType.HideBusinessModal,
+});
+
+export const setFilters = (filters: Partial<Filters>): SetFilters => ({
+	type: ActionType.SetFilters,
+	payload: { filters },
+});
+
+export const resetFilters = (): ResetFilters => ({
+	type: ActionType.ResetFilters,
+});
+
+export const hydrateFilters = (filters: Filters): HydrateFilters => ({
+	type: ActionType.HydrateFilters,
+	payload: { filters },
 });

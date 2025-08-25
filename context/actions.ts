@@ -1,11 +1,14 @@
 import { CategoryProps, BusinessProps } from "../hooks/useResults";
-import { Filter, SpinHistory } from "./state";
+import { Filter, Filters, SpinHistory } from "./state";
 import { YelpBusiness } from "../types/yelp";
 
 export enum ActionType {
 	SetCategories,
 	SetDetail,
 	SetFilter,
+	SetFilters,
+	ResetFilters,
+	HydrateFilters,
 	SetLocation,
 	SetResults,
 	SetShowFilter,
@@ -80,4 +83,18 @@ export interface HideBusinessModal {
 	type: ActionType.HideBusinessModal;
 }
 
-export type AppActions = SetCategories | SetDetail | SetFilter | SetLocation | SetResults | SetShowFilter | AddFavorite | RemoveFavorite | AddSpinHistory | SetSelectedBusiness | ShowBusinessModal | HideBusinessModal;
+export interface SetFilters {
+	type: ActionType.SetFilters;
+	payload: { filters: Partial<Filters> };
+}
+
+export interface ResetFilters {
+	type: ActionType.ResetFilters;
+}
+
+export interface HydrateFilters {
+	type: ActionType.HydrateFilters;
+	payload: { filters: Filters };
+}
+
+export type AppActions = SetCategories | SetDetail | SetFilter | SetFilters | ResetFilters | HydrateFilters | SetLocation | SetResults | SetShowFilter | AddFavorite | RemoveFavorite | AddSpinHistory | SetSelectedBusiness | ShowBusinessModal | HideBusinessModal;
