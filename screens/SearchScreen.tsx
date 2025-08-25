@@ -1,6 +1,6 @@
 import React, { useContext, useEffect, useRef, useState } from "react";
 import { CategoryProps, INIT_RESULTS, PRICE_OPTIONS, ResultsProps } from "../hooks/useResults";
-import { Animated, LayoutAnimation, Platform, StyleSheet, UIManager } from "react-native";
+import { Animated, LayoutAnimation, Platform, StyleSheet, UIManager, Pressable, Text } from "react-native";
 import { View } from "../components/Themed";
 import SearchInput from "../components/search/SearchInput";
 import LocationInput from "../components/search/LocationInput";
@@ -11,6 +11,11 @@ import { StatusBar } from "expo-status-bar";
 import { setCategories } from "../context/reducer";
 import { SafeAreaProvider } from "react-native-safe-area-context";
 import ErrorMessageView from "../components/shared/ErrorMessageView";
+import FiltersSheet from "../components/filter/FiltersSheet";
+import useFiltersPersistence from "../hooks/useFiltersPersistence";
+import { applyFilters, countActiveFilters } from "../utils/filterBusinesses";
+import Icon from 'react-native-vector-icons/MaterialIcons';
+import Config from "../Config";
 
 if (Platform.OS === "android" && UIManager.setLayoutAnimationEnabledExperimental) {
 	UIManager.setLayoutAnimationEnabledExperimental(true);
@@ -25,7 +30,11 @@ const SearchScreen = () => {
 	const [toggleStyle, setToggleStyle] = useState(true);
 	const [hasFocus, setFocus] = useState(false);
 	const [errorMessage, setErrorMessage] = useState(``);
+	const [showFiltersSheet, setShowFiltersSheet] = useState(false);
 	const borderRadius = useRef(new Animated.Value(0)).current;
+
+	// Initialize filter persistence
+	useFiltersPersistence();
 
 	useEffect(() => {
 		LayoutAnimation.configureNext(LayoutAnimation.Presets.easeInEaseOut);
@@ -62,17 +71,17 @@ const SearchScreen = () => {
 		}
 	}, [hasFocus]);
 
+	// Apply new client-side filters
 	useEffect(() => {
-		if (state.filter?.price?.length) {
-			console.log(`filter by price`);
-			const filterPriceOpts = state.filter.price?.map(price => PRICE_OPTIONS[price]);
-			const filterByPriceResults = searchResults.businesses.filter((result) => filterPriceOpts.indexOf(result.price) > -1);
-			const finalResults = { id: searchResults.id, businesses: filterByPriceResults };
+		if (searchResults.businesses.length > 0) {
+			// Apply the new filters to search results
+			const filteredBusinesses = applyFilters(searchResults.businesses, state.filters);
+			const finalResults = { id: searchResults.id, businesses: filteredBusinesses };
 			setFilterResults(finalResults);
 		} else {
 			setFilterResults(searchResults);
 		}
-	}, [state.filter]);
+	}, [searchResults, state.filters]);
 
 	const hasSearchResults = searchResults && searchResults.businesses.length;
 	return (
@@ -82,14 +91,37 @@ const SearchScreen = () => {
 					<Animated.View
 						style={[styles.animatedContainer, { borderRadius }]}
 					>
-						<SearchInput
-							onFocus={() => setFocus(true)}
-							placeholder={`What are you craving?`}
-							setErrorMessage={setErrorMessage}
-							setResults={setSearchResults}
-							setTerm={setTerm}
-							term={term}
-						/>
+						<View style={styles.searchHeader}>
+							<View style={styles.searchInputContainer}>
+								<SearchInput
+									onFocus={() => setFocus(true)}
+									placeholder={`What are you craving?`}
+									setErrorMessage={setErrorMessage}
+									setResults={setSearchResults}
+									setTerm={setTerm}
+									term={term}
+								/>
+							</View>
+							{(hasFocus || hasSearchResults) && (
+								<Pressable
+									style={({ pressed }) => [
+										styles.filtersButton,
+										{ opacity: !Config.isAndroid && pressed ? 0.6 : 1 }
+									]}
+									onPress={() => setShowFiltersSheet(true)}
+									android_ripple={{ color: 'lightgrey', radius: 20, borderless: true }}
+								>
+									<Icon name="tune" size={24} color={AppStyles.color.roulette.gold} />
+									{countActiveFilters(state.filters) > 0 && (
+										<View style={styles.filtersBadge}>
+											<Text style={styles.filtersBadgeText}>
+												{countActiveFilters(state.filters)}
+											</Text>
+										</View>
+									)}
+								</Pressable>
+							)}
+						</View>
 						{
 							hasFocus || hasSearchResults ? (
 								<LocationInput
@@ -114,6 +146,11 @@ const SearchScreen = () => {
 					}
 				</View>
 				<StatusBar style={Platform.OS === "ios" ? "light" : "auto"} />
+
+				<FiltersSheet
+					visible={showFiltersSheet}
+					onClose={() => setShowFiltersSheet(false)}
+				/>
 			</View>
 		</SafeAreaProvider>
 	);
@@ -149,6 +186,34 @@ const styles = StyleSheet.create({
 		},
 		shadowOpacity: 0.3,
 		shadowRadius: 4.65,
+	},
+	searchHeader: {
+		flexDirection: 'row',
+		alignItems: 'center',
+	},
+	searchInputContainer: {
+		flex: 1,
+	},
+	filtersButton: {
+		padding: 8,
+		marginRight: 8,
+		position: 'relative',
+	},
+	filtersBadge: {
+		position: 'absolute',
+		top: 2,
+		right: 2,
+		backgroundColor: AppStyles.color.roulette.red,
+		borderRadius: 10,
+		minWidth: 20,
+		height: 20,
+		justifyContent: 'center',
+		alignItems: 'center',
+	},
+	filtersBadgeText: {
+		color: AppStyles.color.white,
+		fontSize: 12,
+		fontFamily: AppStyles.fonts.bold,
 	},
 });
 
