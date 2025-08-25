@@ -72,13 +72,16 @@ export function BusinessDetails({ business, onYelp, onClose }: BusinessDetailsPr
       <View style={styles.section}>
         <Text style={styles.sectionTitle}>Hours</Text>
         <View style={styles.hoursContainer} testID="bd-hours">
-          {weekly.length > 0 ? (
-            weekly.map(({ day, hours }) => (
-              <View key={day} style={styles.hoursRow}>
-                <Text style={styles.dayLabel}>{day}:</Text>
-                <Text style={styles.dayHours}>{hours}</Text>
-              </View>
-            ))
+          {weekly ? (
+            weekly.split('\n').map((line, index) => {
+              const [day, hours] = line.split(': ');
+              return (
+                <View key={index} style={styles.hoursRow}>
+                  <Text style={styles.dayLabel}>{day}:</Text>
+                  <Text style={styles.dayHours}>{hours}</Text>
+                </View>
+              );
+            })
           ) : (
             <Text style={styles.noHours}>Hours not available</Text>
           )}
