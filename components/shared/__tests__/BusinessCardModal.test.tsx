@@ -119,7 +119,9 @@ describe('BusinessCardModal', () => {
     // Should show QuickInfo content by default
     expect(getByTestId('bqi-title')).toBeTruthy();
     expect(getByText('Test Restaurant')).toBeTruthy();
-    expect(getByText('4.5★ • 128 reviews • $$')).toBeTruthy();
+    expect(getByText('4.5★')).toBeTruthy();
+    expect(getByText('128 reviews')).toBeTruthy();
+    expect(getByText('$$')).toBeTruthy();
     expect(getByText('Italian, Pizza')).toBeTruthy();
     expect(getByTestId('bqi-today')).toBeTruthy();
     expect(getByText('Today: 9:00 AM–5:00 PM')).toBeTruthy();
@@ -224,7 +226,7 @@ describe('BusinessCardModal', () => {
       // Missing most optional fields
     };
 
-    const { getByText, queryByText } = render(
+    const { getByText, queryByTestId } = render(
       <TestHarness business={incompleteBusiness}>
         <BusinessCardModal />
       </TestHarness>
@@ -233,9 +235,11 @@ describe('BusinessCardModal', () => {
     // Should show business name
     expect(getByText('Incomplete Business')).toBeTruthy();
     
-    // Should show fallbacks for missing data
-    expect(getByText('—★ • 0 reviews • —')).toBeTruthy();
-    expect(getByText('—')).toBeTruthy(); // categories fallback
+    // Should not show missing optional fields
+    expect(queryByTestId('bqi-rating')).toBeNull();
+    expect(queryByTestId('bqi-reviews')).toBeNull();
+    expect(queryByTestId('bqi-price')).toBeNull();
+    expect(queryByTestId('bqi-categories')).toBeNull();
   });
 
   describe('snapshots', () => {
