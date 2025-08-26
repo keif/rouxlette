@@ -100,7 +100,7 @@ const ResultsShowScreen = ({ navigation, route }: ResultsShowScreenProps<`Result
 				<Text style={styles.price}><OpenSign is_open_now={is_open_now} /></Text>
 				<View style={styles.starRating}>
 					<StarRating rating={result.rating} shadow />
-					<Text>{result.review_count} Review{result.review_count > 1 ? `s` : null}</Text>
+					<Text>{result.review_count} Review{result.review_count > 1 ? `s` : ``}</Text>
 				</View>
 			</View>
 

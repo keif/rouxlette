@@ -88,10 +88,7 @@ const RestaurantCard = ({ index, result }: RestaurantCardProps) => {
 				</View>
 				<View style={{ flexDirection: "row" }}>
 					<Text style={styles.subText} numberOfLines={1}>
-						{categories.map(cat => cat.title).join(`, `)}
-						<View style={{ width: 4 }} />
-						<Icon name="location-pin" size={12} color={AppStyles.color.primary} />
-						{location.city}
+						{categories.map(cat => cat.title).join(`, `)} • {location.city}
 					</Text>
 				</View>
 				<View style={{ flexDirection: "row", marginTop: 4 }}>

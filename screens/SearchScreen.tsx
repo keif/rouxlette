@@ -1,7 +1,7 @@
 import React, { useContext, useEffect, useRef, useState } from "react";
 import { CategoryProps, INIT_RESULTS, PRICE_OPTIONS, ResultsProps } from "../hooks/useResults";
-import { Animated, LayoutAnimation, Platform, StyleSheet, UIManager, Pressable, Text } from "react-native";
-import { View } from "../components/Themed";
+import { Animated, LayoutAnimation, Platform, StyleSheet, UIManager, Pressable } from "react-native";
+import { View, Text } from "../components/Themed";
 import SearchInput from "../components/search/SearchInput";
 import LocationInput from "../components/search/LocationInput";
 import FilteredOutput from "../components/search/FilteredOutput";
@@ -83,7 +83,7 @@ const SearchScreen = () => {
 		}
 	}, [searchResults, state.filters]);
 
-	const hasSearchResults = searchResults && searchResults.businesses.length;
+	const hasSearchResults = searchResults && searchResults.businesses.length > 0;
 	return (
 		<SafeAreaProvider>
 			<View style={[styles.container, toggleStyle ? styles.containerRow : styles.containerColumn]}>
@@ -115,7 +115,7 @@ const SearchScreen = () => {
 									{countActiveFilters(state.filters) > 0 && (
 										<View style={styles.filtersBadge}>
 											<Text style={styles.filtersBadgeText}>
-												{countActiveFilters(state.filters)}
+												{countActiveFilters(state.filters).toString()}
 											</Text>
 										</View>
 									)}

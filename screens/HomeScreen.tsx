@@ -128,7 +128,7 @@ const HomeScreen: React.FC = () => {
           {hasResults ? (
             <View style={styles.resultsInfo}>
               <Text style={styles.resultsText}>
-                🎯 Found {state.results.length} restaurants ready for roulette!
+                🎯 Found {state.results.length.toString()} restaurants ready for roulette!
               </Text>
             </View>
           ) : null}

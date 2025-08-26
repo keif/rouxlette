@@ -47,7 +47,7 @@ const FilteredOutput = ({ term, filterTerm, searchResults, filteredResults }: Fi
 			<View style={styles.container}>
 				<View style={{ flexDirection: `row`, marginHorizontal: 12 }}>
 					<Text
-						style={styles.titleCount}>{filterResults.businesses.length} for {term}{filterTerm !== `` ? `, without ${filterTerm}` : null}</Text>
+						style={styles.titleCount}>{filterResults.businesses.length.toString()} for {term}{filterTerm !== `` ? `, without ${filterTerm}` : ``}</Text>
 					<Pressable
 						style={({ pressed }) => [
 							styles.button,
