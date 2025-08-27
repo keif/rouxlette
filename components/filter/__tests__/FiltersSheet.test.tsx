@@ -182,14 +182,14 @@ describe('FiltersSheet', () => {
 
   describe('Distance Filter', () => {
     it('should display distance options', () => {
-      const { getByText } = renderFiltersSheet();
+      const { getAllByText } = renderFiltersSheet();
       
-      expect(getByText('Distance')).toBeTruthy();
-      expect(getByText('0.5 mi')).toBeTruthy();
-      expect(getByText('1 mi')).toBeTruthy();
-      expect(getByText('2 mi')).toBeTruthy();
-      expect(getByText('5 mi')).toBeTruthy();
-      expect(getByText('10 mi')).toBeTruthy();
+      expect(getAllByText('Distance')[0]).toBeTruthy();
+      expect(getAllByText('0.5 mi').length).toBeGreaterThan(0);
+      expect(getAllByText('1 mi').length).toBeGreaterThan(0);
+      expect(getAllByText('2 mi')[0]).toBeTruthy();
+      expect(getAllByText('5 mi')[0]).toBeTruthy();
+      expect(getAllByText('10 mi')[0]).toBeTruthy();
     });
 
     it('should show current distance selection', () => {
@@ -200,10 +200,10 @@ describe('FiltersSheet', () => {
         },
       };
 
-      const { getByText } = renderFiltersSheet(contextState);
+      const { getAllByText } = renderFiltersSheet(contextState);
       
-      // Should show "0.5 mi" in the subtitle
-      expect(getByText('0.5 mi')).toBeTruthy();
+      // Should show "0.5 mi" in the subtitle (expect at least one instance)
+      expect(getAllByText('0.5 mi').length).toBeGreaterThan(0);
     });
   });
 

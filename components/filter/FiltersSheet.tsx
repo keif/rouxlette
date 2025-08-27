@@ -22,9 +22,11 @@ import { DISTANCE_OPTIONS, getDistanceLabel } from '../../utils/filterBusinesses
 interface FiltersSheetProps {
   visible: boolean;
   onClose: () => void;
+  testID?: string;
 }
 
-const FiltersSheet: React.FC<FiltersSheetProps> = ({ visible, onClose }) => {
+const FiltersSheet: React.FC<FiltersSheetProps> = ({ visible, onClose, testID }) => {
+  
   const { state, dispatch } = useContext(RootContext);
   const [localFilters, setLocalFilters] = useState<Filters>(state.filters);
 
@@ -70,6 +72,7 @@ const FiltersSheet: React.FC<FiltersSheetProps> = ({ visible, onClose }) => {
       onRequestClose={handleClose}
       transparent
       visible={visible}
+      testID={testID}
     >
       <StatusBar backgroundColor={AppStyles.color.white} />
       <SafeAreaView style={{ flex: 1, backgroundColor: AppStyles.color.white }}>

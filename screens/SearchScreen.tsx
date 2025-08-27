@@ -1,5 +1,7 @@
-import React, { useContext, useEffect, useRef, useState } from "react";
+import React, { useCallback, useContext, useEffect, useRef, useState } from "react";
+import { useFocusEffect, useNavigation, useRoute } from "@react-navigation/native";
 import { CategoryProps, INIT_RESULTS, PRICE_OPTIONS, ResultsProps } from "../hooks/useResults";
+import { RootTabScreenProps } from "../types";
 import { Animated, LayoutAnimation, Platform, StyleSheet, UIManager, Pressable } from "react-native";
 import { View, Text } from "../components/Themed";
 import SearchInput from "../components/search/SearchInput";
@@ -23,6 +25,8 @@ if (Platform.OS === "android" && UIManager.setLayoutAnimationEnabledExperimental
 
 const SearchScreen = () => {
 	const { dispatch, state } = useContext(RootContext);
+	const navigation = useNavigation<RootTabScreenProps<'Search'>['navigation']>();
+	const route = useRoute<RootTabScreenProps<'Search'>['route']>();
 	const [term, setTerm] = useState<string>(``);
 	const [filterTerm, setFilterTerm] = useState<string>(``);
 	const [searchResults, setSearchResults] = useState<ResultsProps>(INIT_RESULTS);
@@ -35,6 +39,24 @@ const SearchScreen = () => {
 
 	// Initialize filter persistence
 	useFiltersPersistence();
+
+	// Handle param-based opening and cleanup
+	useFocusEffect(
+		useCallback(() => {
+			// Open filters if requested via navigation params (one-time only)
+			const openOnMount = route?.params?.openFilters === true;
+			if (openOnMount) {
+				setShowFiltersSheet(true);
+				// Clear param so it only happens once
+				navigation.setParams({ openFilters: undefined });
+			}
+
+			// Cleanup: reset modal state on blur to prevent sticky behavior
+			return () => {
+				setShowFiltersSheet(false);
+			};
+		}, [route?.params?.openFilters, navigation])
+	);
 
 	useEffect(() => {
 		LayoutAnimation.configureNext(LayoutAnimation.Presets.easeInEaseOut);
@@ -104,6 +126,7 @@ const SearchScreen = () => {
 							</View>
 							{(hasFocus || hasSearchResults) && (
 								<Pressable
+									testID="filters-open-button-search"
 									style={({ pressed }) => [
 										styles.filtersButton,
 										{ opacity: !Config.isAndroid && pressed ? 0.6 : 1 }
@@ -148,6 +171,7 @@ const SearchScreen = () => {
 				<StatusBar style={Platform.OS === "ios" ? "light" : "auto"} />
 
 				<FiltersSheet
+					testID="filters-sheet"
 					visible={showFiltersSheet}
 					onClose={() => setShowFiltersSheet(false)}
 				/>

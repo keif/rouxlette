@@ -20,7 +20,7 @@ export function BusinessQuickInfo({ business, onDetails, onClose }: BusinessQuic
   };
 
   const formatDistance = (distance?: number) => {
-    if (!distance) return '';
+    if (!distance) return null;
     const miles = (distance * 0.000621371).toFixed(1);
     return `${miles} mi`;
   };
@@ -43,12 +43,12 @@ export function BusinessQuickInfo({ business, onDetails, onClose }: BusinessQuic
       <View style={styles.metaRow}>
         {business.rating && (
           <Text style={styles.rating} testID="bqi-rating">
-            {String(business.rating)}★
+            {business.rating.toString()}★
           </Text>
         )}
         {business.review_count && (
           <Text style={styles.reviews} testID="bqi-reviews">
-            {String(business.review_count)} reviews
+            {business.review_count.toString()} reviews
           </Text>
         )}
         {business.price && (

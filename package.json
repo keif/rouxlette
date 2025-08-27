@@ -10,7 +10,11 @@
     "test": "jest --watchAll"
   },
   "jest": {
-    "preset": "jest-expo"
+    "preset": "jest-expo",
+    "setupFilesAfterEnv": ["<rootDir>/__tests__/setup.js"],
+    "moduleNameMapping": {
+      "^@env$": "<rootDir>/__tests__/mocks/mockEnv.js"
+    }
   },
   "dependencies": {
     "@expo/vector-icons": "^13.0.0",

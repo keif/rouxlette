@@ -1,5 +1,6 @@
 import React, { useContext, useState } from 'react';
-import { StyleSheet, ScrollView, Text } from 'react-native';
+import { StyleSheet, ScrollView, Text, Pressable, TouchableOpacity } from 'react-native';
+import Icon from 'react-native-vector-icons/MaterialIcons';
 import { SafeAreaProvider, SafeAreaView } from 'react-native-safe-area-context';
 import { StatusBar } from 'expo-status-bar';
 import { View } from '../components/Themed';
@@ -8,9 +9,13 @@ import QuickActionsPanel from '../components/search/QuickActionsPanel';
 import CategoryCard from '../components/shared/CategoryCard';
 import ErrorMessageView from '../components/shared/ErrorMessageView';
 import DevLocationDebug from '../components/shared/DevLocationDebug';
+import FiltersSheet from '../components/filter/FiltersSheet';
+import useFiltersPersistence from '../hooks/useFiltersPersistence';
+import { countActiveFilters } from '../utils/filterBusinesses';
 import AppStyles from '../AppStyles';
+import Config from '../Config';
 import { RootContext } from '../context/RootContext';
-import { addSpinHistory, setSelectedBusiness, showBusinessModal } from '../context/reducer';
+import { addSpinHistory, setSelectedBusiness, showBusinessModal, setShowFilter } from '../context/reducer';
 import { BusinessProps } from '../hooks/useResults';
 import useResults, { INIT_RESULTS } from '../hooks/useResults';
 import useLocation from '../hooks/useLocation';
@@ -31,6 +36,9 @@ const HomeScreen: React.FC = () => {
   const [searchTerm, setSearchTerm] = useState('');
   const [, searchResults, searchYelp] = useResults();
   const [, city, coords, , , isLocationLoading] = useLocation();
+
+  // Initialize filter persistence
+  useFiltersPersistence();
 
   const hasResults = state.results && state.results.length > 0;
 
@@ -85,10 +93,28 @@ const HomeScreen: React.FC = () => {
   return (
     <SafeAreaProvider>
       <SafeAreaView style={styles.container}>
+        {/* Filter Button */}
+        <TouchableOpacity
+          testID="filters-open-button-home"
+          onPress={() => dispatch(setShowFilter(true))}
+          style={styles.headerFiltersButton}
+        >
+          <Icon name="tune" size={22} color={AppStyles.color.roulette.gold} />
+          {countActiveFilters(state.filters) > 0 && (
+            <View style={styles.headerFiltersBadge}>
+              <Text style={styles.headerFiltersBadgeText}>
+                {countActiveFilters(state.filters).toString()}
+              </Text>
+            </View>
+          )}
+        </TouchableOpacity>
+        
         <ScrollView contentContainerStyle={styles.scrollContent}>
           {/* Header */}
           <View style={styles.header}>
-            <Text style={styles.appTitle}>🎲 Rouxlette</Text>
+            <View style={styles.titleContainer}>
+              <Text style={styles.appTitle}>🎲 Rouxlette</Text>
+            </View>
             <Text style={styles.subtitle}>
               Your personal restaurant roulette
             </Text>
@@ -118,11 +144,11 @@ const HomeScreen: React.FC = () => {
           ) : null}
 
           {/* Dev Location Debug */}
-          <DevLocationDebug 
+          {/* <DevLocationDebug 
             coords={coords}
             city={city}
             isLoading={isLocationLoading}
-          />
+          /> */}
 
           {/* Results Summary */}
           {hasResults ? (
@@ -170,6 +196,13 @@ const HomeScreen: React.FC = () => {
           )}
         </ScrollView>
         <StatusBar style="auto" />
+        
+        {/* Filters Sheet */}
+        <FiltersSheet
+          testID="filters-sheet"
+          visible={state.showFilter}
+          onClose={() => dispatch(setShowFilter(false))}
+        />
       </SafeAreaView>
     </SafeAreaProvider>
   );
@@ -188,6 +221,40 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     paddingTop: 20,
     paddingBottom: 16,
+    position: 'relative',
+  },
+  titleContainer: {
+    alignItems: 'center',
+    width: '100%',
+    paddingHorizontal: 16,
+  },
+  headerFiltersButton: {
+    position: 'absolute',
+    top: 60,
+    right: 16,
+    width: 44,
+    height: 44,
+    justifyContent: 'center',
+    alignItems: 'center',
+    borderRadius: 22,
+    zIndex: 9999,
+    backgroundColor: 'transparent',
+  },
+  headerFiltersBadge: {
+    position: 'absolute',
+    top: 2,
+    right: 2,
+    backgroundColor: AppStyles.color.roulette.red,
+    borderRadius: 10,
+    minWidth: 18,
+    height: 18,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  headerFiltersBadgeText: {
+    color: AppStyles.color.white,
+    fontSize: 11,
+    fontFamily: AppStyles.fonts.bold,
   },
   appTitle: {
     fontSize: 32,

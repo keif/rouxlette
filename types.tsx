@@ -25,7 +25,7 @@ export type RootStackScreenProps<Screen extends keyof RootStackParamList> = Nati
 
 export type RootTabParamList = {
 	Home: undefined;
-	Search: undefined;
+	Search: { openFilters?: boolean } | undefined;
 	Favorites: undefined;
 };
 

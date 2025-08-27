@@ -1,10 +1,7 @@
 import { geocode, reverseGeocode, humanizeGeocodeError, GeocodeResponse } from '../../api/google';
 
-// Mock axios and environment
+// Mock axios
 jest.mock('axios');
-jest.mock('@env', () => ({
-  GOOGLE_API_KEY: 'test-api-key'
-}));
 
 const mockAxios = {
   create: jest.fn(() => mockAxios),
