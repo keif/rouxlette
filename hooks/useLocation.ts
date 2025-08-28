@@ -3,10 +3,11 @@ import Geocoder from "react-native-geocoding";
 import * as Location from "expo-location";
 import { LocationObjectCoords } from "expo-location";
 import { GOOGLE_API_KEY } from "@env";
-import useStorage from "./useStorage";
+import usePersistentStorage from "./usePersistentStorage";
 import { RootContext } from "../context/RootContext";
 import { setLocation } from "../context/reducer";
 import { GeocodeResponse, reverseGeocode, humanizeGeocodeError } from "../api/google";
+import { logSafe, logNetwork } from "../utils/log";
 import GeocoderResponse = Geocoder.GeocoderResponse;
 
 interface LocationResult {
@@ -34,14 +35,18 @@ export default (): [string, string, LocationObjectCoords | null, any[], (query: 
 	const [locationResults, setLocationResults] = useState<any[]>([]);
 	const [currentCoords, setCurrentCoords] = useState<LocationObjectCoords | null>(null);
 	const [isLoading, setIsLoading] = useState<boolean>(false);
-	const [deleteItem, getAllItems, getItem, setItem] = useStorage();
+	const storage = usePersistentStorage({
+		debug: __DEV__,
+		debounceMs: 800, // Longer delay for location data
+		keyPrefix: '@roux:location'
+	});
 	const { dispatch } = useContext(RootContext);
 	const locationWatcher = useRef<Location.LocationSubscription | null>(null);
 
 	// Dev logging helper
 	const devLog = (message: string, ...args: any[]) => {
 		if (__DEV__) {
-			console.log(`[useLocation] ${message}`, ...args);
+			logSafe(`[useLocation] ${message}`, ...args);
 		}
 	};
 
@@ -81,7 +86,7 @@ export default (): [string, string, LocationObjectCoords | null, any[], (query: 
 			const response = await reverseGeocode(coords.latitude, coords.longitude);
 			
 			if (!response.ok || !response.results?.length) {
-				console.error('Failed to reverse geocode coordinates');
+				logSafe('Failed to reverse geocode coordinates', { status: response.status });
 				handleError(humanizeGeocodeError(response));
 				return null;
 			}
@@ -99,8 +104,8 @@ export default (): [string, string, LocationObjectCoords | null, any[], (query: 
 			devLog('Successfully set location to:', result, 'coords:', normalizeCoords(coords));
 			return locationResult;
 
-		} catch (error) {
-			console.error('Error setting location from coordinates:', error);
+		} catch (error: any) {
+			logSafe('Error setting location from coordinates', { message: error?.message });
 			handleError('Error getting location from coordinates');
 			return null;
 		} finally {
@@ -163,14 +168,14 @@ export default (): [string, string, LocationObjectCoords | null, any[], (query: 
 		if (response && typeof response === 'object' && 'ok' in response) {
 			const geocodeResp = response as GeocodeResponse;
 			if (!geocodeResp.ok || !geocodeResp.results?.length) {
-				console.error('Geocoding validation failed:', geocodeResp);
+				logSafe('Geocoding validation failed', { status: geocodeResp.status, hasResults: !!geocodeResp.results?.length });
 				handleError(humanizeGeocodeError(geocodeResp));
 				return null;
 			}
 
 			const firstResult = geocodeResp.results[0];
 			if (!firstResult?.address_components || !Array.isArray(firstResult.address_components)) {
-				console.error('Invalid result structure - missing address_components:', firstResult);
+				logSafe('Invalid result structure - missing address_components', { hasResult: !!firstResult, hasComponents: !!firstResult?.address_components });
 				handleError('Invalid location data received');
 				return null;
 			}
@@ -183,20 +188,20 @@ export default (): [string, string, LocationObjectCoords | null, any[], (query: 
 
 		// Handle legacy response format (for cached data compatibility)
 		if (!response || typeof response !== 'object') {
-			console.error('Invalid response structure:', response);
+			logSafe('Invalid response structure', { responseType: typeof response });
 			return null;
 		}
 
 		// Check response status
 		if (response.status !== 'OK') {
-			console.error('Legacy geocoding response error:', response);
+			logSafe('Legacy geocoding response error', { status: response.status });
 			handleError('Location service error');
 			return null;
 		}
 
 		// Check if results array exists and has content
 		if (!response.results || !Array.isArray(response.results) || response.results.length === 0) {
-			console.error('No results in legacy response:', response);
+			logSafe('No results in legacy response', { hasResults: !!response.results, isArray: Array.isArray(response.results) });
 			handleError('No location results found');
 			return null;
 		}
@@ -204,7 +209,7 @@ export default (): [string, string, LocationObjectCoords | null, any[], (query: 
 		// Validate first result has required structure
 		const firstResult = response.results[0];
 		if (!firstResult?.address_components || !Array.isArray(firstResult.address_components)) {
-			console.error('Invalid result structure - missing address_components:', firstResult);
+			logSafe('Invalid result structure - missing address_components', { hasResult: !!firstResult, hasComponents: !!firstResult?.address_components });
 			handleError('Invalid location data received');
 			return null;
 		}
@@ -244,8 +249,8 @@ export default (): [string, string, LocationObjectCoords | null, any[], (query: 
 
 			// Last resort - use formatted_address
 			return result.formatted_address || 'Unknown Location';
-		} catch (error) {
-			console.error('Error extracting city from result:', error, result);
+		} catch (error: any) {
+			logSafe('Error extracting city from result', { message: error?.message, hasResult: !!result });
 			return 'Unknown Location';
 		}
 	};
@@ -262,7 +267,7 @@ export default (): [string, string, LocationObjectCoords | null, any[], (query: 
 			const validatedResult = validateGeocodingResponse(response);
 			
 			if (!validatedResult) {
-				console.error('Geocoding validation failed');
+				logSafe('Geocoding validation failed');
 				return null;
 			}
 
@@ -273,14 +278,14 @@ export default (): [string, string, LocationObjectCoords | null, any[], (query: 
 			key = (key.trim() !== ``) ? key : city;
 			
 			// Cache the results
-			await setItem(key, JSON.stringify(results));
+			await storage.setItem(key, results);
 			dispatch(setLocation(city));
 			
 			devLog(`Successfully geocoded to city: ${city}`);
 			return validatedResult;
 
 		} catch (err: unknown) {
-			console.error(`getCity: error:`, err);
+			logSafe(`getCity: error`, { message: err instanceof Error ? err.message : String(err) });
 			
 			// Handle network errors or other exceptions
 			if (err instanceof Error) {
@@ -306,10 +311,10 @@ export default (): [string, string, LocationObjectCoords | null, any[], (query: 
 				return extractCityFromResult(response[0]);
 			}
 			
-			console.warn('Unable to extract city from response:', response);
+			logSafe('Unable to extract city from response', { responseType: typeof response, isArray: Array.isArray(response) });
 			return 'Unknown Location';
-		} catch (error) {
-			console.error('Error in getResponseCity:', error);
+		} catch (error: any) {
+			logSafe('Error in getResponseCity', { message: error?.message });
 			return 'Unknown Location';
 		}
 	};
@@ -358,7 +363,7 @@ export default (): [string, string, LocationObjectCoords | null, any[], (query: 
 			}
 
 			// Check cache first for the specific query
-			const cache = await getItem(q);
+			const cache = await storage.getItem(q);
 
 			if (cache) {
 				devLog('Using cached location data for:', q);
@@ -373,8 +378,8 @@ export default (): [string, string, LocationObjectCoords | null, any[], (query: 
 						city,
 						results: Array.isArray(parsedCache) ? parsedCache : []
 					};
-				} catch (parseError) {
-					console.warn('Error parsing cached location data:', parseError);
+				} catch (parseError: any) {
+					logSafe('Error parsing cached location data', { message: parseError?.message });
 					// Continue to get fresh location data
 				}
 			}
@@ -394,7 +399,7 @@ export default (): [string, string, LocationObjectCoords | null, any[], (query: 
 			return result;
 
 		} catch (err: unknown) {
-			console.error(`searchLocation: error:`, err);
+			logSafe(`searchLocation: error`, { message: err instanceof Error ? err.message : String(err) });
 			
 			// Provide more specific error handling
 			if (err instanceof Error) {
@@ -424,8 +429,8 @@ export default (): [string, string, LocationObjectCoords | null, any[], (query: 
 	// Initialize location on mount
 	useEffect(() => {
 		devLog('useLocation initializing');
-		searchLocation(``).catch((error) => {
-			console.error('Initial location search failed:', error);
+		searchLocation(``).catch((error: any) => {
+			logSafe('Initial location search failed', { message: error?.message });
 			handleError('Failed to get initial location', String(error));
 		});
 	}, []);

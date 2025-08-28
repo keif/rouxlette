@@ -1,4 +1,5 @@
 import { AppState, Filter, Filters, SpinHistory, initialFilters } from "./state";
+import { logSafe } from "../utils/log";
 import {
 	ActionType,
 	AppActions,
@@ -34,7 +35,7 @@ export function appReducer(state: AppState, action: AppActions): AppState {
 				detail: action.payload.detail,
 			};
 		case ActionType.SetFilter:
-			console.log(`SetFilter: `, action.type, `action.payload: `, action.payload);
+			logSafe(`SetFilter`, { actionType: action.type, payloadKeys: Object.keys(action.payload || {}) });
 			return {
 				...state,
 				filter: {

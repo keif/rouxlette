@@ -37,8 +37,8 @@ const SearchScreen = () => {
 	const [showFiltersSheet, setShowFiltersSheet] = useState(false);
 	const borderRadius = useRef(new Animated.Value(0)).current;
 
-	// Initialize filter persistence
-	useFiltersPersistence();
+	// Initialize filter persistence (now with hardened AsyncStorage handling)
+	const { isHydrated } = useFiltersPersistence();
 
 	// Handle param-based opening and cleanup
 	useFocusEffect(

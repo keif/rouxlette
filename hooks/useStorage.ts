@@ -1,40 +1,31 @@
-import AsyncStorage from "@react-native-async-storage/async-storage";
+/**
+ * DEPRECATED: This hook is being replaced with usePersistentStorage
+ * 
+ * This legacy hook is kept for backward compatibility but will be removed.
+ * The old implementation caused AsyncStorage callback flooding.
+ * 
+ * Migration guide:
+ * OLD: const [deleteItem, getAllItems, getItem, setItem] = useStorage();
+ * NEW: const storage = usePersistentStorage(); // then use storage.getItem(), etc.
+ */
 
-const handleError = (err: string) => {
-	console.error(`LocalStorage Error: `, err);
-};
+import usePersistentStorage from './usePersistentStorage';
+import { logSafe } from '../utils/log';
 
-export default () => {
-	const deleteItem = async (key: string) => {
-		return AsyncStorage.removeItem(`@roux:${key}`);
-	};
+logSafe('[useStorage] This hook is deprecated and causes AsyncStorage callback flooding. Please migrate to usePersistentStorage.');
 
-	const getAllItems = async (): Promise<any> => AsyncStorage.getAllKeys()
-			.then((keys: readonly string[]) => {
-				const fetchKeys = keys.filter((k) => k.startsWith("@roux:"));
-				return AsyncStorage.multiGet(fetchKeys);
-			})
-			.then((result) => result.map((r) => {
-				if (r && r[1]) {
-					return JSON.parse(r[1]);
-				}
-			}))
-			.catch(handleError);
+export default function useStorage() {
+	const storage = usePersistentStorage({
+		keyPrefix: '@roux', // Maintain compatibility with existing keys
+		debug: __DEV__,
+		debounceMs: 300
+	});
 
-	const getItem = async (key: string): Promise<any> => {
-		if (key !== ``) {
-			return AsyncStorage
-				.getItem(`@roux:${key}`)
-				.then((json: any) => JSON.parse(json))
-				.catch(handleError);
-		}
-	};
-
-	const setItem = async (key: string, value: string): Promise<void> => {
-		await AsyncStorage
-			.setItem(`@roux:${key}`, JSON.stringify(value))
-			.catch(handleError);
-	};
+	// Legacy array-based return format for backward compatibility
+	const deleteItem = (key: string) => storage.deleteItem(key);
+	const getAllItems = () => storage.getAllItems();
+	const getItem = (key: string) => storage.getItem(key);
+	const setItem = (key: string, value: any) => storage.setItem(key, value);
 
 	return [deleteItem, getAllItems, getItem, setItem] as const;
-};
+}

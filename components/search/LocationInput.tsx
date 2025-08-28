@@ -6,6 +6,7 @@ import { RootContext } from "../../context/RootContext";
 import { setLocation } from "../../context/reducer";
 import AppStyles from "../../AppStyles";
 import ClearButton from "./ClearButton";
+import { logSafe } from "../../utils/log";
 
 interface LocationInputProps {
 	onFocus?: () => void;
@@ -27,7 +28,7 @@ const LocationInput = ({ onFocus, setErrorMessage }: LocationInputProps) => {
 	};
 
 	useEffect(() => {
-		fetchLocation(``).catch(console.error);
+		fetchLocation(``).catch((error: any) => logSafe('LocationInput fetchLocation error', { message: error?.message }));
 	}, []);
 
 	useEffect(() => {
@@ -73,7 +74,7 @@ const LocationInput = ({ onFocus, setErrorMessage }: LocationInputProps) => {
 					{searchClicked ? (
 						<ClearButton
 							onPress={() => {
-								console.log('LocationInput: Clear button pressed');
+								logSafe('LocationInput: Clear button pressed');
 								setLocale(''); // Clear the input field
 								handleEndEditing(''); // Pass empty string to trigger reset
 							}}
