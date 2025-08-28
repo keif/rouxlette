@@ -150,21 +150,26 @@ export function logSafe(
     return; // No logging in production
   }
 
-  const clipped = clip(value, options);
-  
-  // Additional safety: check final string size
   try {
-    const serialized = JSON.stringify(clipped);
-    if (serialized.length > 10000) {
-      console.log(`[${label}] [PAYLOAD_TOO_LARGE: ${serialized.length} chars]`);
-      return;
+    const clipped = clip(value, options);
+    
+    // Additional safety: check final string size
+    try {
+      const serialized = JSON.stringify(clipped);
+      if (serialized && serialized.length > 10000) {
+        console.log(`[${label}] [PAYLOAD_TOO_LARGE: ${serialized.length} chars]`);
+        return;
+      }
+      
+      console.log(`[${label}]`, clipped);
+    } catch (stringifyError) {
+      // If JSON.stringify fails, fall back to string representation
+      console.log(`[${label}] [SERIALIZATION_ERROR: ${stringifyError instanceof Error ? stringifyError.message : 'Unknown stringify error'}]`);
     }
-  } catch (error) {
-    console.log(`[${label}] [SERIALIZATION_ERROR]`, error);
-    return;
+  } catch (clipError) {
+    // If even clipping fails, show the error
+    console.log(`[${label}] [CLIP_ERROR: ${clipError instanceof Error ? clipError.message : 'Unknown clip error'}]`);
   }
-
-  console.log(`[${label}]`, clipped);
 }
 
 /**

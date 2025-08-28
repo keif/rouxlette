@@ -426,14 +426,15 @@ export default (): [string, string, LocationObjectCoords | null, any[], (query: 
 		};
 	}, []);
 
-	// Initialize location on mount
-	useEffect(() => {
-		devLog('useLocation initializing');
-		searchLocation(``).catch((error: any) => {
-			logSafe('Initial location search failed', { message: error?.message });
-			handleError('Failed to get initial location', String(error));
-		});
-	}, []);
+	// Initialize location on mount (disabled to prevent multiple instances from auto-starting)
+	// Components should manually call searchLocation('') when they need location
+	// useEffect(() => {
+	//   devLog('useLocation initializing');
+	//   searchLocation(``).catch((error: any) => {
+	//     logSafe('Initial location search failed', { message: error?.message });
+	//     handleError('Failed to get initial location', String(error));
+	//   });
+	// }, []);
 
 	return [locationErrorMessage, city, currentCoords, locationResults, searchLocation, isLoading] as const;
 }

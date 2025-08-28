@@ -10,7 +10,6 @@ import CategoryCard from '../components/shared/CategoryCard';
 import ErrorMessageView from '../components/shared/ErrorMessageView';
 import DevLocationDebug from '../components/shared/DevLocationDebug';
 import FiltersSheet from '../components/filter/FiltersSheet';
-import useFiltersPersistence from '../hooks/useFiltersPersistence';
 import { countActiveFilters } from '../utils/filterBusinesses';
 import AppStyles from '../AppStyles';
 import Config from '../Config';
@@ -37,8 +36,7 @@ const HomeScreen: React.FC = () => {
   const [, searchResults, searchYelp] = useResults();
   const [, city, coords, , , isLocationLoading] = useLocation();
 
-  // Initialize filter persistence
-  useFiltersPersistence();
+  // Filter persistence is handled by SearchScreen
 
   const hasResults = state.results && state.results.length > 0;
 
