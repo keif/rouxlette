@@ -51,7 +51,7 @@ export default function useFiltersPersistence() {
     };
 
     hydrateFromStorage();
-  }, [dispatch, storage]);
+  }, []); // Empty deps - should only run once on mount
 
   // Save filters when they change (but only after hydration)
   useEffect(() => {
@@ -60,7 +60,7 @@ export default function useFiltersPersistence() {
       logSafe('[useFiltersPersistence] Saving filters to storage', { categoryCount: state.filters?.categoryIds?.length || 0, openNow: state.filters?.openNow });
       storage.setItem(FILTERS_STORAGE_KEY, state.filters);
     }
-  }, [state.filters, storage]);
+  }, [state.filters]); // Removed storage from deps to prevent re-runs
 
   // Utility functions for manual control
   const clearStoredFilters = useCallback(async () => {
