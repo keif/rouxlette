@@ -8,6 +8,7 @@ import StarRating from "../shared/StarRating";
 import OpenSign from "../results/OpenSign";
 import FlipCard from "../shared/FlipCard";
 import Config from "../../Config";
+import { logSafe } from "../../utils/log";
 
 interface RestaurantCardProps {
 	index: number;
@@ -41,7 +42,7 @@ const RestaurantCard = ({ index, result }: RestaurantCardProps) => {
 	const handleYelpPress = () => {
 		Linking
 			.openURL(url)
-			.catch((err) => console.error("An error occurred:", err));
+			.catch((err: any) => logSafe("RestaurantCard Yelp link error", { message: err?.message, url }));
 	};
 
 	const handlePhonePress = () => {

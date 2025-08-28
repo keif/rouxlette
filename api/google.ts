@@ -1,5 +1,6 @@
 import axios from "axios";
 import { GOOGLE_API_KEY } from "@env";
+import { logSafe, logNetwork } from "../utils/log";
 
 const GOOGLE_MAP_URL: string = `https://maps.googleapis.com/maps/api/geocode/json`;
 
@@ -26,32 +27,33 @@ google.interceptors.request.use(function (config) {
 			key: GOOGLE_API_KEY
 		};
 	} else {
-		console.error('GOOGLE_API_KEY not found in environment variables');
+		logSafe('GOOGLE_API_KEY not found in environment variables');
 	}
 	
-	console.log('Google API request:', {
+	logNetwork('Google API request', {
 		url: config.url,
-		params: config.params,
+		params: config.params ? Object.keys(config.params) : [],
 		baseURL: config.baseURL
 	});
 	
 	return config;
 }, function (error) {
-	console.error('Google API request error:', error);
+	logSafe('Google API request error', { message: error?.message, code: error?.code });
 	return Promise.reject(error);
 });
 
 google.interceptors.response.use(function (response) {
-	console.log('Google API response:', {
+	logNetwork('Google API response', {
 		status: response.status,
-		data: response.data
+		resultsCount: response.data?.results?.length || 0,
+		responseStatus: response.data?.status
 	});
 	return response;
 }, function (error) {
-	console.error('Google API response error:', {
-		message: error.message,
-		response: error.response?.data,
-		status: error.response?.status
+	logSafe('Google API response error', {
+		message: error?.message,
+		status: error?.response?.status,
+		errorStatus: error?.response?.data?.status
 	});
 	return Promise.reject(error);
 });
@@ -65,7 +67,7 @@ export async function geocode(query: string | null | undefined): Promise<Geocode
 	
 	// Guard against empty queries - return early without making API call
 	if (!q) {
-		console.log('geocode: Empty query provided, returning EMPTY_QUERY status');
+		logSafe('geocode: Empty query provided, returning EMPTY_QUERY status');
 		return { 
 			ok: false, 
 			status: 'EMPTY_QUERY', 
@@ -76,19 +78,22 @@ export async function geocode(query: string | null | undefined): Promise<Geocode
 	}
 
 	try {
-		console.log('geocode: Making API request for query:', q);
+		logSafe('geocode: Making API request for query', { query: q });
 		const response = await google.get('', {
 			params: { address: q }
 		});
 
 		const json = response.data;
-		console.log('geocode: Raw API response:', json);
+		logNetwork('geocode: API response', {
+			status: json?.status,
+			resultsCount: Array.isArray(json?.results) ? json.results.length : (Array.isArray(json) ? json.length : 0)
+		});
 
 		// Handle case where API returns an array at top level (some Google APIs do this)
 		const isArrayTop = Array.isArray(json);
 		
 		if (isArrayTop) {
-			console.log('geocode: Detected array-level response, normalizing...');
+			logSafe('geocode: Detected array-level response, normalizing', { arrayLength: json.length });
 			const status = json.length > 0 ? 'OK' : 'ZERO_RESULTS';
 			return {
 				ok: status === 'OK',
@@ -104,7 +109,7 @@ export async function geocode(query: string | null | undefined): Promise<Geocode
 		const results = Array.isArray(json.results) ? json.results : [];
 		const errorMessage = json.error_message;
 
-		console.log('geocode: Normalized response:', { status, resultsCount: results.length, errorMessage });
+		logSafe('geocode: Normalized response', { status, resultsCount: results.length, hasError: !!errorMessage });
 
 		return {
 			ok: status === 'OK',
@@ -115,7 +120,7 @@ export async function geocode(query: string | null | undefined): Promise<Geocode
 		};
 
 	} catch (error: any) {
-		console.error('geocode: Network or parsing error:', error);
+		logSafe('geocode: Network or parsing error', { message: error?.message, code: error?.code });
 		
 		// Handle network errors or API failures
 		return {
@@ -133,7 +138,7 @@ export async function geocode(query: string | null | undefined): Promise<Geocode
  */
 export async function reverseGeocode(latitude: number, longitude: number): Promise<GeocodeResponse> {
 	const latlng = `${latitude},${longitude}`;
-	console.log('reverseGeocode: Converting coordinates to address:', latlng);
+	logSafe('reverseGeocode: Converting coordinates to address', { latlng });
 	
 	try {
 		const response = await google.get('', {
@@ -141,7 +146,10 @@ export async function reverseGeocode(latitude: number, longitude: number): Promi
 		});
 
 		const json = response.data;
-		console.log('reverseGeocode: Raw API response:', json);
+		logNetwork('reverseGeocode: API response', {
+			status: json?.status,
+			resultsCount: Array.isArray(json?.results) ? json.results.length : (Array.isArray(json) ? json.length : 0)
+		});
 
 		// Handle array response (some endpoints return arrays)
 		const isArrayTop = Array.isArray(json);
@@ -170,7 +178,7 @@ export async function reverseGeocode(latitude: number, longitude: number): Promi
 		};
 
 	} catch (error: any) {
-		console.error('reverseGeocode: Error:', error);
+		logSafe('reverseGeocode: Error', { message: error?.message, code: error?.code });
 		return {
 			ok: false,
 			status: 'NETWORK_ERROR',

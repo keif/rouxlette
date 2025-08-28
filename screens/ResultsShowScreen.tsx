@@ -20,6 +20,7 @@ import { View } from "../components/Themed";
 import StarRating from "../components/shared/StarRating";
 import Config from "../Config";
 import OpenSign from "../components/results/OpenSign";
+import { logSafe } from "../utils/log";
 
 const ResultsShowScreen = ({ navigation, route }: ResultsShowScreenProps<`ResultsShow`>) => {
 	const [result, setResult] = useState<BusinessProps>();
@@ -33,8 +34,8 @@ const ResultsShowScreen = ({ navigation, route }: ResultsShowScreenProps<`Result
 			try {
 				const response = await yelp.get(`/${id}`);
 				setResult(response.data);
-			} catch (err) {
-				console.warn(err);
+			} catch (err: any) {
+				logSafe('ResultsShowScreen API error', { id, message: err?.message });
 			}
 		};
 
@@ -67,7 +68,7 @@ const ResultsShowScreen = ({ navigation, route }: ResultsShowScreenProps<`Result
 	const handleIconPress = () => {
 		Linking
 			.openURL(result.url)
-			.catch((err) => console.error("An error occurred:", err));
+			.catch((err: any) => logSafe("ResultsShowScreen Yelp link error", { message: err?.message, url: result.url }));
 	};
 
 	const handlePhonePress = () => {

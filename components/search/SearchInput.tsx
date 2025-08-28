@@ -6,6 +6,7 @@ import useResults, { ResultsProps } from "../../hooks/useResults";
 import AppStyles from "../../AppStyles";
 import useLocation from "../../hooks/useLocation";
 import ClearButton from "./ClearButton";
+import { logSafe } from "../../utils/log";
 
 interface SearchBarProps {
 	onBlur?: () => void;
@@ -24,7 +25,7 @@ const SearchInput = ({ onBlur, onFocus, placeholder, setErrorMessage, setResults
 
 	const handleDoneEditing = async (term: string, city: string) => {
 		if (__DEV__) {
-			console.log('[SearchInput] handleDoneEditing:', { term, city, coords });
+			logSafe('[SearchInput] handleDoneEditing', { term, city, hasCoords: !!coords });
 		}
 		await searchApi(term, city, coords);
 	};

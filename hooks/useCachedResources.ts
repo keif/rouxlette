@@ -2,6 +2,7 @@ import { FontAwesome } from '@expo/vector-icons';
 import * as Font from 'expo-font';
 import * as SplashScreen from 'expo-splash-screen';
 import { useEffect, useState } from 'react';
+import { logSafe } from '../utils/log';
 
 export default function useCachedResources() {
   const [isLoadingComplete, setLoadingComplete] = useState(false);
@@ -24,9 +25,9 @@ export default function useCachedResources() {
           'WorkSans-Regular': require('../assets/fonts/WorkSans-Regular.ttf'),
           'WorkSans-SemiBold': require('../assets/fonts/WorkSans-SemiBold.ttf'),
         });
-      } catch (e) {
+      } catch (e: any) {
         // We might want to provide this error information to an error reporting service
-        console.warn(e);
+        logSafe('Font loading error', { message: e?.message });
       } finally {
         setLoadingComplete(true);
         SplashScreen.hideAsync();
