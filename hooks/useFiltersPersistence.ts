@@ -19,7 +19,7 @@ const FILTERS_STORAGE_KEY = 'filters';
 export default function useFiltersPersistence() {
   const { dispatch, state } = useContext(RootContext);
   const storage = usePersistentStorage({ 
-    debug: __DEV__,
+    debug: false, // Reduce logging noise during normal operations
     debounceMs: 500 // Slightly longer delay for filters
   });
 
@@ -36,11 +36,15 @@ export default function useFiltersPersistence() {
             ...storedFilters,
           };
           
-          logSafe('[useFiltersPersistence] Hydrating filters from storage', { categoryCount: hydratedFilters.categoryIds?.length || 0, openNow: hydratedFilters.openNow });
+          if (__DEV__) {
+            logSafe('[useFiltersPersistence] Hydrating filters from storage', { categoryCount: hydratedFilters.categoryIds?.length || 0, openNow: hydratedFilters.openNow });
+          }
           dispatch(hydrateFilters(hydratedFilters));
         } else {
           // No stored filters found, mark as hydrated with initial state
-          logSafe('[useFiltersPersistence] No stored filters found, using initial state');
+          if (__DEV__) {
+            logSafe('[useFiltersPersistence] No stored filters found, using initial state');
+          }
           storage.markAsHydrated(FILTERS_STORAGE_KEY, initialFilters);
         }
       } catch (error: any) {
@@ -51,16 +55,18 @@ export default function useFiltersPersistence() {
     };
 
     hydrateFromStorage();
-  }, [dispatch, storage]);
+  }, []); // Empty dependency array - should only run once on mount
 
   // Save filters when they change (but only after hydration)
   useEffect(() => {
     // Only save if we've hydrated and filters have actually changed
     if (storage.isHydrated(FILTERS_STORAGE_KEY)) {
-      logSafe('[useFiltersPersistence] Saving filters to storage', { categoryCount: state.filters?.categoryIds?.length || 0, openNow: state.filters?.openNow });
+      if (__DEV__) {
+        logSafe('[useFiltersPersistence] Saving filters to storage', { categoryCount: state.filters?.categoryIds?.length || 0, openNow: state.filters?.openNow });
+      }
       storage.setItem(FILTERS_STORAGE_KEY, state.filters);
     }
-  }, [state.filters, storage]);
+  }, [state.filters]); // Removed storage from deps to prevent re-runs
 
   // Utility functions for manual control
   const clearStoredFilters = useCallback(async () => {

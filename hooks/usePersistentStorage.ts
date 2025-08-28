@@ -63,7 +63,11 @@ export default function usePersistentStorage(options: PersistentStorageOptions =
   const pendingWritesRef = useRef<Map<string, NodeJS.Timeout>>(new Map());
 
   const log = useCallback((message: string, ...args: any[]) => {
-    if (debug) {
+    if (debug && __DEV__) {
+      // Only log important operations, not every single access
+      if (message.includes('Loaded key:') || message.includes('Saved key:')) {
+        return; // Skip routine operations
+      }
       logSafe(`[usePersistentStorage] ${message}`, ...args);
     }
   }, [debug]);
@@ -126,14 +130,18 @@ export default function usePersistentStorage(options: PersistentStorageOptions =
   const setItem = useCallback(async (key: string, value: any): Promise<void> => {
     // Skip if not hydrated yet (prevents overwriting on initial render)
     if (!hydratedKeysRef.current.has(key)) {
-      log(`Skipping save for non-hydrated key: ${key}`);
+      if (debug && __DEV__) {
+        log(`Skipping save for non-hydrated key: ${key}`);
+      }
       return;
     }
 
     // Skip if value hasn't actually changed
     const lastSaved = lastSavedRef.current.get(key);
     if (deepEqual(lastSaved, value)) {
-      log(`Skipping save for unchanged key: ${key}`);
+      if (debug && __DEV__) {
+        log(`Skipping save for unchanged key: ${key}`);
+      }
       return;
     }
 
