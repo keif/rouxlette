@@ -28,12 +28,52 @@ import { CategoryProps, BusinessProps } from "../hooks/useResults";
 import { YelpBusiness } from "../types/yelp";
 import { FavoriteItem, HistoryItem, HISTORY_MAX_ITEMS } from "../types/favorites";
 
-// Normalize history items with stable ordering and cap
+// Normalize history items with sanitization, stable ordering, and cap
 function normalizeHistory(items: HistoryItem[]): HistoryItem[] {
-  // Stable sort: newest first by selectedAt, then by id for determinism  
-  return [...items]
-    .sort((a, b) => (b.selectedAt - a.selectedAt) || a.id.localeCompare(b.id))
-    .slice(0, HISTORY_MAX_ITEMS);
+  // Helpers kept local to avoid new imports
+  const toTimestamp = (t: any): number => {
+    if (typeof t === 'number' && Number.isFinite(t)) return t;
+    if (typeof t === 'string') {
+      const p = Date.parse(t);
+      if (Number.isFinite(p)) return p;
+    }
+    return Date.now();
+  };
+  const makeId = () => `hist_${Math.random().toString(36).slice(2, 10)}`;
+
+  // 1) Sanitize each item
+  const cleaned = (Array.isArray(items) ? items : [])
+    .filter(Boolean)
+    .map((it: any) => ({
+      ...it,
+      id: typeof it?.id === 'string' && it.id.length > 0 ? it.id : makeId(),
+      selectedAt: toTimestamp(it?.selectedAt),
+    }));
+
+  // 2) De-dupe by id (fallback to businessId if present)
+  const seen = new Set<string>();
+  const deduped: HistoryItem[] = [];
+  for (const it of cleaned) {
+    const key = (it as any).id ?? (it as any).businessId ?? makeId();
+    const k = String(key);
+    if (!seen.has(k)) {
+      seen.add(k);
+      deduped.push(it as HistoryItem);
+    }
+  }
+
+  // 3) Stable sort: newest first by selectedAt, then by id
+  deduped.sort((a: any, b: any) => {
+    const ta = toTimestamp(a?.selectedAt);
+    const tb = toTimestamp(b?.selectedAt);
+    if (tb !== ta) return tb - ta;
+    const ida = typeof a?.id === 'string' ? a.id : '';
+    const idb = typeof b?.id === 'string' ? b.id : '';
+    return ida.localeCompare(idb);
+  });
+
+  // 4) Cap to max
+  return deduped.slice(0, HISTORY_MAX_ITEMS);
 }
 
 export function appReducer(state: AppState, action: AppActions): AppState {
@@ -58,9 +98,15 @@ export function appReducer(state: AppState, action: AppActions): AppState {
 				},
 			};
 		case ActionType.SetLocation:
+			const newLocation = action.payload.location;
+			const locationChanged = state.location && state.location !== newLocation;
+			
+			// Clear results if location has changed significantly to prevent wrong-city roulette picks
 			return {
 				...state,
-				location: action.payload.location,
+				location: newLocation,
+				// Clear results when location changes to prevent stale results from wrong cities
+				...(locationChanged && { results: [] })
 			};
 		case ActionType.SetResults:
 			return {

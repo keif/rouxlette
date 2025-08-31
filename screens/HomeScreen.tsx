@@ -34,8 +34,8 @@ const HomeScreen: React.FC = () => {
   const { state, dispatch } = useContext(RootContext);
   const [errorMessage, setErrorMessage] = useState('');
   const [searchTerm, setSearchTerm] = useState('');
-  const [, searchResults, searchYelp] = useResults();
-  const [, city, coords, , , isLocationLoading] = useLocation();
+  const [, searchResults, searchApi, searchApiWithResolver] = useResults();
+  const [, city, canonicalLocation, coords, , searchLocation, resolveSearchArea, isLocationLoading] = useLocation();
   const { addHistoryEntry } = useHistory();
 
   // Filter persistence is handled by SearchScreen
@@ -46,6 +46,17 @@ const HomeScreen: React.FC = () => {
     if (!hasResults) {
       setErrorMessage('Please search for restaurants first!');
       return;
+    }
+
+    // Debug logging to identify wrong city issues
+    if (__DEV__) {
+      console.log('[[spin] context]', {
+        searchTerm: searchTerm,
+        currentLocation: state.location || city,
+        coords: coords ? `${coords.latitude.toFixed(3)},${coords.longitude.toFixed(3)}` : 'none',
+        resultCount: state.results.length,
+        sampleBusinessLocations: state.results.slice(0, 3).map(r => `${r.name} in ${r.location?.display_address?.[1] || 'unknown'}`),
+      });
     }
 
     // Pick random restaurant from results
@@ -86,7 +97,15 @@ const HomeScreen: React.FC = () => {
     setSearchTerm(term);
     if (term.trim()) {
       try {
-        await searchYelp(term, state.location || 'Current Location', coords);
+        // Use enhanced resolver for better location accuracy
+        const resolvedLocation = await resolveSearchArea(state.location || canonicalLocation);
+        if (resolvedLocation) {
+          await searchApiWithResolver(term, resolvedLocation);
+        } else {
+          // Fallback to legacy search
+          await searchApi(term, state.location || 'Current Location', coords);
+        }
+        
         if (searchResults.businesses.length > 0) {
           dispatch(setResults(searchResults.businesses));
         }
@@ -99,7 +118,15 @@ const HomeScreen: React.FC = () => {
   const handleCategoryPress = async (categoryTerm: string) => {
     setSearchTerm(categoryTerm);
     try {
-      await searchYelp(categoryTerm, state.location || 'Current Location', coords);
+      // Use enhanced resolver for better location accuracy
+      const resolvedLocation = await resolveSearchArea(state.location || canonicalLocation);
+      if (resolvedLocation) {
+        await searchApiWithResolver(categoryTerm, resolvedLocation);
+      } else {
+        // Fallback to legacy search
+        await searchApi(categoryTerm, state.location || 'Current Location', coords);
+      }
+      
       if (searchResults.businesses.length > 0) {
         dispatch(setResults(searchResults.businesses));
       }

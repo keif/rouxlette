@@ -1,5 +1,6 @@
 import React, { useEffect, useContext } from 'react';
 import { render, fireEvent } from '@testing-library/react-native';
+import { SafeAreaProvider } from 'react-native-safe-area-context';
 import { BusinessCardModal } from '../BusinessCardModal';
 import { RootContext } from '../../../context/RootContext';
 import { initialAppState } from '../../../context/state';
@@ -74,9 +75,11 @@ function TestHarness({ business = sampleBusiness, children }: TestHarnessProps) 
   };
 
   return (
-    <RootContext.Provider value={contextValue}>
-      {children}
-    </RootContext.Provider>
+    <SafeAreaProvider initialMetrics={{ insets: { top: 0, left: 0, right: 0, bottom: 0 }, frame: { x: 0, y: 0, width: 0, height: 0 } }}>
+      <RootContext.Provider value={contextValue}>
+        {children}
+      </RootContext.Provider>
+    </SafeAreaProvider>
   );
 }
 
@@ -98,9 +101,11 @@ describe('BusinessCardModal', () => {
     };
 
     const { queryByTestId } = render(
-      <RootContext.Provider value={contextValue}>
-        <BusinessCardModal />
-      </RootContext.Provider>
+      <SafeAreaProvider initialMetrics={{ insets: { top: 0, left: 0, right: 0, bottom: 0 }, frame: { x: 0, y: 0, width: 0, height: 0 } }}>
+        <RootContext.Provider value={contextValue}>
+          <BusinessCardModal />
+        </RootContext.Provider>
+      </SafeAreaProvider>
     );
 
     expect(queryByTestId('modal-backdrop')).toBeNull();

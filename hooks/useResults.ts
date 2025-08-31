@@ -70,11 +70,11 @@ export interface LocationProps {
 	zip_code: string;
 }
 
-export const INIT_RESULTS = { id: ``, businesses: [] };
+export const INIT_RESULTS: ResultsProps = { id: ``, businesses: [] };
 
 export default function useResults() {
 	const [errorMessage, setErrorMessage] = useState<string>(``);
-	const [results, setResults] = useState<ResultsProps | { id: string; businesses: [] }>(INIT_RESULTS);
+	const [results, setResults] = useState<ResultsProps>(INIT_RESULTS);
 	const resultsPersistence = useResultsPersistence();
 
 	// Dev logging helper
@@ -96,9 +96,9 @@ export default function useResults() {
 			// First, try to get cached results
 			const cachedResults = await resultsPersistence.getCachedResults(location, searchTerm, coords);
 			if (cachedResults) {
-				const cachedResultsObj = {
+				const cachedResultsObj: ResultsProps = {
 					id: uuid(),
-					businesses: cachedResults,
+					businesses: Array.isArray(cachedResults) ? cachedResults : [],
 				};
 				setResults(cachedResultsObj);
 				logArray('useResults cached businesses', cachedResults, 3);
@@ -137,17 +137,18 @@ export default function useResults() {
 			});
 
 			if (response.data && response.data.businesses) {
-				// Filter out closed businesses
-				const onlyOpenBusinesses = response.data.businesses.filter((business: BusinessProps) => {
+				// Ensure businesses is an array and filter out closed businesses
+				const businessesArray = Array.isArray(response.data.businesses) ? response.data.businesses : [];
+				const onlyOpenBusinesses = businessesArray.filter((business: BusinessProps) => {
 					return !business.is_closed;
 				});
 
 				logArray('useResults filtered businesses', onlyOpenBusinesses, 3);
 
 				// Create final results object
-				const finalResults = {
+				const finalResults: ResultsProps = {
 					id: uuid(),
-					businesses: [...onlyOpenBusinesses],
+					businesses: onlyOpenBusinesses,
 				};
 
 				// Cache the results (this is debounced and change-detected automatically)
@@ -200,29 +201,21 @@ export default function useResults() {
 			});
 			setErrorMessage('');
 
-			// Generate cache key based on location type
-			let cacheKey: string;
-			const termNorm = searchTerm.toLowerCase().trim();
-			
-			if (resolvedLocation.coords) {
-				// Use coordinates for precise cache key (rounded to ~100m precision)
-				const lat = resolvedLocation.coords.latitude.toFixed(3);
-				const lng = resolvedLocation.coords.longitude.toFixed(3);
-				cacheKey = `search:${lat},${lng}:${termNorm}`;
-			} else {
-				// Use normalized label for cache key
-				const labelNorm = resolvedLocation.label.toLowerCase().replace(/[^a-z0-9]/g, '-');
-				cacheKey = `search:${labelNorm}:${termNorm}`;
-			}
+			// Generate versioned cache key to avoid corrupted entries
+			const cacheKey = resultsPersistence.generateCacheKey(
+				resolvedLocation.label, 
+				searchTerm, 
+				resolvedLocation.coords
+			);
 
 			devLog('Using cache key:', cacheKey);
 
 			// Try to get cached results with the specific cache key
 			const cachedResults = await resultsPersistence.getCachedResultsByKey(cacheKey);
 			if (cachedResults) {
-				const cachedResultsObj = {
+				const cachedResultsObj: ResultsProps = {
 					id: uuid(),
-					businesses: cachedResults,
+					businesses: Array.isArray(cachedResults) ? cachedResults : [],
 				};
 				setResults(cachedResultsObj);
 				logArray('Enhanced search cached businesses', cachedResults, 3);
@@ -261,17 +254,18 @@ export default function useResults() {
 			});
 
 			if (response.data && response.data.businesses) {
-				// Filter out closed businesses
-				const onlyOpenBusinesses = response.data.businesses.filter((business: BusinessProps) => {
+				// Ensure businesses is an array and filter out closed businesses
+				const businessesArray = Array.isArray(response.data.businesses) ? response.data.businesses : [];
+				const onlyOpenBusinesses = businessesArray.filter((business: BusinessProps) => {
 					return !business.is_closed;
 				});
 
 				logArray('Enhanced search filtered businesses', onlyOpenBusinesses, 3);
 
 				// Create final results object
-				const finalResults = {
+				const finalResults: ResultsProps = {
 					id: uuid(),
-					businesses: [...onlyOpenBusinesses],
+					businesses: onlyOpenBusinesses,
 				};
 
 				// Cache the results with the specific cache key

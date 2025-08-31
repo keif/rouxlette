@@ -273,10 +273,11 @@ export async function geocodeAddress(address: string, opts?: {
 
 		// Add bounds bias if we have a current location
 		if (opts?.biasCenter) {
-			params.bounds = boundsFromCenter(opts.biasCenter, opts.kmBias ?? 50);
+			const radius = opts.kmBias ?? 25; // Reduced default bias radius for more precise results
+			params.bounds = boundsFromCenter(opts.biasCenter, radius);
 			logSafe('geocodeAddress: Adding bounds bias', {
 				center: opts.biasCenter,
-				radius: opts.kmBias ?? 50,
+				radius,
 				bounds: params.bounds
 			});
 		}

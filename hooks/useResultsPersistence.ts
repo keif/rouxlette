@@ -3,6 +3,23 @@ import usePersistentStorage from './usePersistentStorage';
 import { BusinessProps } from './useResults';
 import { logSafe, logArray } from '../utils/log';
 
+// Cache version to bust corrupted entries
+export const CACHE_VERSION = 'v2';
+
+// Corruption detector
+const BAD = '[MAX_DEPTH_EXCEEDED]';
+const isValidBusiness = (b: any): b is BusinessProps => {
+  return (
+    b &&
+    typeof b.id === 'string' &&
+    typeof b.name === 'string' &&
+    b.coordinates &&
+    typeof b.coordinates.latitude === 'number' &&
+    typeof b.coordinates.longitude === 'number' &&
+    !JSON.stringify(b).includes(BAD)
+  );
+};
+
 /**
  * Hardened persistence hook for restaurant search results caching.
  * 
@@ -22,24 +39,25 @@ export default function useResultsPersistence() {
   const activeCacheKeys = useRef<Set<string>>(new Set());
 
   /**
-   * Generate a cache key from search parameters
+   * Generate a versioned cache key from search parameters
    */
   const generateCacheKey = useCallback((location: string, term: string, coords?: any): string => {
+    const normalizedTerm = term.trim().toLowerCase();
+    
     if (coords?.latitude && coords?.longitude) {
       // Use coordinates for more precise caching
       const lat = coords.latitude.toFixed(4);
       const lng = coords.longitude.toFixed(4);
-      return `search:${lat},${lng}:${term}`;
+      return `${CACHE_VERSION}:search:${lat},${lng}:${normalizedTerm}`;
     }
     
     // Fallback to location string
     const normalizedLocation = location.trim().toLowerCase();
-    const normalizedTerm = term.trim().toLowerCase();
-    return `search:${normalizedLocation}:${normalizedTerm}`;
+    return `${CACHE_VERSION}:search:${normalizedLocation}:${normalizedTerm}`;
   }, []);
 
   /**
-   * Load cached results for a search
+   * Load cached results for a search with corruption detection
    */
   const getCachedResults = useCallback(async (
     location: string, 
@@ -52,6 +70,12 @@ export default function useResultsPersistence() {
       const cached = await storage.getItem<BusinessProps[]>(cacheKey);
       
       if (cached && Array.isArray(cached)) {
+        // Validate all businesses - if any are corrupt, treat as cache miss
+        if (cached.length > 0 && !cached.every(isValidBusiness)) {
+          logSafe(`[useResultsPersistence] Cache corrupted for: ${cacheKey}, treating as miss`);
+          return null;
+        }
+        
         logArray(`useResultsPersistence cache hit for: ${cacheKey}`, cached, { limit: 3 });
         return cached;
       }
@@ -119,6 +143,31 @@ export default function useResultsPersistence() {
   }, [storage]);
 
   /**
+   * Clear old corrupted cache entries (one-time cleanup)
+   */
+  const clearCorruptedCache = useCallback(async (): Promise<void> => {
+    if (!__DEV__) return; // Only run in development for safety
+    
+    try {
+      // Use direct AsyncStorage import for cleanup
+      const AsyncStorage = require('@react-native-async-storage/async-storage').default;
+      const allKeys = await AsyncStorage.getAllKeys();
+      
+      // Find old cache keys without version prefix (corrupted entries)
+      const corruptedKeys = allKeys.filter((key: string) => 
+        key.startsWith('search:') && !key.startsWith(`${CACHE_VERSION}:`)
+      );
+      
+      if (corruptedKeys.length > 0) {
+        logSafe(`[useResultsPersistence] Clearing ${corruptedKeys.length} corrupted cache entries`);
+        await AsyncStorage.multiRemove(corruptedKeys);
+      }
+    } catch (error: any) {
+      logSafe('[useResultsPersistence] Failed to clear corrupted cache', { message: error?.message });
+    }
+  }, []);
+
+  /**
    * Clear all cached results
    */
   const clearAllCache = useCallback(async (): Promise<void> => {
@@ -138,7 +187,7 @@ export default function useResultsPersistence() {
   }, [storage]);
 
   /**
-   * Load cached results using a specific cache key (for enhanced search)
+   * Load cached results using a specific cache key (for enhanced search) with corruption detection
    */
   const getCachedResultsByKey = useCallback(async (cacheKey: string): Promise<BusinessProps[] | null> => {
     try {
@@ -151,6 +200,12 @@ export default function useResultsPersistence() {
       
       const cached = await storage.getItem<BusinessProps[]>(cacheKey);
       if (cached && Array.isArray(cached) && cached.length > 0) {
+        // Validate all businesses - if any are corrupt, treat as cache miss
+        if (!cached.every(isValidBusiness)) {
+          logSafe(`[useResultsPersistence] Cache corrupted for key: ${cacheKey}, treating as miss`);
+          return null;
+        }
+        
         logArray('[useResultsPersistence] Cache hit for key', cached, 2);
         return cached;
       }
@@ -194,6 +249,7 @@ export default function useResultsPersistence() {
     cacheResultsByKey,
     clearOldCache,
     clearAllCache,
+    clearCorruptedCache,
     generateCacheKey,
   } as const;
 }

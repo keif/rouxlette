@@ -17,9 +17,9 @@ export interface LogSafeOptions {
 }
 
 const DEFAULT_OPTIONS: Required<LogSafeOptions> = {
-  maxLength: 5000,
-  maxDepth: 3,
-  maxItems: 10,
+  maxLength: 2000,
+  maxDepth: 2, // Reduced from 3 to prevent MAX_DEPTH_EXCEEDED issues
+  maxItems: 5, // Reduced from 10 to minimize payload size
   showSizes: true,
 };
 

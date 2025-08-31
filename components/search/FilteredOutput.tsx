@@ -23,11 +23,14 @@ const FilteredOutput = ({ term, filterTerm, searchResults, filteredResults }: Fi
 	let filterResults;
 	const hasSearchTerm = term.trim().length > 0;
 
-	if (filteredResults?.businesses.length > 0) {
+	const filteredBusinesses = filteredResults?.businesses ?? [];
+	const searchBusinesses = searchResults?.businesses ?? [];
+	
+	if (filteredBusinesses.length > 0) {
 		// filterResults = searchResults.filter(searchRes => !filteredResults.find(filteredRes => filteredRes.id !== searchRes.id));
-		filterResults = filteredResults;
+		filterResults = { ...filteredResults, businesses: filteredBusinesses };
 	} else {
-		filterResults = searchResults;
+		filterResults = { ...searchResults, businesses: searchBusinesses };
 	}
 
 	const handleFilterPress = () => {
@@ -47,7 +50,7 @@ const FilteredOutput = ({ term, filterTerm, searchResults, filteredResults }: Fi
 			<View style={styles.container}>
 				<View style={{ flexDirection: `row`, marginHorizontal: 12 }}>
 					<Text
-						style={styles.titleCount}>{filterResults.businesses.length.toString()} for {term}{filterTerm !== `` ? `, without ${filterTerm}` : ``}</Text>
+						style={styles.titleCount}>{(filterResults.businesses ?? []).length.toString()} for {term}{filterTerm !== `` ? `, without ${filterTerm}` : ``}</Text>
 					<Pressable
 						style={({ pressed }) => [
 							styles.button,

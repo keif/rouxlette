@@ -16,6 +16,14 @@ interface BusinessQuickInfoProps {
 export function BusinessQuickInfo({ business, onDetails, onClose }: BusinessQuickInfoProps) {
   const { todayLabel, isOpen } = useBusinessHours(business.hours);
   const { isFavorite, toggleFavorite } = useFavorites();
+  // const { width: winW } = useWindowDimensions();
+  // const insets = useSafeAreaInsets();
+  
+  // Match modal horizontal padding + safe-area so content never bleeds
+  // const H_PADDING = 16 + insets.left + insets.right;
+
+  // Calculate responsive card width
+  // const cardWidth = Math.min(620, Math.max(320, Math.floor(winW - H_PADDING * 2)));
 
   // Convert YelpBusiness to BusinessProps for favorites
   const businessForFavorites: BusinessProps = {
@@ -52,13 +60,17 @@ export function BusinessQuickInfo({ business, onDetails, onClose }: BusinessQuic
   return (
     <View style={styles.container}>
       {/* Business Image */}
-      <View style={styles.imageContainer}>
-        {business.image_url && (
+      <View style={styles.imageWrap}>
+        {business.image_url ? (
           <Image 
             source={{ uri: business.image_url }} 
             style={styles.image}
             testID="bqi-image"
           />
+        ) : (
+          <View style={[styles.image, styles.noImage]}>
+            <Text style={styles.noImageText}>No Image</Text>
+          </View>
         )}
         
         {/* Favorite Button */}
@@ -67,6 +79,7 @@ export function BusinessQuickInfo({ business, onDetails, onClose }: BusinessQuic
           onPress={() => toggleFavorite(businessForFavorites)}
           testID="bqi-favorite-btn"
           accessibilityLabel={isFavorite(business.id) ? "Remove from favorites" : "Add to favorites"}
+          hitSlop={{ top: 8, right: 8, bottom: 8, left: 8 }}
         >
           <Ionicons
             name={isFavorite(business.id) ? "heart" : "heart-outline"}
@@ -78,31 +91,37 @@ export function BusinessQuickInfo({ business, onDetails, onClose }: BusinessQuic
       </View>
 
       {/* Title */}
-      <Text style={styles.title} testID="bqi-title">{business.name}</Text>
+      <Text style={styles.title} numberOfLines={2} ellipsizeMode="tail" testID="bqi-title">{business.name}</Text>
 
       {/* Meta Information */}
       <View style={styles.metaRow}>
         {business.rating && (
-          <Text style={styles.rating} testID="bqi-rating">
-            {business.rating.toString()}★
-          </Text>
+          <View style={styles.ratingPill}>
+            <Text style={styles.rating} testID="bqi-rating">
+              {business.rating.toString()}★
+            </Text>
+          </View>
         )}
         {business.review_count && (
-          <Text style={styles.reviews} testID="bqi-reviews">
-            {business.review_count.toString()} reviews
-          </Text>
+          <View style={styles.reviewsPill}>
+            <Text style={styles.reviews} testID="bqi-reviews">
+              {business.review_count.toString()} reviews
+            </Text>
+          </View>
         )}
         {business.price && (
-          <Text style={styles.price} testID="bqi-price">
-            {business.price}
-          </Text>
+          <View style={styles.pricePill}>
+            <Text style={styles.price} testID="bqi-price">
+              {business.price}
+            </Text>
+          </View>
         )}
       </View>
 
       {/* Categories */}
       {business.categories && business.categories.length > 0 && (
-        <Text style={styles.categories} testID="bqi-categories">
-          {business.categories.map(c => c.title).join(', ')}
+        <Text style={styles.categories} numberOfLines={1} ellipsizeMode="tail" testID="bqi-categories">
+          {(business.categories ?? []).map(c => c?.title).filter(Boolean).join(', ')}
         </Text>
       )}
 
@@ -135,7 +154,7 @@ export function BusinessQuickInfo({ business, onDetails, onClose }: BusinessQuic
             onPress={onDetails}
             testID="bqi-details-btn"
           >
-            <Text style={styles.buttonText}>Details</Text>
+            <Text style={styles.buttonText} allowFontScaling>Details</Text>
           </Pressable>
         )}
         
@@ -145,7 +164,7 @@ export function BusinessQuickInfo({ business, onDetails, onClose }: BusinessQuic
             onPress={handleYelpPress}
             testID="bqi-yelp-btn"
           >
-            <Text style={styles.buttonText}>Yelp</Text>
+            <Text style={styles.buttonText} allowFontScaling>Yelp</Text>
           </Pressable>
         )}
         
@@ -155,7 +174,7 @@ export function BusinessQuickInfo({ business, onDetails, onClose }: BusinessQuic
             onPress={onClose}
             testID="bqi-close-btn"
           >
-            <Text style={[styles.buttonText, styles.closeButtonText]}>Close</Text>
+            <Text style={[styles.buttonText, styles.closeButtonText]} allowFontScaling>Close</Text>
           </Pressable>
         )}
       </View>
@@ -165,25 +184,48 @@ export function BusinessQuickInfo({ business, onDetails, onClose }: BusinessQuic
 
 const styles = StyleSheet.create({
   container: {
+    backgroundColor: AppStyles.color.white,
+    borderRadius: 20,
     padding: 16,
+    shadowColor: '#000',
+    shadowOpacity: 0.08,
+    shadowRadius: 12,
+    shadowOffset: { width: 0, height: 6 },
+    elevation: 4,
+    overflow: 'hidden',
+    alignSelf: 'center',
+    minWidth: 320,
   },
-  imageContainer: {
+  imageWrap: {
+    width: '100%',
+    aspectRatio: 3/2,
+    borderRadius: 16,
+    overflow: 'hidden',
+    marginBottom: 16,
     position: 'relative',
-    marginBottom: 12,
   },
   image: {
     width: '100%',
-    height: 200,
-    borderRadius: 8,
+    height: '100%',
+  },
+  noImage: {
+    backgroundColor: AppStyles.color.background,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  noImageText: {
+    fontSize: 16,
+    fontFamily: AppStyles.fonts.medium,
+    color: AppStyles.color.greylight,
   },
   favoriteButton: {
     position: 'absolute',
     top: 12,
     right: 12,
-    backgroundColor: 'rgba(0,0,0,0.3)',
+    backgroundColor: 'rgba(0,0,0,0.4)',
     borderRadius: 20,
-    width: 40,
-    height: 40,
+    width: 36,
+    height: 36,
     justifyContent: 'center',
     alignItems: 'center',
   },
@@ -196,50 +238,74 @@ const styles = StyleSheet.create({
     textShadowRadius: 4,
   },
   title: {
-    fontSize: 24,
+    fontSize: 22,
+    lineHeight: 24,
+    fontWeight: '700',
     fontFamily: AppStyles.fonts.bold,
     color: AppStyles.color.greydark,
-    marginBottom: 8,
+    marginBottom: 12,
   },
   metaRow: {
     flexDirection: 'row',
     alignItems: 'center',
-    marginBottom: 8,
+    flexWrap: 'wrap',
+    gap: 6,
+    marginBottom: 12,
+    alignContent: 'flex-start',
+  },
+  ratingPill: {
+    backgroundColor: AppStyles.color.roulette.gold + '15',
+    paddingHorizontal: 8,
+    paddingVertical: 4,
+    borderRadius: 12,
+  },
+  reviewsPill: {
+    backgroundColor: AppStyles.color.greylight + '15',
+    paddingHorizontal: 8,
+    paddingVertical: 4,
+    borderRadius: 12,
+  },
+  pricePill: {
+    backgroundColor: AppStyles.color.roulette.green + '15',
+    paddingHorizontal: 8,
+    paddingVertical: 4,
+    borderRadius: 12,
   },
   rating: {
-    fontSize: 16,
+    fontSize: 14,
     fontFamily: AppStyles.fonts.medium,
     color: AppStyles.color.roulette.gold,
-    marginRight: 8,
   },
   reviews: {
     fontSize: 14,
     fontFamily: AppStyles.fonts.regular,
     color: AppStyles.color.greydark,
-    marginRight: 8,
   },
   price: {
-    fontSize: 16,
+    fontSize: 14,
     fontFamily: AppStyles.fonts.medium,
     color: AppStyles.color.roulette.green,
   },
   categories: {
     fontSize: 14,
     fontFamily: AppStyles.fonts.regular,
-    color: AppStyles.color.greylight,
-    marginBottom: 12,
+    color: '#666',
+    marginBottom: 16,
   },
   hoursRow: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
-    marginBottom: 8,
+    marginBottom: 12,
+    flexWrap: 'wrap',
   },
   hoursLabel: {
     fontSize: 14,
     fontFamily: AppStyles.fonts.medium,
     color: AppStyles.color.greydark,
     flex: 1,
+    marginRight: 8,
+    minWidth: 0,
   },
   statusTag: {
     paddingHorizontal: 8,
@@ -266,20 +332,24 @@ const styles = StyleSheet.create({
     fontSize: 14,
     fontFamily: AppStyles.fonts.regular,
     color: AppStyles.color.greylight,
-    marginBottom: 16,
+    paddingBottom: 20,
   },
   buttonRow: {
     flexDirection: 'row',
-    justifyContent: 'space-around',
+    justifyContent: 'space-between',
     gap: 12,
+    marginTop: 8,
   },
   button: {
     flex: 1,
     paddingVertical: 12,
     paddingHorizontal: 16,
     backgroundColor: AppStyles.color.roulette.gold,
-    borderRadius: 8,
+    borderRadius: 12,
     alignItems: 'center',
+    minHeight: 44,
+    justifyContent: 'center',
+    minWidth: 0,
   },
   buttonText: {
     fontSize: 16,

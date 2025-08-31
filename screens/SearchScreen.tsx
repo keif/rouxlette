@@ -43,8 +43,10 @@ const SearchScreen = () => {
 	// Handle param-based opening and cleanup
 	useFocusEffect(
 		useCallback(() => {
-			// Open filters if requested via navigation params (one-time only)
-			const openOnMount = route?.params?.openFilters === true;
+			// Safe route params access with defaults
+			const routeParams = route?.params ?? {};
+			const openOnMount = routeParams.openFilters === true;
+			
 			if (openOnMount) {
 				setShowFiltersSheet(true);
 				// Clear param so it only happens once
@@ -60,7 +62,7 @@ const SearchScreen = () => {
 
 	useEffect(() => {
 		LayoutAnimation.configureNext(LayoutAnimation.Presets.easeInEaseOut);
-		const hasSearchResults = searchResults && searchResults.businesses.length > 0;
+		const hasSearchResults = searchResults && (searchResults.businesses ?? []).length > 0;
 		if (hasFocus || hasSearchResults) {
 			Animated.timing(borderRadius, {
 				duration: 500,
@@ -70,9 +72,11 @@ const SearchScreen = () => {
 			}).start();
 
 			setToggleStyle(false);
-			// generate list of category objects
-			const categories: CategoryProps[] = searchResults.businesses.reduce<CategoryProps[]>((acc, curr) => {
-				acc.push(...curr.categories);
+			// generate list of category objects - safe iteration
+			const businesses = searchResults.businesses ?? [];
+			const categories: CategoryProps[] = businesses.reduce<CategoryProps[]>((acc, curr) => {
+				const currentCategories = curr.categories ?? [];
+				acc.push(...currentCategories);
 				return acc;
 			}, []);
 			// filter to uniques
@@ -95,17 +99,18 @@ const SearchScreen = () => {
 
 	// Apply new client-side filters
 	useEffect(() => {
-		if (searchResults.businesses.length > 0) {
+		const businesses = searchResults.businesses ?? [];
+		if (businesses.length > 0) {
 			// Apply the new filters to search results
-			const filteredBusinesses = applyFilters(searchResults.businesses, state.filters);
-			const finalResults = { id: searchResults.id, businesses: filteredBusinesses };
+			const filteredBusinesses = applyFilters(businesses, state.filters);
+			const finalResults: ResultsProps = { id: searchResults.id, businesses: filteredBusinesses };
 			setFilterResults(finalResults);
 		} else {
 			setFilterResults(searchResults);
 		}
 	}, [searchResults, state.filters]);
 
-	const hasSearchResults = searchResults && searchResults.businesses.length > 0;
+	const hasSearchResults = searchResults && (searchResults.businesses ?? []).length > 0;
 	return (
 		<SafeAreaProvider>
 			<View style={[styles.container, toggleStyle ? styles.containerRow : styles.containerColumn]}>

@@ -3,15 +3,20 @@ import * as Font from 'expo-font';
 import * as SplashScreen from 'expo-splash-screen';
 import { useEffect, useState } from 'react';
 import { logSafe } from '../utils/log';
+import useResultsPersistence from './useResultsPersistence';
 
 export default function useCachedResources() {
   const [isLoadingComplete, setLoadingComplete] = useState(false);
+  const resultsPersistence = useResultsPersistence();
 
   // Load any resources or data that we need prior to rendering the app
   useEffect(() => {
     async function loadResourcesAndDataAsync() {
       try {
         SplashScreen.preventAutoHideAsync();
+
+        // Clean up corrupted cache entries from MAX_DEPTH_EXCEEDED pollution
+        await resultsPersistence.clearCorruptedCache();
 
         // Load fonts
         await Font.loadAsync({
@@ -35,7 +40,7 @@ export default function useCachedResources() {
     }
 
     loadResourcesAndDataAsync();
-  }, []);
+  }, [resultsPersistence]);
 
   return isLoadingComplete;
 }

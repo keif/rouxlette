@@ -18,7 +18,8 @@ const ResultsList = ({ filterTerm, horizontal = false, results, term }: ResultsL
 	const inset = useSafeAreaInsets();
 	const hasSearchTerm = term.trim().length > 0;
 
-	if (hasSearchTerm && results.businesses.length === 0) {
+	const businesses = results.businesses ?? [];
+	if (hasSearchTerm && businesses.length === 0) {
 		return (
 			<View style={styles.container}>
 				<Text style={styles.title}>We couldn't find anything for {term} :(</Text>
@@ -34,7 +35,7 @@ const ResultsList = ({ filterTerm, horizontal = false, results, term }: ResultsL
 		<View style={styles.container}>
 			<FlatList
 				contentContainerStyle={styles.contentContainer}
-				data={results.businesses}
+				data={businesses}
 				horizontal={horizontal}
 				keyExtractor={(result) => result.id}
 				renderItem={renderItem}

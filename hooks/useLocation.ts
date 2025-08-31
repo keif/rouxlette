@@ -517,8 +517,8 @@ export default (): [string, string, string, LocationObjectCoords | null, any[], 
 			
 			if (currentCoords) {
 				geocodeOpts.biasCenter = { latitude: currentCoords.latitude, longitude: currentCoords.longitude };
-				geocodeOpts.kmBias = 50; // 50km bias radius
-				devLog('Adding location bias:', geocodeOpts.biasCenter);
+				geocodeOpts.kmBias = 25; // Reduced from 50km to 25km for stronger bias toward nearby locations
+				devLog('Adding location bias:', geocodeOpts.biasCenter, `radius: ${geocodeOpts.kmBias}km`);
 			}
 			
 			// Geocode the query with bias

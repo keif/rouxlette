@@ -1,5 +1,6 @@
 import React, { useState, useContext } from 'react';
-import { Modal, View, Pressable, Text, StyleSheet, ScrollView } from 'react-native';
+import { Modal, View, Pressable, Text, StyleSheet, ScrollView, useWindowDimensions } from 'react-native';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { RootContext } from '../../context/RootContext';
 import { hideBusinessModal } from '../../context/reducer';
 import { BusinessQuickInfo } from './BusinessQuickInfo';
@@ -9,6 +10,11 @@ import AppStyles from '../../AppStyles';
 export function BusinessCardModal() {
   const { state, dispatch } = useContext(RootContext);
   const [showDetails, setShowDetails] = useState(false);
+  const { width: winW } = useWindowDimensions();
+  const insets = useSafeAreaInsets();
+  
+  // Calculate modal container width with safe areas
+  const modalMaxWidth = Math.min(700, winW - 40);
   
   const { isBusinessModalOpen, selectedBusiness } = state;
   
@@ -44,7 +50,7 @@ export function BusinessCardModal() {
       >
         <View style={styles.modalContainer}>
           <Pressable onPress={(e) => e.stopPropagation()}>
-            <View style={styles.modal}>
+            <View style={[styles.modal, { maxWidth: modalMaxWidth, width: '100%' }]}>
               {/* Tab buttons */}
               <View style={styles.tabContainer}>
                 <Pressable
@@ -68,7 +74,12 @@ export function BusinessCardModal() {
               </View>
 
               {/* Content */}
-              <ScrollView style={styles.content} showsVerticalScrollIndicator={false}>
+              <ScrollView 
+                style={styles.content} 
+                showsVerticalScrollIndicator={false}
+                contentInsetAdjustmentBehavior="always"
+                keyboardShouldPersistTaps="handled"
+              >
                 {showDetails ? (
                   <BusinessDetails 
                     business={selectedBusiness} 
@@ -99,14 +110,13 @@ const styles = StyleSheet.create({
     flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
-    paddingHorizontal: 20,
+    paddingHorizontal: 10,
   },
   modal: {
     backgroundColor: AppStyles.color.white,
-    borderRadius: 12,
-    maxWidth: 400,
-    width: '100%',
-    maxHeight: '80%',
+    borderRadius: 20,
+    maxHeight: '85%',
+    alignSelf: 'center',
     shadowColor: AppStyles.color.shadow,
     shadowOffset: {
       width: 0,
@@ -142,5 +152,6 @@ const styles = StyleSheet.create({
   },
   content: {
     maxHeight: '100%',
+    paddingHorizontal: 4,
   },
 });
