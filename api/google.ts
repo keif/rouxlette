@@ -30,7 +30,7 @@ google.interceptors.request.use(function (config) {
 		logSafe('GOOGLE_API_KEY not found in environment variables');
 	}
 	
-	logNetwork('Google API request', {
+	logSafe('Google API request', {
 		url: config.url,
 		params: config.params ? Object.keys(config.params) : [],
 		baseURL: config.baseURL
@@ -43,7 +43,7 @@ google.interceptors.request.use(function (config) {
 });
 
 google.interceptors.response.use(function (response) {
-	logNetwork('Google API response', {
+	logSafe('Google API response', {
 		status: response.status,
 		resultsCount: response.data?.results?.length || 0,
 		responseStatus: response.data?.status
@@ -84,7 +84,7 @@ export async function geocode(query: string | null | undefined): Promise<Geocode
 		});
 
 		const json = response.data;
-		logNetwork('geocode: API response', {
+		logSafe('geocode: API response', {
 			status: json?.status,
 			resultsCount: Array.isArray(json?.results) ? json.results.length : (Array.isArray(json) ? json.length : 0)
 		});
@@ -146,7 +146,7 @@ export async function reverseGeocode(latitude: number, longitude: number): Promi
 		});
 
 		const json = response.data;
-		logNetwork('reverseGeocode: API response', {
+		logSafe('reverseGeocode: API response', {
 			status: json?.status,
 			resultsCount: Array.isArray(json?.results) ? json.results.length : (Array.isArray(json) ? json.length : 0)
 		});
@@ -210,6 +210,130 @@ export function humanizeGeocodeError(response: GeocodeResponse): string {
 			return 'An unexpected error occurred. Please try again.';
 		default:
 			return response.errorMessage || 'Location search failed. Please try again.';
+	}
+}
+
+// Enhanced geocoding with bias and components support for location disambiguation
+type Coords = { latitude: number; longitude: number };
+
+/**
+ * Generate bounds string for Google Geocoding API from center point
+ * Creates a bounding box around the center with specified radius in kilometers
+ */
+function boundsFromCenter(center: Coords, km = 50): string {
+	// Approximately 111 km per degree latitude; longitude scaled by cos(lat)
+	const latDelta = km / 111;
+	const lonDelta = km / (111 * Math.cos((center.latitude * Math.PI) / 180) || 1);
+	
+	const south = center.latitude - latDelta;
+	const west = center.longitude - lonDelta;
+	const north = center.latitude + latDelta;
+	const east = center.longitude + lonDelta;
+	
+	// Google bounds format: south,west|north,east
+	return `${south},${west}|${north},${east}`;
+}
+
+/**
+ * Enhanced geocoding function with country/state components and bounds bias
+ * Helps resolve ambiguous location names like "Powell" to the correct city
+ */
+export async function geocodeAddress(address: string, opts?: {
+	biasCenter?: Coords;   // from device location to bias results
+	country?: string;      // e.g. 'US'
+	state?: string;        // e.g. 'OH' 
+	kmBias?: number;       // radius for bounds bias (default 50)
+}): Promise<GeocodeResponse> {
+	const q = (address ?? '').trim();
+	
+	// Guard against empty queries
+	if (!q) {
+		logSafe('geocodeAddress: Empty address provided');
+		return { 
+			ok: false, 
+			status: 'EMPTY_QUERY', 
+			results: [], 
+			raw: null, 
+			errorMessage: 'No address provided' 
+		};
+	}
+
+	try {
+		const params: Record<string, string> = {
+			address: q
+		};
+
+		// Add country/state components to restrict results
+		const components: string[] = [];
+		if (opts?.country) components.push(`country:${opts.country}`);
+		if (opts?.state) components.push(`administrative_area:${opts.state}`);
+		if (components.length) {
+			params.components = components.join('|');
+		}
+
+		// Add bounds bias if we have a current location
+		if (opts?.biasCenter) {
+			params.bounds = boundsFromCenter(opts.biasCenter, opts.kmBias ?? 50);
+			logSafe('geocodeAddress: Adding bounds bias', {
+				center: opts.biasCenter,
+				radius: opts.kmBias ?? 50,
+				bounds: params.bounds
+			});
+		}
+
+		logSafe('geocodeAddress: Making biased API request', {
+			address: q,
+			components: params.components,
+			hasBounds: !!params.bounds
+		});
+
+		const response = await google.get('', { params });
+		const json = response.data;
+
+		logSafe('geocodeAddress: API response', {
+			status: json?.status,
+			resultsCount: Array.isArray(json?.results) ? json.results.length : 0
+		});
+
+		// Handle array response (some endpoints return arrays)
+		const isArrayTop = Array.isArray(json);
+		
+		if (isArrayTop) {
+			const status = json.length > 0 ? 'OK' : 'ZERO_RESULTS';
+			return {
+				ok: status === 'OK',
+				status,
+				results: json,
+				raw: json,
+				errorMessage: json.length === 0 ? 'No results found' : undefined
+			};
+		}
+
+		// Standard response format
+		const status = json.status ?? 'UNKNOWN';
+		const results = Array.isArray(json.results) ? json.results : [];
+
+		return {
+			ok: status === 'OK',
+			status,
+			results,
+			raw: json,
+			errorMessage: json.error_message
+		};
+
+	} catch (error: any) {
+		logSafe('geocodeAddress: Network or parsing error', { 
+			message: error?.message, 
+			code: error?.code 
+		});
+		
+		return {
+			ok: false,
+			status: 'NETWORK_ERROR',
+			results: [],
+			raw: null,
+			errorMessage: error.message || 'Network error occurred'
+		};
 	}
 }
 
