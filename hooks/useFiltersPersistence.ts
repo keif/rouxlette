@@ -19,7 +19,7 @@ const FILTERS_STORAGE_KEY = 'filters';
 export default function useFiltersPersistence() {
   const { dispatch, state } = useContext(RootContext);
   const storage = usePersistentStorage({ 
-    debug: __DEV__,
+    debug: false, // Disabled to reduce log noise during normal operations
     debounceMs: 500 // Slightly longer delay for filters
   });
 

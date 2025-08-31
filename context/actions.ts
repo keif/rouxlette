@@ -1,6 +1,7 @@
 import { CategoryProps, BusinessProps } from "../hooks/useResults";
 import { Filter, Filters, SpinHistory } from "./state";
 import { YelpBusiness } from "../types/yelp";
+import { FavoriteItem, HistoryItem } from "../types/favorites";
 
 export enum ActionType {
 	SetCategories,
@@ -14,6 +15,10 @@ export enum ActionType {
 	SetShowFilter,
 	AddFavorite,
 	RemoveFavorite,
+	HydrateFavorites,
+	AddHistory,
+	ClearHistory,
+	HydrateHistory,
 	AddSpinHistory,
 	SetSelectedBusiness,
 	ShowBusinessModal,
@@ -57,12 +62,31 @@ export interface SetShowFilter {
 
 export interface AddFavorite {
 	type: ActionType.AddFavorite;
-	payload: { restaurant: BusinessProps };
+	payload: { favorite: FavoriteItem };
 }
 
 export interface RemoveFavorite {
 	type: ActionType.RemoveFavorite;
-	payload: { restaurantId: string };
+	payload: { businessId: string };
+}
+
+export interface HydrateFavorites {
+	type: ActionType.HydrateFavorites;
+	payload: { favorites: FavoriteItem[] };
+}
+
+export interface AddHistory {
+	type: ActionType.AddHistory;
+	payload: { history: HistoryItem };
+}
+
+export interface ClearHistory {
+	type: ActionType.ClearHistory;
+}
+
+export interface HydrateHistory {
+	type: ActionType.HydrateHistory;
+	payload: { history: HistoryItem[] };
 }
 
 export interface AddSpinHistory {
@@ -97,4 +121,4 @@ export interface HydrateFilters {
 	payload: { filters: Filters };
 }
 
-export type AppActions = SetCategories | SetDetail | SetFilter | SetFilters | ResetFilters | HydrateFilters | SetLocation | SetResults | SetShowFilter | AddFavorite | RemoveFavorite | AddSpinHistory | SetSelectedBusiness | ShowBusinessModal | HideBusinessModal;
+export type AppActions = SetCategories | SetDetail | SetFilter | SetFilters | ResetFilters | HydrateFilters | SetLocation | SetResults | SetShowFilter | AddFavorite | RemoveFavorite | HydrateFavorites | AddHistory | ClearHistory | HydrateHistory | AddSpinHistory | SetSelectedBusiness | ShowBusinessModal | HideBusinessModal;

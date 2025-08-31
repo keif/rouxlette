@@ -15,7 +15,7 @@ interface LocationInputProps {
 
 const LocationInput = ({ onFocus, setErrorMessage }: LocationInputProps) => {
 	const { state, dispatch } = useContext(RootContext);
-	const [locationErrorMessage, city, coords, locationResults, searchLocation, isLocationLoading] = useLocation();
+	const [locationErrorMessage, city, canonicalLocation, coords, locationResults, searchLocation, resolveSearchArea, isLocationLoading] = useLocation();
 	const [locale, setLocale] = useState<string>(``);
 	const [searchClicked, setSearchClick] = useState<boolean>(false);
 
@@ -32,9 +32,19 @@ const LocationInput = ({ onFocus, setErrorMessage }: LocationInputProps) => {
 	}, []);
 
 	useEffect(() => {
-		setLocale(city);
-		dispatch(setLocation(city));
-	}, [city]);
+		// Prefer canonical location over city for display
+		const displayLocation = canonicalLocation || city;
+		setLocale(displayLocation);
+		dispatch(setLocation(displayLocation));
+		
+		if (__DEV__ && canonicalLocation && canonicalLocation !== city) {
+			logSafe('[LocationInput] Using canonical location', { 
+				city, 
+				canonical: canonicalLocation,
+				display: displayLocation
+			});
+		}
+	}, [city, canonicalLocation]);
 
 	useEffect(() => {
 		setErrorMessage(locationErrorMessage);

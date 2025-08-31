@@ -19,6 +19,7 @@ import { BusinessProps } from '../hooks/useResults';
 import useResults, { INIT_RESULTS } from '../hooks/useResults';
 import useLocation from '../hooks/useLocation';
 import { setResults } from '../context/reducer';
+import { useHistory } from '../hooks/useHistory';
 
 const FEATURED_CATEGORIES = [
   { title: 'Pizza', emoji: '🍕', term: 'pizza' },
@@ -35,6 +36,7 @@ const HomeScreen: React.FC = () => {
   const [searchTerm, setSearchTerm] = useState('');
   const [, searchResults, searchYelp] = useResults();
   const [, city, coords, , , isLocationLoading] = useLocation();
+  const { addHistoryEntry } = useHistory();
 
   // Filter persistence is handled by SearchScreen
 
@@ -50,7 +52,25 @@ const HomeScreen: React.FC = () => {
     const randomIndex = Math.floor(Math.random() * state.results.length);
     const selectedRestaurant = state.results[randomIndex];
 
-    // Add to spin history
+    // Add to new history tracking system
+    addHistoryEntry({
+      business: selectedRestaurant,
+      source: 'spin',
+      context: {
+        searchTerm: searchTerm,
+        locationText: state.location || city,
+        coords: coords,
+        filters: {
+          openNow: state.filters.openNow,
+          categories: state.filters.categoryIds,
+          priceLevels: state.filters.priceLevels,
+          radiusMeters: state.filters.radiusMeters,
+          minRating: state.filters.minRating,
+        },
+      },
+    });
+
+    // Also keep the old spin history for backward compatibility (for now)
     const spinEntry = {
       restaurant: selectedRestaurant,
       timestamp: Date.now(),

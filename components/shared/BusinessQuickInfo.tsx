@@ -3,6 +3,9 @@ import { View, Text, Pressable, Image, StyleSheet, Linking } from 'react-native'
 import { YelpBusiness } from '../../types/yelp';
 import useBusinessHours from '../../hooks/useBusinessHours';
 import AppStyles from '../../AppStyles';
+import { useFavorites } from '../../hooks/useFavorites';
+import { Ionicons } from '@expo/vector-icons';
+import { BusinessProps } from '../../hooks/useResults';
 
 interface BusinessQuickInfoProps {
   business: YelpBusiness;
@@ -12,6 +15,27 @@ interface BusinessQuickInfoProps {
 
 export function BusinessQuickInfo({ business, onDetails, onClose }: BusinessQuickInfoProps) {
   const { todayLabel, isOpen } = useBusinessHours(business.hours);
+  const { isFavorite, toggleFavorite } = useFavorites();
+
+  // Convert YelpBusiness to BusinessProps for favorites
+  const businessForFavorites: BusinessProps = {
+    id: business.id,
+    name: business.name,
+    image_url: business.image_url || '',
+    rating: business.rating || 0,
+    price: business.price || '',
+    location: {
+      city: business.location?.city || '',
+      display_address: business.location?.display_address || [],
+      address1: business.location?.address1 || '',
+    },
+    categories: business.categories?.map(cat => ({ title: cat.title, alias: cat.alias })) || [],
+    is_closed: business.is_closed || false,
+    coordinates: business.coordinates,
+    url: business.url || '',
+    phone: business.phone || '',
+    display_phone: business.display_phone || '',
+  };
 
   const handleYelpPress = () => {
     if (business.url) {
@@ -28,13 +52,30 @@ export function BusinessQuickInfo({ business, onDetails, onClose }: BusinessQuic
   return (
     <View style={styles.container}>
       {/* Business Image */}
-      {business.image_url && (
-        <Image 
-          source={{ uri: business.image_url }} 
-          style={styles.image}
-          testID="bqi-image"
-        />
-      )}
+      <View style={styles.imageContainer}>
+        {business.image_url && (
+          <Image 
+            source={{ uri: business.image_url }} 
+            style={styles.image}
+            testID="bqi-image"
+          />
+        )}
+        
+        {/* Favorite Button */}
+        <Pressable
+          style={styles.favoriteButton}
+          onPress={() => toggleFavorite(businessForFavorites)}
+          testID="bqi-favorite-btn"
+          accessibilityLabel={isFavorite(business.id) ? "Remove from favorites" : "Add to favorites"}
+        >
+          <Ionicons
+            name={isFavorite(business.id) ? "heart" : "heart-outline"}
+            size={24}
+            color={isFavorite(business.id) ? AppStyles.color.yelp : AppStyles.color.white}
+            style={styles.favoriteIcon}
+          />
+        </Pressable>
+      </View>
 
       {/* Title */}
       <Text style={styles.title} testID="bqi-title">{business.name}</Text>
@@ -126,11 +167,33 @@ const styles = StyleSheet.create({
   container: {
     padding: 16,
   },
+  imageContainer: {
+    position: 'relative',
+    marginBottom: 12,
+  },
   image: {
     width: '100%',
     height: 200,
     borderRadius: 8,
-    marginBottom: 12,
+  },
+  favoriteButton: {
+    position: 'absolute',
+    top: 12,
+    right: 12,
+    backgroundColor: 'rgba(0,0,0,0.3)',
+    borderRadius: 20,
+    width: 40,
+    height: 40,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  favoriteIcon: {
+    textShadowColor: AppStyles.color.black,
+    textShadowOffset: {
+      width: 0,
+      height: 0,
+    },
+    textShadowRadius: 4,
   },
   title: {
     fontSize: 24,

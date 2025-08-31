@@ -26,7 +26,12 @@ export type RootStackScreenProps<Screen extends keyof RootStackParamList> = Nati
 export type RootTabParamList = {
 	Home: undefined;
 	Search: { openFilters?: boolean } | undefined;
+	Saved: NavigatorScreenParams<SavedTabParamList> | undefined;
+};
+
+export type SavedTabParamList = {
 	Favorites: undefined;
+	History: undefined;
 };
 
 export type RootTabScreenProps<Screen extends keyof RootTabParamList> = CompositeScreenProps<MaterialTopTabScreenProps<RootTabParamList, Screen>,

@@ -137,9 +137,61 @@ export default function useResultsPersistence() {
     }
   }, [storage]);
 
+  /**
+   * Load cached results using a specific cache key (for enhanced search)
+   */
+  const getCachedResultsByKey = useCallback(async (cacheKey: string): Promise<BusinessProps[] | null> => {
+    try {
+      if (activeCacheKeys.current.has(cacheKey)) {
+        logSafe('[useResultsPersistence] Request already in flight for cache key', { cacheKey });
+        return null;
+      }
+
+      activeCacheKeys.current.add(cacheKey);
+      
+      const cached = await storage.getItem<BusinessProps[]>(cacheKey);
+      if (cached && Array.isArray(cached) && cached.length > 0) {
+        logArray('[useResultsPersistence] Cache hit for key', cached, 2);
+        return cached;
+      }
+      
+      return null;
+    } catch (error: any) {
+      logSafe('[useResultsPersistence] Cache read error', { cacheKey, error: error?.message });
+      return null;
+    } finally {
+      activeCacheKeys.current.delete(cacheKey);
+    }
+  }, [storage]);
+
+  /**
+   * Cache results using a specific cache key (for enhanced search)
+   */
+  const cacheResultsByKey = useCallback(async (cacheKey: string, businesses: BusinessProps[]): Promise<void> => {
+    if (!businesses || !Array.isArray(businesses) || businesses.length === 0) {
+      logSafe('[useResultsPersistence] Skipping cache - no valid businesses to store');
+      return;
+    }
+
+    try {
+      await storage.setItem(cacheKey, businesses);
+      logSafe('[useResultsPersistence] Cached results by key', { 
+        cacheKey, 
+        count: businesses.length 
+      });
+    } catch (error: any) {
+      logSafe('[useResultsPersistence] Cache write error', { 
+        cacheKey, 
+        error: error?.message 
+      });
+    }
+  }, [storage]);
+
   return {
     getCachedResults,
     cacheResults,
+    getCachedResultsByKey,
+    cacheResultsByKey,
     clearOldCache,
     clearAllCache,
     generateCacheKey,

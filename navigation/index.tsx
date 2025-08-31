@@ -8,7 +8,7 @@ import { RootStackParamList, RootTabParamList, RootTabScreenProps } from "../typ
 import LinkingConfiguration from "./LinkingConfiguration";
 import SearchScreen from "../screens/SearchScreen";
 import HomeScreen from "../screens/HomeScreen";
-import FavoritesScreen from "../screens/FavoritesScreen";
+import { SavedTabNavigator } from "./SavedTabNavigator";
 import { createMaterialTopTabNavigator } from "@react-navigation/material-top-tabs";
 import AppStyles from "../AppStyles";
 import { Ionicons } from "@expo/vector-icons";
@@ -96,12 +96,12 @@ function TopTabNavigator() {
 				}}
 			/>
 			<Tabs.Screen
-				component={FavoritesScreen}
-				name="Favorites"
+				component={SavedTabNavigator}
+				name="Saved"
 				options={{
-					title: "Favorites",
+					title: "Saved",
 					tabBarIcon: ({ color, focused }) => (
-						<Ionicons name={focused ? "heart" : "heart-outline"} size={20} color={color} />
+						<Ionicons name={focused ? "bookmark" : "bookmark-outline"} size={20} color={color} />
 					),
 				}}
 			/>

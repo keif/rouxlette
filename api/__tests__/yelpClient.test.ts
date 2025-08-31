@@ -3,12 +3,31 @@
  */
 
 import axios from 'axios';
-import { YelpClient } from '../yelpClient';
 import * as log from '../../utils/log';
+
+// Mock environment variables first
+jest.mock('@env', () => ({
+  YELP_API_KEY: 'test-api-key',
+}));
 
 // Mock axios
 jest.mock('axios');
 const mockedAxios = axios as jest.Mocked<typeof axios>;
+
+// Setup axios.create mock before importing yelpClient  
+const mockAxiosInstance = {
+  get: jest.fn(),
+  interceptors: {
+    request: { use: jest.fn() },
+    response: { use: jest.fn() },
+  },
+};
+mockedAxios.create.mockReturnValue(mockAxiosInstance as any);
+
+// Mock axios.isAxiosError to return true for our test errors
+mockedAxios.isAxiosError.mockImplementation((error: any) => {
+  return error && error.isAxiosError === true;
+});
 
 // Mock logging utilities
 jest.mock('../../utils/log', () => ({
@@ -16,33 +35,21 @@ jest.mock('../../utils/log', () => ({
   logNetwork: jest.fn(),
 }));
 
-// Mock environment variables
-jest.mock('@env', () => ({
-  YELP_API_KEY: 'test-api-key',
-}));
-
 const mockLogSafe = log.logSafe as jest.MockedFunction<typeof log.logSafe>;
 const mockLogNetwork = log.logNetwork as jest.MockedFunction<typeof log.logNetwork>;
 
 describe('YelpClient', () => {
-  let client: YelpClient;
+  let YelpClient: any;
+  let client: any;
+
+  beforeAll(() => {
+    // Import YelpClient only after mocks are set up
+    const yelpClientModule = require('../yelpClient');
+    YelpClient = yelpClientModule.YelpClient;
+  });
 
   beforeEach(() => {
     jest.clearAllMocks();
-    
-    // Mock axios.create to return our mocked instance
-    mockedAxios.create.mockReturnValue({
-      get: mockedAxios.get,
-      interceptors: {
-        request: {
-          use: jest.fn(),
-        },
-        response: {
-          use: jest.fn(),
-        },
-      },
-    } as any);
-    
     client = new YelpClient();
   });
 
@@ -77,7 +84,7 @@ describe('YelpClient', () => {
         },
       };
 
-      mockedAxios.get.mockResolvedValue(mockResponse);
+      mockAxiosInstance.get.mockResolvedValue(mockResponse);
 
       const params = {
         term: 'pizza',
@@ -149,7 +156,7 @@ describe('YelpClient', () => {
         code: 'ERR_BAD_REQUEST',
       };
 
-      mockedAxios.get.mockRejectedValue(axiosError);
+      mockAxiosInstance.get.mockRejectedValueOnce(axiosError);
 
       await expect(
         client.searchBusinesses({ term: 'invalid', location: '' })
@@ -212,7 +219,7 @@ describe('YelpClient', () => {
         // ... many more fields that would create large payloads
       };
 
-      mockedAxios.get.mockResolvedValue({
+      mockAxiosInstance.get.mockResolvedValue({
         status: 200,
         data: mockBusiness,
       });
@@ -279,7 +286,7 @@ describe('YelpClient', () => {
         ],
       };
 
-      mockedAxios.get.mockResolvedValue({
+      mockAxiosInstance.get.mockResolvedValue({
         status: 200,
         data: mockReviews,
       });
@@ -334,7 +341,7 @@ describe('YelpClient', () => {
         })),
       };
 
-      mockedAxios.get.mockResolvedValue({
+      mockAxiosInstance.get.mockResolvedValue({
         status: 200,
         data: mockCategories,
       });
@@ -426,7 +433,7 @@ describe('YelpClient', () => {
         description: 'x'.repeat(1000), // 1KB string per business
       }));
 
-      mockedAxios.get.mockResolvedValue({
+      mockAxiosInstance.get.mockResolvedValue({
         status: 200,
         data: {
           businesses: massiveBusinesses,

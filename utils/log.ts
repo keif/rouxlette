@@ -293,7 +293,7 @@ export function logNetwork(
 
   const logData: Record<string, unknown> = {
     method: method.toUpperCase(),
-    url: url.replace(/https?:\/\/[^/]+/, ''), // Remove domain for brevity
+    url: typeof url === 'string' ? url.replace(/https?:\/\/[^/]+/, '') : url, // Remove domain for brevity, handle non-string URLs
   };
 
   if (params) {

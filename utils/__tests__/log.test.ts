@@ -185,9 +185,10 @@ describe('logObject', () => {
     expect(loggedData['[KEYS_COUNT]']).toBe(5);
     expect(loggedData.name).toBe('test');
     expect(loggedData.id).toBe(123);
-    // logObject should include all fields, not just selected ones
-    expect(loggedData.data).toEqual({ nested: 'value' });
-    expect(loggedData.array).toEqual([1, 2, 3]);
+    // logObject should only include selected keys
+    expect(loggedData.data).toBeUndefined();
+    expect(loggedData.array).toBeUndefined();
+    expect(loggedData['[TRUNCATED_KEYS]']).toBe(3); // 5 total - 2 selected = 3 truncated
   });
 
   test('should handle non-objects', () => {

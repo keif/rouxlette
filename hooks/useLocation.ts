@@ -6,13 +6,22 @@ import { GOOGLE_API_KEY } from "@env";
 import usePersistentStorage from "./usePersistentStorage";
 import { RootContext } from "../context/RootContext";
 import { setLocation } from "../context/reducer";
-import { GeocodeResponse, reverseGeocode, humanizeGeocodeError } from "../api/google";
+import { GeocodeResponse, geocodeAddress, reverseGeocode, humanizeGeocodeError } from "../api/google";
 import { logSafe, logNetwork } from "../utils/log";
+import { Coords, haversineKm, findClosestResult, extractCanonicalLabel, extractStateFromResult, extractCoordsFromResult } from "./geoUtils";
 import GeocoderResponse = Geocoder.GeocoderResponse;
 
 interface LocationResult {
 	city: string;
 	results: any[];
+}
+
+// Enhanced interface for resolved location data
+export interface ResolvedLocation {
+	coords: Coords | null;        // Resolved coordinates
+	label: string;                // Canonical label like "Powell, OH"
+	state?: string;               // State code like "OH"
+	source: 'coords' | 'geocoded' | 'fallback'; // How the location was resolved
 }
 
 interface LocationState {
@@ -26,11 +35,13 @@ interface UseLocationReturn {
 	coords: LocationObjectCoords | null;
 	locationResults: any[];
 	searchLocation: (query: string | null | undefined) => Promise<LocationResult | null>;
+	resolveSearchArea: (query: string | null | undefined) => Promise<ResolvedLocation | null>;
 	isLoading: boolean;
 }
 
-export default (): [string, string, LocationObjectCoords | null, any[], (query: string | null | undefined) => Promise<LocationResult | null>, boolean] => {
+export default (): [string, string, string, LocationObjectCoords | null, any[], (query: string | null | undefined) => Promise<LocationResult | null>, (query: string | null | undefined) => Promise<ResolvedLocation | null>, boolean] => {
 	const [city, setCity] = useState<string>(``);
+	const [canonicalLocation, setCanonicalLocation] = useState<string>(``); // For display like "Powell, OH"
 	const [locationErrorMessage, setLocationErrorMessage] = useState<string>(``);
 	const [locationResults, setLocationResults] = useState<any[]>([]);
 	const [currentCoords, setCurrentCoords] = useState<LocationObjectCoords | null>(null);
@@ -63,6 +74,7 @@ export default (): [string, string, LocationObjectCoords | null, any[], (query: 
 	const clearLocationState = () => {
 		devLog('Clearing location state');
 		setCity('');
+		setCanonicalLocation('');
 		setLocationResults([]);
 		setLocationErrorMessage('');
 		setCurrentCoords(null);
@@ -419,6 +431,169 @@ export default (): [string, string, LocationObjectCoords | null, any[], (query: 
 		}
 	};
 
+	/**
+	 * Enhanced location resolver that geocodes city names to coordinates
+	 * This is the key function for disambiguating location strings like "powell"
+	 * 
+	 * @param query - Location query (city name, address, etc)
+	 * @returns ResolvedLocation with coordinates and canonical label
+	 */
+	const resolveSearchArea = async (query: string | null | undefined): Promise<ResolvedLocation | null> => {
+		const q = (query ?? '').trim();
+		
+		devLog('resolveSearchArea called with:', q);
+		
+		try {
+			// CASE 1: Empty query - use current device coordinates
+			if (!q) {
+				if (currentCoords) {
+					devLog('Using existing current coordinates');
+					// Try to get a canonical label for current coordinates
+					const response = await reverseGeocode(currentCoords.latitude, currentCoords.longitude);
+					if (response.ok && response.results?.length) {
+						const label = extractCanonicalLabel(response.results[0]);
+						// Update UI state with canonical location
+						setCanonicalLocation(label);
+						return {
+							coords: { latitude: currentCoords.latitude, longitude: currentCoords.longitude },
+							label,
+							source: 'coords'
+						};
+					}
+				}
+				
+				// Get fresh current location
+				const { status } = await Location.requestForegroundPermissionsAsync();
+				if (status !== 'granted') {
+					devLog('No location permissions for empty query');
+					return null;
+				}
+				
+				const location = await Location.getCurrentPositionAsync({
+					accuracy: Location.Accuracy.Balanced,
+				});
+				
+				setCurrentCoords(location.coords);
+				
+				const response = await reverseGeocode(location.coords.latitude, location.coords.longitude);
+				if (response.ok && response.results?.length) {
+					const label = extractCanonicalLabel(response.results[0]);
+					// Update UI state with canonical location
+					setCanonicalLocation(label);
+					return {
+						coords: { latitude: location.coords.latitude, longitude: location.coords.longitude },
+						label,
+						source: 'coords'
+					};
+				}
+				
+				return {
+					coords: { latitude: location.coords.latitude, longitude: location.coords.longitude },
+					label: 'Current Location',
+					source: 'coords'
+				};
+			}
+			
+			// CASE 2: Query provided - geocode with bias
+			
+			// Determine current state for bias (if we have coordinates)
+			let currentState: string | null = null;
+			if (currentCoords) {
+				const reverseResponse = await reverseGeocode(currentCoords.latitude, currentCoords.longitude);
+				if (reverseResponse.ok && reverseResponse.results?.length) {
+					currentState = extractStateFromResult(reverseResponse.results[0]);
+				}
+			}
+			
+			// Build geocoding options with bias
+			const geocodeOpts: Parameters<typeof geocodeAddress>[1] = {
+				country: 'US', // Always restrict to US
+			};
+			
+			if (currentState) {
+				geocodeOpts.state = currentState;
+				devLog('Adding state bias:', currentState);
+			}
+			
+			if (currentCoords) {
+				geocodeOpts.biasCenter = { latitude: currentCoords.latitude, longitude: currentCoords.longitude };
+				geocodeOpts.kmBias = 50; // 50km bias radius
+				devLog('Adding location bias:', geocodeOpts.biasCenter);
+			}
+			
+			// Geocode the query with bias
+			devLog('Geocoding query with bias:', { query: q, opts: geocodeOpts });
+			const response = await geocodeAddress(q, geocodeOpts);
+			
+			if (!response.ok || !response.results?.length) {
+				devLog('Geocoding failed or no results');
+				// Show user-friendly message about using text search
+				if (response.status === 'ZERO_RESULTS') {
+					handleError("Couldn't pinpoint that location—using text search (results may be broader).");
+				} else {
+					handleError("Location service error—using text search instead.");
+				}
+				
+				// Fallback: return the query as a string location
+				return {
+					coords: null,
+					label: q,
+					source: 'fallback'
+				};
+			}
+			
+			// Choose the best result
+			let bestResult = response.results[0]; // Default to first result
+			
+			// If we have current coordinates, find the closest result
+			if (currentCoords && response.results.length > 1) {
+				const currentCoordsForDistance = { latitude: currentCoords.latitude, longitude: currentCoords.longitude };
+				const closest = findClosestResult(response.results, currentCoordsForDistance);
+				
+				if (closest) {
+					bestResult = closest;
+					devLog('Selected closest result by distance');
+					
+					// Optional: Log disambiguation info for future UI enhancement
+					if (response.results.length >= 2) {
+						const alternatives = response.results.slice(0, 3).map(r => extractCanonicalLabel(r));
+						devLog('Disambiguation occurred - alternatives were:', alternatives);
+						
+						// Future enhancement: could show disambiguation UI here
+						// For now, we auto-select the closest one
+					}
+				}
+			}
+			
+			// Extract data from the best result
+			const coords = extractCoordsFromResult(bestResult);
+			const label = extractCanonicalLabel(bestResult);
+			const state = extractStateFromResult(bestResult);
+			
+			devLog('Resolved location:', { coords, label, state });
+			
+			// Update UI state with canonical location
+			setCanonicalLocation(label);
+			
+			return {
+				coords,
+				label,
+				state,
+				source: 'geocoded'
+			};
+			
+		} catch (error: any) {
+			logSafe('resolveSearchArea error', { message: error?.message, query: q });
+			
+			// Fallback: return the query as a string location
+			return {
+				coords: null,
+				label: q || 'Unknown Location',
+				source: 'fallback'
+			};
+		}
+	};
+
 	// Cleanup watcher on unmount
 	useEffect(() => {
 		return () => {
@@ -436,5 +611,5 @@ export default (): [string, string, LocationObjectCoords | null, any[], (query: 
 	//   });
 	// }, []);
 
-	return [locationErrorMessage, city, currentCoords, locationResults, searchLocation, isLoading] as const;
+	return [locationErrorMessage, city, canonicalLocation, currentCoords, locationResults, searchLocation, resolveSearchArea, isLoading] as const;
 }

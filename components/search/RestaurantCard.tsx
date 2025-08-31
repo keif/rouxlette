@@ -3,12 +3,16 @@ import { Animated, Image, StyleSheet, Text, useWindowDimensions, View, Linking, 
 import { BusinessProps } from "../../hooks/useResults";
 import AppStyles from "../../AppStyles";
 import Icon from "react-native-vector-icons/MaterialIcons";
-import { FontAwesome, MaterialIcons } from "@expo/vector-icons";
+import { FontAwesome, MaterialIcons, Ionicons } from "@expo/vector-icons";
 import StarRating from "../shared/StarRating";
 import OpenSign from "../results/OpenSign";
 import FlipCard from "../shared/FlipCard";
 import Config from "../../Config";
 import { logSafe } from "../../utils/log";
+import { useFavorites } from "../../hooks/useFavorites";
+import { useHistory } from "../../hooks/useHistory";
+import { useContext } from 'react';
+import { RootContext } from '../../context/RootContext';
 
 interface RestaurantCardProps {
 	index: number;
@@ -21,6 +25,9 @@ const RestaurantCard = ({ index, result }: RestaurantCardProps) => {
 	const translateY = useRef<Animated.Value>(new Animated.Value(50)).current;
 	const opacity = useRef<Animated.Value>(new Animated.Value(0)).current;
 	const is_open_now = hours && hours[0]?.is_open_now || false;
+	const { isFavorite, toggleFavorite } = useFavorites();
+	const { addHistoryEntry } = useHistory();
+	const { state } = useContext(RootContext);
 
 	useEffect(() => {
 		Animated.parallel([
@@ -40,6 +47,22 @@ const RestaurantCard = ({ index, result }: RestaurantCardProps) => {
 	}, []);
 
 	const handleYelpPress = () => {
+		// Track this as a manual selection when user opens Yelp
+		addHistoryEntry({
+			business: result,
+			source: 'manual',
+			context: {
+				locationText: state.location,
+				filters: {
+					openNow: state.filters.openNow,
+					categories: state.filters.categoryIds,
+					priceLevels: state.filters.priceLevels,
+					radiusMeters: state.filters.radiusMeters,
+					minRating: state.filters.minRating,
+				},
+			},
+		});
+		
 		Linking
 			.openURL(url)
 			.catch((err: any) => logSafe("RestaurantCard Yelp link error", { message: err?.message, url }));
@@ -52,6 +75,22 @@ const RestaurantCard = ({ index, result }: RestaurantCardProps) => {
 	};
 
 	const handleMapsPress = () => {
+		// Track this as a manual selection when user opens Maps
+		addHistoryEntry({
+			business: result,
+			source: 'manual',
+			context: {
+				locationText: state.location,
+				filters: {
+					openNow: state.filters.openNow,
+					categories: state.filters.categoryIds,
+					priceLevels: state.filters.priceLevels,
+					radiusMeters: state.filters.radiusMeters,
+					minRating: state.filters.minRating,
+				},
+			},
+		});
+		
 		const address = location.display_address.join(', ');
 		const encodedAddress = encodeURIComponent(address);
 		
@@ -73,12 +112,23 @@ const RestaurantCard = ({ index, result }: RestaurantCardProps) => {
 					resizeMode="cover"
 				/>
 				<Text style={styles.index}>{index + 1}.</Text>
-				<Icon
-					style={styles.iconFavorite}
-					name="favorite-border"
-					size={24}
-					color={AppStyles.color.primary}
-				/>
+				<Pressable
+					style={styles.favoriteButton}
+					onPress={() => toggleFavorite(result)}
+					android_ripple={{
+						color: "rgba(255,255,255,0.3)",
+						radius: 20,
+						borderless: true,
+					}}
+					accessibilityLabel={isFavorite(result.id) ? "Remove from favorites" : "Add to favorites"}
+				>
+					<Ionicons
+						name={isFavorite(result.id) ? "heart" : "heart-outline"}
+						size={24}
+						color={isFavorite(result.id) ? AppStyles.color.yelp : AppStyles.color.white}
+						style={styles.iconFavorite}
+					/>
+				</Pressable>
 			</View>
 			<View style={styles.detail}>
 				<View style={styles.detailHeader}>
@@ -244,10 +294,25 @@ const styles = StyleSheet.create({
 		flex: 1,
 		flexDirection: "row",
 	},
-	iconFavorite: {
-		padding: 16,
+	favoriteButton: {
+		padding: 8,
 		position: "absolute",
-		right: 0,
+		right: 8,
+		top: 8,
+		backgroundColor: "rgba(0,0,0,0.2)",
+		borderRadius: 20,
+		width: 40,
+		height: 40,
+		justifyContent: "center",
+		alignItems: "center",
+	},
+	iconFavorite: {
+		textShadowColor: AppStyles.color.black,
+		textShadowOffset: {
+			width: 0,
+			height: 0,
+		},
+		textShadowRadius: 4,
 	},
 	imageContainer: {
 		borderTopLeftRadius: 16,

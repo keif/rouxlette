@@ -6,6 +6,7 @@ import useResultsPersistence from "./useResultsPersistence";
 import { v4 as uuid } from "uuid";
 import { logSafe, logArray, logNetwork } from "../utils/log";
 import { LocationObjectCoords } from "expo-location";
+import { ResolvedLocation } from "./useLocation";
 
 export const PRICE_OPTIONS = [`$`, `$$`, `$$$`, `$$$$`];
 
@@ -100,7 +101,7 @@ export default function useResults() {
 					businesses: cachedResults,
 				};
 				setResults(cachedResultsObj);
-				logArray('useResults cached businesses', cachedResults, { limit: 3 });
+				logArray('useResults cached businesses', cachedResults, 3);
 				return;
 			}
 
@@ -130,10 +131,9 @@ export default function useResults() {
 				params: searchParams
 			});
 
-			logNetwork('useResults API response', {
-				businessCount: response.data.businesses?.length || 0,
+			logNetwork('GET', '/businesses/search', searchParams, {
 				status: response.status,
-				url: response.config?.url
+				data: response.data,
 			});
 
 			if (response.data && response.data.businesses) {
@@ -142,7 +142,7 @@ export default function useResults() {
 					return !business.is_closed;
 				});
 
-				logArray('useResults filtered businesses', onlyOpenBusinesses, { limit: 3 });
+				logArray('useResults filtered businesses', onlyOpenBusinesses, 3);
 
 				// Create final results object
 				const finalResults = {
@@ -180,6 +180,131 @@ export default function useResults() {
 		}
 	}, [resultsPersistence]);
 
+	/**
+	 * Enhanced search API that resolves location ambiguity and prefers coordinates
+	 * This addresses the "Powell, WY vs Powell, OH" problem by using location resolver
+	 * 
+	 * @param searchTerm - Restaurant/food search term  
+	 * @param resolvedLocation - ResolvedLocation from location resolver
+	 */
+	const searchApiWithResolver = useCallback(async (
+		searchTerm: string,
+		resolvedLocation: ResolvedLocation
+	) => {
+		try {
+			devLog('Enhanced search starting:', { 
+				searchTerm, 
+				location: resolvedLocation.label,
+				coords: resolvedLocation.coords,
+				source: resolvedLocation.source
+			});
+			setErrorMessage('');
+
+			// Generate cache key based on location type
+			let cacheKey: string;
+			const termNorm = searchTerm.toLowerCase().trim();
+			
+			if (resolvedLocation.coords) {
+				// Use coordinates for precise cache key (rounded to ~100m precision)
+				const lat = resolvedLocation.coords.latitude.toFixed(3);
+				const lng = resolvedLocation.coords.longitude.toFixed(3);
+				cacheKey = `search:${lat},${lng}:${termNorm}`;
+			} else {
+				// Use normalized label for cache key
+				const labelNorm = resolvedLocation.label.toLowerCase().replace(/[^a-z0-9]/g, '-');
+				cacheKey = `search:${labelNorm}:${termNorm}`;
+			}
+
+			devLog('Using cache key:', cacheKey);
+
+			// Try to get cached results with the specific cache key
+			const cachedResults = await resultsPersistence.getCachedResultsByKey(cacheKey);
+			if (cachedResults) {
+				const cachedResultsObj = {
+					id: uuid(),
+					businesses: cachedResults,
+				};
+				setResults(cachedResultsObj);
+				logArray('Enhanced search cached businesses', cachedResults, 3);
+				return;
+			}
+
+			devLog('No cache found, making API request with resolved location...');
+
+			// Build Yelp search parameters - prefer coordinates over location string
+			const searchParams: any = { term: searchTerm, limit: 50 };
+			
+			if (resolvedLocation.coords?.latitude && resolvedLocation.coords?.longitude) {
+				// PREFERRED: Use coordinates for most accurate search
+				searchParams.latitude = resolvedLocation.coords.latitude;
+				searchParams.longitude = resolvedLocation.coords.longitude;
+				searchParams.radius = 1600; // ~1 mile in meters
+				devLog('Using coordinates for Yelp search:', resolvedLocation.coords);
+			} else if (resolvedLocation.label) {
+				// FALLBACK: Use canonical location string (e.g., "Powell, OH")
+				searchParams.location = resolvedLocation.label;
+				devLog('Using canonical location string for Yelp search:', resolvedLocation.label);
+			} else {
+				devLog('No valid search location available');
+				setResults(INIT_RESULTS);
+				return;
+			}
+
+			// Make the Yelp API call
+			const response: AxiosResponse = await yelp.get('/businesses/search', {
+				params: searchParams
+			});
+
+			logNetwork('GET', '/businesses/search', searchParams, {
+				status: response.status,
+				data: response.data,
+			});
+
+			if (response.data && response.data.businesses) {
+				// Filter out closed businesses
+				const onlyOpenBusinesses = response.data.businesses.filter((business: BusinessProps) => {
+					return !business.is_closed;
+				});
+
+				logArray('Enhanced search filtered businesses', onlyOpenBusinesses, 3);
+
+				// Create final results object
+				const finalResults = {
+					id: uuid(),
+					businesses: [...onlyOpenBusinesses],
+				};
+
+				// Cache the results with the specific cache key
+				await resultsPersistence.cacheResultsByKey(cacheKey, onlyOpenBusinesses);
+				
+				setResults(finalResults);
+			} else {
+				devLog('No businesses in API response');
+				setResults(INIT_RESULTS);
+			}
+		} catch (err: any) {
+			logSafe(`[useResults] searchApiWithResolver error`, { 
+				message: err?.message, 
+				status: err?.response?.status,
+				code: err?.code,
+				location: resolvedLocation.label
+			});
+			
+			// Set user-friendly error message
+			if (err.response?.status === 429) {
+				setErrorMessage('Too many requests. Please wait a moment and try again.');
+			} else if (err.response?.status === 400) {
+				setErrorMessage('Invalid search parameters. Please check your location and try again.');
+			} else if (err.code === 'NETWORK_ERROR' || !err.response) {
+				setErrorMessage('Network error. Please check your internet connection.');
+			} else {
+				setErrorMessage('Search failed. Please try again.');
+			}
+			
+			setResults(INIT_RESULTS);
+		}
+	}, [resultsPersistence]);
+
 	// Clean up old cache entries periodically (optional)
 	useEffect(() => {
 		const cleanupInterval = setInterval(() => {
@@ -189,5 +314,5 @@ export default function useResults() {
 		return () => clearInterval(cleanupInterval);
 	}, [resultsPersistence]);
 
-	return [errorMessage, results, searchApi] as const;
+	return [errorMessage, results, searchApi, searchApiWithResolver] as const;
 }

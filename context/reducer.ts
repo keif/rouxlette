@@ -1,5 +1,6 @@
 import { AppState, Filter, Filters, SpinHistory, initialFilters } from "./state";
 import { logSafe } from "../utils/log";
+import { deepEqual } from "../utils/deepEqual";
 import {
 	ActionType,
 	AppActions,
@@ -14,6 +15,10 @@ import {
 	SetShowFilter,
 	AddFavorite,
 	RemoveFavorite,
+	HydrateFavorites,
+	AddHistory,
+	ClearHistory,
+	HydrateHistory,
 	AddSpinHistory,
 	SetSelectedBusiness,
 	ShowBusinessModal,
@@ -21,6 +26,15 @@ import {
 } from "./actions";
 import { CategoryProps, BusinessProps } from "../hooks/useResults";
 import { YelpBusiness } from "../types/yelp";
+import { FavoriteItem, HistoryItem, HISTORY_MAX_ITEMS } from "../types/favorites";
+
+// Normalize history items with stable ordering and cap
+function normalizeHistory(items: HistoryItem[]): HistoryItem[] {
+  // Stable sort: newest first by selectedAt, then by id for determinism  
+  return [...items]
+    .sort((a, b) => (b.selectedAt - a.selectedAt) || a.id.localeCompare(b.id))
+    .slice(0, HISTORY_MAX_ITEMS);
+}
 
 export function appReducer(state: AppState, action: AppActions): AppState {
 	switch (action.type) {
@@ -59,14 +73,45 @@ export function appReducer(state: AppState, action: AppActions): AppState {
 				showFilter: action.payload.showFilter,
 			};
 		case ActionType.AddFavorite:
+			// De-dupe by businessId, upsert and refresh addedAt
+			const existingFavorites = state.favorites.filter(f => f.id !== action.payload.favorite.id);
 			return {
 				...state,
-				favorites: [...state.favorites, action.payload.restaurant],
+				favorites: [...existingFavorites, action.payload.favorite],
 			};
 		case ActionType.RemoveFavorite:
 			return {
 				...state,
-				favorites: state.favorites.filter(r => r.id !== action.payload.restaurantId),
+				favorites: state.favorites.filter(f => f.id !== action.payload.businessId),
+			};
+		case ActionType.HydrateFavorites:
+			return {
+				...state,
+				favorites: action.payload.favorites,
+			};
+		case ActionType.AddHistory:
+			// Dedupe by id, then normalize with stable sorting and cap
+			const nextHistory = normalizeHistory([
+				action.payload.history, 
+				...state.history.filter(h => h.id !== action.payload.history.id)
+			]);
+			if (deepEqual(state.history, nextHistory)) return state;
+			return {
+				...state,
+				history: nextHistory,
+			};
+		case ActionType.ClearHistory:
+			if (state.history.length === 0) return state;
+			return {
+				...state,
+				history: [],
+			};
+		case ActionType.HydrateHistory:
+			const normalizedHistory = normalizeHistory(action.payload.history ?? []);
+			if (deepEqual(state.history, normalizedHistory)) return state;
+			return {
+				...state,
+				history: normalizedHistory,
 			};
 		case ActionType.AddSpinHistory:
 			return {
@@ -142,14 +187,33 @@ export const setShowFilter = (showFilter: boolean): SetShowFilter => ({
 	payload: { showFilter },
 });
 
-export const addFavorite = (restaurant: BusinessProps): AddFavorite => ({
+export const addFavorite = (favorite: FavoriteItem): AddFavorite => ({
 	type: ActionType.AddFavorite,
-	payload: { restaurant },
+	payload: { favorite },
 });
 
-export const removeFavorite = (restaurantId: string): RemoveFavorite => ({
+export const removeFavorite = (businessId: string): RemoveFavorite => ({
 	type: ActionType.RemoveFavorite,
-	payload: { restaurantId },
+	payload: { businessId },
+});
+
+export const hydrateFavorites = (favorites: FavoriteItem[]): HydrateFavorites => ({
+	type: ActionType.HydrateFavorites,
+	payload: { favorites },
+});
+
+export const addHistory = (history: HistoryItem): AddHistory => ({
+	type: ActionType.AddHistory,
+	payload: { history },
+});
+
+export const clearHistory = (): ClearHistory => ({
+	type: ActionType.ClearHistory,
+});
+
+export const hydrateHistory = (history: HistoryItem[]): HydrateHistory => ({
+	type: ActionType.HydrateHistory,
+	payload: { history },
 });
 
 export const addSpinHistory = (spin: SpinHistory): AddSpinHistory => ({

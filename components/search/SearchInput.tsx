@@ -19,20 +19,59 @@ interface SearchBarProps {
 }
 
 const SearchInput = ({ onBlur, onFocus, placeholder, setErrorMessage, setResults, setTerm, term }: SearchBarProps) => {
-	const [locationErrorMessage, city, coords, locationResults, searchLocation, isLocationLoading] = useLocation();
-	const [errorMessage, results, searchApi] = useResults();
+	const [locationErrorMessage, city, canonicalLocation, coords, locationResults, searchLocation, resolveSearchArea, isLocationLoading] = useLocation();
+	const [errorMessage, results, searchApi, searchApiWithResolver] = useResults();
 	const [searchClicked, setSearchClick] = useState<boolean>(false);
 
-	const handleDoneEditing = async (term: string, city: string) => {
+	// Enhanced handleDoneEditing that resolves location ambiguity
+	const handleDoneEditing = async (term: string, locationQuery: string) => {
 		if (__DEV__) {
-			logSafe('[SearchInput] handleDoneEditing', { term, city, hasCoords: !!coords });
+			logSafe('[SearchInput] Enhanced handleDoneEditing', { 
+				term, 
+				locationQuery, 
+				hasCoords: !!coords 
+			});
 		}
-		await searchApi(term, city, coords);
+		
+		try {
+			// Step 1: Resolve the search area using enhanced location resolver
+			const resolvedLocation = await resolveSearchArea(locationQuery);
+			
+			if (!resolvedLocation) {
+				logSafe('[SearchInput] Failed to resolve location, falling back to legacy search');
+				await searchApi(term, locationQuery, coords);
+				return;
+			}
+			
+			if (__DEV__) {
+				logSafe('[SearchInput] Resolved location:', {
+					query: locationQuery,
+					resolved: resolvedLocation.label,
+					coords: resolvedLocation.coords,
+					source: resolvedLocation.source
+				});
+			}
+			
+			// Step 2: Search using the resolved location
+			await searchApiWithResolver(term, resolvedLocation);
+			
+		} catch (error: any) {
+			logSafe('[SearchInput] Error in enhanced search flow', { 
+				message: error?.message, 
+				term,
+				locationQuery 
+			});
+			
+			// Fallback to legacy search on error
+			await searchApi(term, locationQuery, coords);
+		}
 	};
 
 	useEffect(() => {
-		handleDoneEditing(term, city);
-	}, [city, coords]);
+		// Use canonical location when available, fallback to city
+		const locationToUse = canonicalLocation || city;
+		handleDoneEditing(term, locationToUse);
+	}, [city, canonicalLocation, coords]);
 
 	useEffect(() => {
 		setResults(results);
