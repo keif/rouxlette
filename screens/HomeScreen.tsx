@@ -6,7 +6,7 @@ import { StatusBar } from 'expo-status-bar';
 import { View } from '../components/Themed';
 import RouletteButton from '../components/shared/RouletteButton';
 import QuickActionsPanel from '../components/search/QuickActionsPanel';
-import CategoryCard from '../components/shared/CategoryCard';
+import PopularCategories from '../components/search/PopularCategories';
 import ErrorMessageView from '../components/shared/ErrorMessageView';
 import DevLocationDebug from '../components/shared/DevLocationDebug';
 import FiltersSheet from '../components/filter/FiltersSheet';
@@ -34,9 +34,13 @@ const HomeScreen: React.FC = () => {
   const { state, dispatch } = useContext(RootContext);
   const [errorMessage, setErrorMessage] = useState('');
   const [searchTerm, setSearchTerm] = useState('');
-  const [, searchResults, searchApi, searchApiWithResolver] = useResults();
+  const [isSearching, setIsSearching] = useState(false);
+  const [, searchResults, searchApi, searchApiWithResolver, resultsLoading] = useResults();
   const [, city, canonicalLocation, coords, , searchLocation, resolveSearchArea, isLocationLoading] = useLocation();
   const { addHistoryEntry } = useHistory();
+
+  // Use results hook loading state for UI
+  const isLoading = resultsLoading || isSearching;
 
   // Filter persistence is handled by SearchScreen
 
@@ -96,6 +100,7 @@ const HomeScreen: React.FC = () => {
   const handleSearch = async (term: string) => {
     setSearchTerm(term);
     if (term.trim()) {
+      setIsSearching(true);
       try {
         // Use enhanced resolver for better location accuracy
         const resolvedLocation = await resolveSearchArea(state.location || canonicalLocation);
@@ -111,12 +116,17 @@ const HomeScreen: React.FC = () => {
         }
       } catch (error) {
         setErrorMessage('Failed to search restaurants. Please try again.');
+      } finally {
+        setIsSearching(false);
       }
     }
   };
 
   const handleCategoryPress = async (categoryTerm: string) => {
+    // Immediately update search term for UI
     setSearchTerm(categoryTerm);
+    setIsSearching(true);
+    
     try {
       // Use enhanced resolver for better location accuracy
       const resolvedLocation = await resolveSearchArea(state.location || canonicalLocation);
@@ -132,6 +142,8 @@ const HomeScreen: React.FC = () => {
       }
     } catch (error) {
       setErrorMessage('Failed to search restaurants. Please try again.');
+    } finally {
+      setIsSearching(false);
     }
   };
 
@@ -169,7 +181,7 @@ const HomeScreen: React.FC = () => {
           <View style={styles.heroSection}>
             <RouletteButton
               onSpin={handleRouletteSpIn}
-              disabled={!hasResults}
+              disabled={!hasResults || isLoading}
             />
           </View>
 
@@ -178,6 +190,8 @@ const HomeScreen: React.FC = () => {
             <QuickActionsPanel
               onSearch={handleSearch}
               setErrorMessage={setErrorMessage}
+              externalQuery={searchTerm}
+              isLoading={isLoading}
             />
           </View>
 
@@ -205,23 +219,11 @@ const HomeScreen: React.FC = () => {
           ) : null}
 
           {/* Featured Categories */}
-          <View style={styles.categoriesSection}>
-            <Text style={styles.sectionTitle}>Popular Categories</Text>
-            <ScrollView 
-              horizontal 
-              showsHorizontalScrollIndicator={false}
-              contentContainerStyle={styles.categoriesScroll}
-            >
-              {FEATURED_CATEGORIES.map((category, index) => (
-                <CategoryCard
-                  key={index}
-                  title={category.title}
-                  emoji={category.emoji}
-                  onPress={() => handleCategoryPress(category.term)}
-                />
-              ))}
-            </ScrollView>
-          </View>
+          <PopularCategories
+            categories={FEATURED_CATEGORIES}
+            onSelect={handleCategoryPress}
+            disabled={isLoading}
+          />
 
           {/* Recent Spins */}
           {state.spinHistory.length > 0 && (
@@ -340,18 +342,12 @@ const styles = StyleSheet.create({
     color: AppStyles.color.roulette.green,
     textAlign: 'center',
   },
-  categoriesSection: {
-    marginTop: 32,
-  },
   sectionTitle: {
     fontSize: 20,
     fontFamily: AppStyles.fonts.bold,
     color: AppStyles.color.greydark,
     marginHorizontal: 16,
     marginBottom: 16,
-  },
-  categoriesScroll: {
-    paddingHorizontal: 8,
   },
   historySection: {
     marginTop: 32,

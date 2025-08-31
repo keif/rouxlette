@@ -75,6 +75,7 @@ export const INIT_RESULTS: ResultsProps = { id: ``, businesses: [] };
 export default function useResults() {
 	const [errorMessage, setErrorMessage] = useState<string>(``);
 	const [results, setResults] = useState<ResultsProps>(INIT_RESULTS);
+	const [isLoading, setIsLoading] = useState<boolean>(false);
 	const resultsPersistence = useResultsPersistence();
 
 	// Dev logging helper
@@ -89,6 +90,7 @@ export default function useResults() {
 		location = `columbus`, 
 		coords: LocationObjectCoords | null = null
 	) => {
+		setIsLoading(true);
 		try {
 			devLog('Starting search:', { searchTerm, location, coords: coords ? `${coords.latitude},${coords.longitude}` : 'none' });
 			setErrorMessage('');
@@ -178,6 +180,8 @@ export default function useResults() {
 			}
 			
 			setResults(INIT_RESULTS);
+		} finally {
+			setIsLoading(false);
 		}
 	}, [resultsPersistence]);
 
@@ -192,6 +196,7 @@ export default function useResults() {
 		searchTerm: string,
 		resolvedLocation: ResolvedLocation
 	) => {
+		setIsLoading(true);
 		try {
 			devLog('Enhanced search starting:', { 
 				searchTerm, 
@@ -296,6 +301,8 @@ export default function useResults() {
 			}
 			
 			setResults(INIT_RESULTS);
+		} finally {
+			setIsLoading(false);
 		}
 	}, [resultsPersistence]);
 
@@ -308,5 +315,5 @@ export default function useResults() {
 		return () => clearInterval(cleanupInterval);
 	}, [resultsPersistence]);
 
-	return [errorMessage, results, searchApi, searchApiWithResolver] as const;
+	return [errorMessage, results, searchApi, searchApiWithResolver, isLoading] as const;
 }

@@ -1,6 +1,6 @@
 import { Feather } from "@expo/vector-icons";
 import React, { Dispatch, SetStateAction, useEffect, useState } from "react";
-import { StyleSheet, TextInput } from "react-native";
+import { StyleSheet, TextInput, ActivityIndicator } from "react-native";
 import { View } from "../Themed";
 import useResults, { ResultsProps } from "../../hooks/useResults";
 import AppStyles from "../../AppStyles";
@@ -16,15 +16,43 @@ interface SearchBarProps {
 	setResults: Dispatch<SetStateAction<ResultsProps>>;
 	setTerm: Dispatch<SetStateAction<string>>;
 	term: string;
+	externalQuery?: string;
+	isLoading?: boolean;
 }
 
-const SearchInput = ({ onBlur, onFocus, placeholder, setErrorMessage, setResults, setTerm, term }: SearchBarProps) => {
+const SearchInput = ({ 
+	onBlur, 
+	onFocus, 
+	placeholder, 
+	setErrorMessage, 
+	setResults, 
+	setTerm, 
+	term, 
+	externalQuery, 
+	isLoading = false 
+}: SearchBarProps) => {
 	const [locationErrorMessage, city, canonicalLocation, coords, locationResults, searchLocation, resolveSearchArea, isLocationLoading] = useLocation();
 	const [errorMessage, results, searchApi, searchApiWithResolver] = useResults();
 	const [searchClicked, setSearchClick] = useState<boolean>(false);
+	const [internalTerm, setInternalTerm] = useState(term);
+
+	// Sync internal term with external query
+	useEffect(() => {
+		if (typeof externalQuery === 'string') {
+			setInternalTerm(externalQuery);
+		}
+	}, [externalQuery]);
+
+	// Sync internal term with prop
+	useEffect(() => {
+		setInternalTerm(term);
+	}, [term]);
 
 	// Enhanced handleDoneEditing that resolves location ambiguity
 	const handleDoneEditing = async (term: string, locationQuery: string) => {
+		// Prevent double submits when loading
+		if (isLoading) return;
+		
 		if (__DEV__) {
 			logSafe('[SearchInput] Enhanced handleDoneEditing', { 
 				term, 
@@ -96,8 +124,12 @@ const SearchInput = ({ onBlur, onFocus, placeholder, setErrorMessage, setResults
 							if (onBlur) onBlur();
 							setSearchClick(false);
 						}}
-						onChangeText={setTerm}
-						onEndEditing={(props) => handleDoneEditing(term, city)}
+						onChangeText={(text) => {
+							setInternalTerm(text);
+							setTerm(text);
+						}}
+						onEndEditing={() => handleDoneEditing(internalTerm, city)}
+						onSubmitEditing={() => handleDoneEditing(internalTerm, city)}
 						onFocus={() => {
 							if (onFocus) onFocus();
 							setSearchClick(true);
@@ -105,13 +137,21 @@ const SearchInput = ({ onBlur, onFocus, placeholder, setErrorMessage, setResults
 						placeholder={placeholder}
 						placeholderTextColor="#999"
 						style={styles.input}
-						value={term}
+						value={internalTerm}
 					/>
-					{searchClicked ? (
+					{isLoading ? (
+						<ActivityIndicator 
+							testID="qa-search-spinner"
+							size="small" 
+							color={AppStyles.color.roulette.gold} 
+							style={styles.spinner}
+						/>
+					) : searchClicked ? (
 						<ClearButton
 							onPress={() => {
-								handleDoneEditing(term, city);
+								handleDoneEditing(internalTerm, city);
 								setTerm(``);
+								setInternalTerm(``);
 							}}
 						/>
 					) : null}
@@ -138,6 +178,10 @@ const styles = StyleSheet.create({
 		backgroundColor: AppStyles.color.white,
 		flexDirection: `row`,
 		...AppStyles.TextInputWrapper,
+	},
+	spinner: {
+		marginRight: 12,
+		alignSelf: 'center',
 	},
 });
 

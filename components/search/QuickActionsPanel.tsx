@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { StyleSheet } from 'react-native';
 import { View } from '../Themed';
 import SearchInput from './SearchInput';
@@ -8,17 +8,27 @@ interface QuickActionsPanelProps {
   onSearch?: (term: string) => void;
   setErrorMessage: (message: string) => void;
   setResults?: (results: any) => void;
+  externalQuery?: string;
+  isLoading?: boolean;
 }
 
 const QuickActionsPanel: React.FC<QuickActionsPanelProps> = ({ 
   onSearch, 
   setErrorMessage,
-  setResults 
+  setResults,
+  externalQuery,
+  isLoading = false,
 }) => {
   const [searchTerm, setSearchTerm] = useState('');
 
+  useEffect(() => {
+    if (typeof externalQuery === 'string') {
+      setSearchTerm(externalQuery);
+    }
+  }, [externalQuery]);
+
   const handleSearchTermChange = (term: string) => {
-    setSearchTerm(term);
+  setSearchTerm(term);
     if (onSearch) {
       onSearch(term);
     }
@@ -33,6 +43,8 @@ const QuickActionsPanel: React.FC<QuickActionsPanelProps> = ({
           setResults={setResults || (() => {})}
           setTerm={handleSearchTermChange}
           term={searchTerm}
+          externalQuery={externalQuery}
+          isLoading={isLoading}
           onFocus={() => {}}
         />
       </View>

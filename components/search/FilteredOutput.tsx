@@ -1,5 +1,5 @@
 import { Text, View } from "../Themed";
-import React, { useContext, useEffect, useState } from "react";
+import React, { useContext } from "react";
 import { ResultsProps } from "../../hooks/useResults";
 import { Pressable, StyleSheet } from "react-native";
 import ResultsList from "../results/ResultsList";
@@ -15,31 +15,23 @@ interface FilteredOutputProps {
 	filterTerm: string;
 	searchResults: ResultsProps;
 	filteredResults: ResultsProps;
+	isLoading?: boolean;
 }
 
-const FilteredOutput = ({ term, filterTerm, searchResults, filteredResults }: FilteredOutputProps) => {
+const FilteredOutput = ({ term, filterTerm, searchResults, filteredResults, isLoading = false }: FilteredOutputProps) => {
 	const { state, dispatch } = useContext(RootContext);
-	const [searchTerm, setSearchTerm] = useState(term);
-	let filterResults;
 	const hasSearchTerm = term.trim().length > 0;
 
 	const filteredBusinesses = filteredResults?.businesses ?? [];
 	const searchBusinesses = searchResults?.businesses ?? [];
-	
-	if (filteredBusinesses.length > 0) {
-		// filterResults = searchResults.filter(searchRes => !filteredResults.find(filteredRes => filteredRes.id !== searchRes.id));
-		filterResults = { ...filteredResults, businesses: filteredBusinesses };
-	} else {
-		filterResults = { ...searchResults, businesses: searchBusinesses };
-	}
+
+	const mergedResults: ResultsProps = filteredBusinesses.length > 0
+		? { ...searchResults, ...filteredResults, businesses: filteredBusinesses }
+		: { ...filteredResults, ...searchResults, businesses: searchBusinesses };
 
 	const handleFilterPress = () => {
 		dispatch(setShowFilter(!state.showFilter));
 	};
-
-	useEffect(() => {
-		setSearchTerm(term);
-	}, [filterResults.id]);
 
 	if (!hasSearchTerm) {
 		return null;
@@ -50,7 +42,7 @@ const FilteredOutput = ({ term, filterTerm, searchResults, filteredResults }: Fi
 			<View style={styles.container}>
 				<View style={{ flexDirection: `row`, marginHorizontal: 12 }}>
 					<Text
-						style={styles.titleCount}>{(filterResults.businesses ?? []).length.toString()} for {term}{filterTerm !== `` ? `, without ${filterTerm}` : ``}</Text>
+						style={styles.titleCount}>{String((mergedResults.businesses ?? []).length)} for {term}{filterTerm !== `` ? `, without ${filterTerm}` : ``}</Text>
 					<Pressable
 						style={({ pressed }) => [
 							styles.button,
@@ -72,8 +64,9 @@ const FilteredOutput = ({ term, filterTerm, searchResults, filteredResults }: Fi
 				<ResultsList
 					filterTerm={filterTerm}
 					horizontal={false}
-					results={filterResults}
+					results={mergedResults}
 					term={term}
+					isLoading={isLoading}
 				/>
 			</View>
 			<FilterModal />

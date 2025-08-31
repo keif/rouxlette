@@ -2,7 +2,7 @@ import React, { useCallback, useContext, useEffect, useRef, useState } from "rea
 import { useFocusEffect, useNavigation, useRoute } from "@react-navigation/native";
 import { CategoryProps, INIT_RESULTS, PRICE_OPTIONS, ResultsProps } from "../hooks/useResults";
 import { RootTabScreenProps } from "../types";
-import { Animated, LayoutAnimation, Platform, StyleSheet, UIManager, Pressable } from "react-native";
+import { Animated, LayoutAnimation, Platform, StyleSheet, UIManager, Pressable, ActivityIndicator } from "react-native";
 import { View, Text } from "../components/Themed";
 import SearchInput from "../components/search/SearchInput";
 import LocationInput from "../components/search/LocationInput";
@@ -68,7 +68,7 @@ const SearchScreen = () => {
 				duration: 500,
 				toValue: 20,
 				// toValue: hasFocus ? 20 : 0,
-				useNativeDriver: true,
+				useNativeDriver: false,
 			}).start();
 
 			setToggleStyle(false);
@@ -95,7 +95,7 @@ const SearchScreen = () => {
 		if (hasFocus || hasSearchResults) {
 			setToggleStyle(false);
 		}
-	}, [hasFocus]);
+	}, [hasFocus, hasSearchResults]);
 
 	// Apply new client-side filters
 	useEffect(() => {
@@ -111,6 +111,7 @@ const SearchScreen = () => {
 	}, [searchResults, state.filters]);
 
 	const hasSearchResults = searchResults && (searchResults.businesses ?? []).length > 0;
+	const isSearching = hasFocus && term.trim().length > 0 && !hasSearchResults && errorMessage === '';
 	return (
 		<SafeAreaProvider>
 			<View style={[styles.container, toggleStyle ? styles.containerRow : styles.containerColumn]}>
@@ -159,19 +160,28 @@ const SearchScreen = () => {
 							) : null
 						}
 					</Animated.View>
-					{errorMessage !== `` ?
+					{isSearching && (
+						<View style={{ paddingVertical: 24, alignItems: 'center' }}>
+							<ActivityIndicator size="large" />
+							<Text style={{ marginTop: 10 }}>Searching…</Text>
+						</View>
+					)}
+					{errorMessage !== `` ? (
 						<View>
 							<ErrorMessageView text={errorMessage} />
 						</View>
-						: null}
-					{
-						hasSearchResults ? (
-							<View>
-								<FilteredOutput term={term} filterTerm={filterTerm} searchResults={searchResults}
-												filteredResults={filterResults} />
-							</View>
-						) : null
-					}
+					) : null}
+					{hasSearchResults ? (
+						<View>
+							<FilteredOutput
+								term={term}
+								filterTerm={filterTerm}
+								searchResults={searchResults}
+								filteredResults={filterResults}
+								isLoading={isSearching}
+							/>
+						</View>
+					) : null}
 				</View>
 				<StatusBar style={Platform.OS === "ios" ? "light" : "auto"} />
 
