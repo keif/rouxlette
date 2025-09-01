@@ -14,9 +14,6 @@ interface BusinessDetailsProps {
 }
 
 export function BusinessDetails({ business, onYelp, onClose }: BusinessDetailsProps) {
-  console.log('Rendering BusinessDetails for:', business.name);
-  console.log('Business Object:', business);
-  
   // Convert YelpBusiness to BusinessProps for the hook
   const businessForHook: BusinessProps = {
     id: business.id,

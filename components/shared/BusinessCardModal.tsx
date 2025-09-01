@@ -8,8 +8,6 @@ import { BusinessDetails } from './BusinessDetails';
 import AppStyles from '../../AppStyles';
 
 export function BusinessCardModal() {
-  console.log('Rendering BusinessCardModal');
-  console.log('RootContext state:', useContext(RootContext).state);
   const { state, dispatch } = useContext(RootContext);
   const [showDetails, setShowDetails] = useState(false);
   const { width: winW, height: winH } = useWindowDimensions();
