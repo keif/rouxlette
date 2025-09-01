@@ -83,7 +83,7 @@ export function BusinessCardModal() {
               {/* Content */}
               <ScrollView
                 style={styles.content}
-                contentContainerStyle={{ paddingHorizontal: 16, paddingBottom: insets.bottom + 8 }}
+                contentContainerStyle={{ paddingHorizontal: 16 }}
                 showsVerticalScrollIndicator={true}
                 contentInsetAdjustmentBehavior="always"
                 keyboardShouldPersistTaps="handled"
@@ -118,7 +118,7 @@ const styles = StyleSheet.create({
     flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
-    paddingHorizontal: 10,
+    paddingHorizontal: 8,
   },
   modal: {
     backgroundColor: AppStyles.color.white,
@@ -161,6 +161,7 @@ const styles = StyleSheet.create({
   },
   content: {
     maxHeight: '100%',
+    minWidth: '95%',
     // ScrollView gets padding via contentContainerStyle to avoid double padding
   },
 });

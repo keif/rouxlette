@@ -202,15 +202,8 @@ export function BusinessQuickInfo({ business, onDetails, onClose }: BusinessQuic
 
 const styles = StyleSheet.create({
   container: {
-    backgroundColor: AppStyles.color.white,
-    borderRadius: 20,
-    padding: 16,
-    shadowColor: '#000',
-    shadowOpacity: 0.08,
-    shadowRadius: 12,
-    shadowOffset: { width: 0, height: 6 },
-    elevation: 4,
-    overflow: 'hidden',
+    backgroundColor: 'transparent',
+    paddingVertical: 16,
     alignSelf: 'stretch',
     minWidth: 0,
   },
@@ -328,7 +321,7 @@ const styles = StyleSheet.create({
     fontFamily: AppStyles.fonts.medium,
     color: AppStyles.color.greydark,
     flex: 1,
-    marginRight: 8,
+    marginRight: 6,
     minWidth: 0,
   },
   statusTag: {

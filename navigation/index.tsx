@@ -12,6 +12,7 @@ import { SavedTabNavigator } from "./SavedTabNavigator";
 import { createMaterialTopTabNavigator } from "@react-navigation/material-top-tabs";
 import AppStyles from "../AppStyles";
 import { Ionicons } from "@expo/vector-icons";
+import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context';
 
 export default function Navigation({ colorScheme }: { colorScheme: ColorSchemeName }) {
 	return (
@@ -48,63 +49,69 @@ const Tabs = createMaterialTopTabNavigator<RootTabParamList>();
 
 function TopTabNavigator() {
 	const colorScheme = useColorScheme();
+	const insets = useSafeAreaInsets();
 
 	return (
+	  <SafeAreaView edges={["top"]} style={{ flex: 1, backgroundColor: AppStyles.color.white }}>
 		<Tabs.Navigator
-			initialRouteName={"Home"}
-			screenOptions={{
-				tabBarActiveTintColor: AppStyles.color.roulette.gold,
-				tabBarInactiveTintColor: AppStyles.color.greylight,
-				tabBarStyle: { 
-					backgroundColor: AppStyles.color.white,
-					borderBottomWidth: 1,
-					borderBottomColor: AppStyles.color.background,
-				},
-				tabBarIndicatorStyle: {
-					backgroundColor: AppStyles.color.roulette.gold,
-					height: 3,
-				},
-				tabBarLabelStyle: {
-					fontSize: 14,
-					fontFamily: AppStyles.fonts.semiBold,
-					textTransform: 'none',
-				},
-				tabBarShowIcon: true,
-				tabBarIconStyle: {
-					marginBottom: 4,
-				},
-			}}
+		  initialRouteName={"Home"}
+		  screenOptions={{
+			tabBarActiveTintColor: AppStyles.color.roulette.gold,
+			tabBarInactiveTintColor: AppStyles.color.greylight,
+			tabBarStyle: {
+			  backgroundColor: AppStyles.color.white,
+			  borderBottomWidth: 1,
+			  borderBottomColor: AppStyles.color.background,
+			  // Give the tab bar a little breathing room below the notch even with SafeAreaView
+			  paddingTop: 4,
+			  minHeight: 44,
+			},
+			tabBarIndicatorStyle: {
+			  backgroundColor: AppStyles.color.roulette.gold,
+			  height: 3,
+			},
+			tabBarLabelStyle: {
+			  fontSize: 14,
+			  fontFamily: AppStyles.fonts.semiBold,
+			  textTransform: 'none',
+			},
+			tabBarShowIcon: true,
+			tabBarIconStyle: {
+			  marginBottom: 4,
+			},
+		  }}
 		>
-			<Tabs.Screen
-				component={HomeScreen}
-				name="Home"
-				options={{
-					title: "Home",
-					tabBarIcon: ({ color, focused }) => (
-						<Ionicons name={focused ? "home" : "home-outline"} size={20} color={color} />
-					),
-				}}
-			/>
-			<Tabs.Screen
-				component={SearchScreen}
-				name="Search"
-				options={{
-					title: "Search",
-					tabBarIcon: ({ color, focused }) => (
-						<Ionicons name={focused ? "search" : "search-outline"} size={20} color={color} />
-					),
-				}}
-			/>
-			<Tabs.Screen
-				component={SavedTabNavigator}
-				name="Saved"
-				options={{
-					title: "Saved",
-					tabBarIcon: ({ color, focused }) => (
-						<Ionicons name={focused ? "bookmark" : "bookmark-outline"} size={20} color={color} />
-					),
-				}}
-			/>
+		  <Tabs.Screen
+			component={HomeScreen}
+			name="Home"
+			options={{
+			  title: "Home",
+			  tabBarIcon: ({ color, focused }) => (
+				<Ionicons name={focused ? "home" : "home-outline"} size={20} color={color} />
+			  ),
+			}}
+		  />
+		  <Tabs.Screen
+			component={SearchScreen}
+			name="Search"
+			options={{
+			  title: "Search",
+			  tabBarIcon: ({ color, focused }) => (
+				<Ionicons name={focused ? "search" : "search-outline"} size={20} color={color} />
+			  ),
+			}}
+		  />
+		  <Tabs.Screen
+			component={SavedTabNavigator}
+			name="Saved"
+			options={{
+			  title: "Saved",
+			  tabBarIcon: ({ color, focused }) => (
+				<Ionicons name={focused ? "bookmark" : "bookmark-outline"} size={20} color={color} />
+			  ),
+			}}
+		  />
 		</Tabs.Navigator>
+	  </SafeAreaView>
 	);
 }

@@ -86,6 +86,7 @@ export function BusinessDetails({ business, onYelp, onClose }: BusinessDetailsPr
 
   return (
     <View style={styles.container}>
+      <View style={{ width: '100%', alignSelf: 'stretch' }}>
       {/* Title */}
       <Text style={styles.title} allowFontScaling numberOfLines={2} ellipsizeMode="tail" testID="bd-title">{business.name}</Text>
 
@@ -201,21 +202,15 @@ export function BusinessDetails({ business, onYelp, onClose }: BusinessDetailsPr
           </Pressable>
         )}
       </View>
+      </View>
     </View>
   );
 }
 
 const styles = StyleSheet.create({
   container: {
-    backgroundColor: AppStyles.color.white,
-    borderRadius: 20,
-    padding: 16,
-    shadowColor: '#000',
-    shadowOpacity: 0.08,
-    shadowRadius: 12,
-    shadowOffset: { width: 0, height: 6 },
-    elevation: 4,
-    overflow: 'hidden',
+    backgroundColor: 'transparent',
+    paddingVertical: 16,
     alignSelf: 'stretch',
     minWidth: 0,
   },
@@ -225,11 +220,12 @@ const styles = StyleSheet.create({
     fontWeight: '700',
     fontFamily: AppStyles.fonts.bold,
     color: AppStyles.color.greydark,
-    marginBottom: 20,
-    textAlign: 'center',
+    marginBottom: 16,
+    textAlign: 'left',
   },
   section: {
     marginBottom: 24,
+    minWidth: 0,
   },
   sectionTitle: {
     fontSize: 18,
@@ -251,9 +247,8 @@ const styles = StyleSheet.create({
   hoursContainer: {
     backgroundColor: AppStyles.color.background,
     borderRadius: 12,
-    padding: 16,
-    borderWidth: 1,
-    borderColor: AppStyles.color.greylight + '40',
+    padding: 8,
+    paddingHorizontal: 12,
   },
   hoursRow: {
     flexDirection: 'row',
@@ -266,7 +261,7 @@ const styles = StyleSheet.create({
     fontSize: 14,
     fontFamily: AppStyles.fonts.medium,
     color: AppStyles.color.greydark,
-    width: 80,
+    width: 90,
     minWidth: 0,
   },
   dayHours: {
