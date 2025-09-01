@@ -89,7 +89,7 @@ export default function useResults() {
 		searchTerm: string, 
 		location = `columbus`, 
 		coords: LocationObjectCoords | null = null
-	) => {
+	): Promise<BusinessProps[]> => {
 		setIsLoading(true);
 		try {
 			devLog('Starting search:', { searchTerm, location, coords: coords ? `${coords.latitude},${coords.longitude}` : 'none' });
@@ -98,13 +98,14 @@ export default function useResults() {
 			// First, try to get cached results
 			const cachedResults = await resultsPersistence.getCachedResults(location, searchTerm, coords);
 			if (cachedResults) {
+				const businesses = Array.isArray(cachedResults) ? cachedResults : [];
 				const cachedResultsObj: ResultsProps = {
 					id: uuid(),
-					businesses: Array.isArray(cachedResults) ? cachedResults : [],
+					businesses,
 				};
 				setResults(cachedResultsObj);
 				logArray('useResults cached businesses', cachedResults, 3);
-				return;
+				return businesses;
 			}
 
 			devLog('No cache found, making API request...');
@@ -157,9 +158,11 @@ export default function useResults() {
 				await resultsPersistence.cacheResults(location, searchTerm, onlyOpenBusinesses, coords);
 				
 				setResults(finalResults);
+				return onlyOpenBusinesses;
 			} else {
 				devLog('No businesses in API response');
 				setResults(INIT_RESULTS);
+				return [];
 			}
 		} catch (err: any) {
 			logSafe(`[useResults] searchApi error`, { 
@@ -180,6 +183,7 @@ export default function useResults() {
 			}
 			
 			setResults(INIT_RESULTS);
+			return [];
 		} finally {
 			setIsLoading(false);
 		}
@@ -195,7 +199,7 @@ export default function useResults() {
 	const searchApiWithResolver = useCallback(async (
 		searchTerm: string,
 		resolvedLocation: ResolvedLocation
-	) => {
+	): Promise<BusinessProps[]> => {
 		setIsLoading(true);
 		try {
 			devLog('Enhanced search starting:', { 
@@ -218,13 +222,14 @@ export default function useResults() {
 			// Try to get cached results with the specific cache key
 			const cachedResults = await resultsPersistence.getCachedResultsByKey(cacheKey);
 			if (cachedResults) {
+				const businesses = Array.isArray(cachedResults) ? cachedResults : [];
 				const cachedResultsObj: ResultsProps = {
 					id: uuid(),
-					businesses: Array.isArray(cachedResults) ? cachedResults : [],
+					businesses,
 				};
 				setResults(cachedResultsObj);
 				logArray('Enhanced search cached businesses', cachedResults, 3);
-				return;
+				return businesses;
 			}
 
 			devLog('No cache found, making API request with resolved location...');
@@ -277,9 +282,11 @@ export default function useResults() {
 				await resultsPersistence.cacheResultsByKey(cacheKey, onlyOpenBusinesses);
 				
 				setResults(finalResults);
+				return onlyOpenBusinesses;
 			} else {
 				devLog('No businesses in API response');
 				setResults(INIT_RESULTS);
+				return [];
 			}
 		} catch (err: any) {
 			logSafe(`[useResults] searchApiWithResolver error`, { 
@@ -301,6 +308,7 @@ export default function useResults() {
 			}
 			
 			setResults(INIT_RESULTS);
+			return [];
 		} finally {
 			setIsLoading(false);
 		}

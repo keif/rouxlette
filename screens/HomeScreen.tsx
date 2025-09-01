@@ -102,20 +102,22 @@ const HomeScreen: React.FC = () => {
     if (term.trim()) {
       setIsSearching(true);
       try {
+        let businesses: BusinessProps[] = [];
+        
         // Use enhanced resolver for better location accuracy
         const resolvedLocation = await resolveSearchArea(state.location || canonicalLocation);
         if (resolvedLocation) {
-          await searchApiWithResolver(term, resolvedLocation);
+          businesses = await searchApiWithResolver(term, resolvedLocation);
         } else {
           // Fallback to legacy search
-          await searchApi(term, state.location || 'Current Location', coords);
+          businesses = await searchApi(term, state.location || 'Current Location', coords);
         }
         
-        if (searchResults.businesses.length > 0) {
-          dispatch(setResults(searchResults.businesses));
-        }
+        // Always dispatch results, even if empty
+        dispatch(setResults(businesses));
       } catch (error) {
         setErrorMessage('Failed to search restaurants. Please try again.');
+        dispatch(setResults([])); // Clear results on error
       } finally {
         setIsSearching(false);
       }
@@ -128,20 +130,22 @@ const HomeScreen: React.FC = () => {
     setIsSearching(true);
     
     try {
+      let businesses: BusinessProps[] = [];
+      
       // Use enhanced resolver for better location accuracy
       const resolvedLocation = await resolveSearchArea(state.location || canonicalLocation);
       if (resolvedLocation) {
-        await searchApiWithResolver(categoryTerm, resolvedLocation);
+        businesses = await searchApiWithResolver(categoryTerm, resolvedLocation);
       } else {
         // Fallback to legacy search
-        await searchApi(categoryTerm, state.location || 'Current Location', coords);
+        businesses = await searchApi(categoryTerm, state.location || 'Current Location', coords);
       }
       
-      if (searchResults.businesses.length > 0) {
-        dispatch(setResults(searchResults.businesses));
-      }
+      // Always dispatch results, even if empty
+      dispatch(setResults(businesses));
     } catch (error) {
       setErrorMessage('Failed to search restaurants. Please try again.');
+      dispatch(setResults([])); // Clear results on error
     } finally {
       setIsSearching(false);
     }
