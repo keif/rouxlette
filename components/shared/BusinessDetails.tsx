@@ -1,5 +1,5 @@
 import React from 'react';
-import { View, Text, Pressable, StyleSheet, Linking, Platform, ActivityIndicator } from 'react-native';
+import { View, Text, Pressable, StyleSheet, Linking, Platform, ActivityIndicator, ScrollView } from 'react-native';
 import { YelpBusiness } from '../../types/yelp';
 import useBusinessHours from '../../hooks/useBusinessHours';
 import { useBusinessDetails } from '../../hooks/useBusinessDetails';
@@ -83,76 +83,80 @@ export function BusinessDetails({ business, onYelp, onClose }: BusinessDetailsPr
 
   return (
     <View style={styles.container}>
-      <View style={{ width: '100%', alignSelf: 'stretch' }}>
-      {/* Title */}
-      <Text style={styles.title} allowFontScaling numberOfLines={2} ellipsizeMode="tail" testID="bd-title">{business.name}</Text>
+      <ScrollView
+        style={styles.scroll}
+        contentContainerStyle={styles.scrollContent}
+        showsVerticalScrollIndicator
+        keyboardShouldPersistTaps="handled"
+      >
+        {/* Title */}
+        <Text style={styles.title} allowFontScaling numberOfLines={2} ellipsizeMode="tail" testID="bd-title">{business.name}</Text>
 
-      {/* Address */}
-      <View style={styles.section}>
-        <Text style={styles.sectionTitle} allowFontScaling>Address</Text>
-        <Text style={styles.address} allowFontScaling testID="bd-address">
-          {business.location?.display_address?.join(', ') || 'Address not available'}
-        </Text>
-      </View>
-
-      {/* Contact */}
-      <View style={styles.section}>
-        <Text style={styles.sectionTitle} allowFontScaling>Contact</Text>
-        <Text style={styles.phone} allowFontScaling testID="bd-phone">
-          {business.display_phone || business.phone || 'Phone not available'}
-        </Text>
-      </View>
-
-      {/* Weekly Hours */}
-      <View style={styles.section}>
-        <Text style={styles.sectionTitle} allowFontScaling>Hours</Text>
-        <View style={styles.hoursContainer} testID="bd-hours">
-          {detailsLoading && !richBusiness.hours?.[0] ? (
-            <View style={styles.hoursLoadingRow}>
-              <ActivityIndicator size="small" color={AppStyles.color.roulette.gold} />
-              <Text style={styles.noHours} allowFontScaling>Loading hours...</Text>
-            </View>
-          ) : richBusiness.hours?.[0]?.open?.length ? (
-            richBusiness.hours[0].open.map((slot: any, index: number) => {
-              const dayNames = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'];
-              const formatTime = (hhmm: string): string => {
-                const hour = parseInt(hhmm.slice(0, 2), 10);
-                const minute = hhmm.slice(2);
-                const date = new Date(2000, 0, 1, hour, parseInt(minute, 10));
-                return date.toLocaleTimeString([], { 
-                  hour: 'numeric', 
-                  minute: '2-digit',
-                  hour12: true
-                });
-              };
-              
-              return (
-                <View key={index} style={styles.hoursRow}>
-                  <Text style={styles.dayLabel} allowFontScaling>{dayNames[slot.day]}:</Text>
-                  <Text style={styles.dayHours} allowFontScaling>
-                    {formatTime(slot.start)} – {formatTime(slot.end)}
-                  </Text>
-                </View>
-              );
-            })
-          ) : weekly ? (
-            weekly.split('\n').map((line, index) => {
-              const [day, hours] = line.split(': ');
-              return (
-                <View key={index} style={styles.hoursRow}>
-                  <Text style={styles.dayLabel} allowFontScaling>{day}:</Text>
-                  <Text style={styles.dayHours} allowFontScaling>{hours}</Text>
-                </View>
-              );
-            })
-          ) : (
-            <Text style={styles.noHours} allowFontScaling>Hours not available</Text>
-          )}
+        {/* Address */}
+        <View style={styles.section}>
+          <Text style={styles.sectionTitle} allowFontScaling>Address</Text>
+          <Text style={styles.address} allowFontScaling testID="bd-address">
+            {business.location?.display_address?.join(', ') || 'Address not available'}
+          </Text>
         </View>
-      </View>
 
-      {/* Action Buttons */}
-      <View style={styles.buttonContainer}>
+        {/* Contact */}
+        <View style={styles.section}>
+          <Text style={styles.sectionTitle} allowFontScaling>Contact</Text>
+          <Text style={styles.phone} allowFontScaling testID="bd-phone">
+            {business.display_phone || business.phone || 'Phone not available'}
+          </Text>
+        </View>
+
+        {/* Weekly Hours */}
+        <View style={styles.section}>
+          <Text style={styles.sectionTitle} allowFontScaling>Hours</Text>
+          <View style={styles.hoursContainer} testID="bd-hours">
+            {detailsLoading && !richBusiness.hours?.[0] ? (
+              <View style={styles.hoursLoadingRow}>
+                <ActivityIndicator size="small" color={AppStyles.color.roulette.gold} />
+                <Text style={styles.noHours} allowFontScaling>Loading hours...</Text>
+              </View>
+            ) : richBusiness.hours?.[0]?.open?.length ? (
+              richBusiness.hours[0].open.map((slot: any, index: number) => {
+                const dayNames = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'];
+                const formatTime = (hhmm: string): string => {
+                  const hour = parseInt(hhmm.slice(0, 2), 10);
+                  const minute = hhmm.slice(2);
+                  const date = new Date(2000, 0, 1, hour, parseInt(minute, 10));
+                  return date.toLocaleTimeString([], { 
+                    hour: 'numeric', 
+                    minute: '2-digit',
+                    hour12: true
+                  });
+                };
+                
+                return (
+                  <View key={index} style={styles.hoursRow}>
+                    <Text style={styles.dayLabel} allowFontScaling>{dayNames[slot.day]}:</Text>
+                    <Text style={styles.dayHours} allowFontScaling>
+                      {formatTime(slot.start)} – {formatTime(slot.end)}
+                    </Text>
+                  </View>
+                );
+              })
+            ) : weekly ? (
+              weekly.split('\n').map((line, index) => {
+                const [day, hours] = line.split(': ');
+                return (
+                  <View key={index} style={styles.hoursRow}>
+                    <Text style={styles.dayLabel} allowFontScaling>{day}:</Text>
+                    <Text style={styles.dayHours} allowFontScaling>{hours}</Text>
+                  </View>
+                );
+              })
+            ) : (
+              <Text style={styles.noHours} allowFontScaling>Hours not available</Text>
+            )}
+          </View>
+        </View>
+
+        {/* Action Buttons */}
         <View style={styles.buttonRow}>
           {/* Map Button */}
           {business.location?.display_address && (
@@ -198,8 +202,7 @@ export function BusinessDetails({ business, onYelp, onClose }: BusinessDetailsPr
             <Text style={styles.closeButtonText} allowFontScaling>Close</Text>
           </Pressable>
         )}
-      </View>
-      </View>
+      </ScrollView>
     </View>
   );
 }
@@ -207,67 +210,78 @@ export function BusinessDetails({ business, onYelp, onClose }: BusinessDetailsPr
 const styles = StyleSheet.create({
   container: {
     backgroundColor: 'transparent',
-    paddingVertical: 16,
     alignSelf: 'stretch',
     minWidth: 0,
+    paddingHorizontal: 0,
+    paddingVertical: 0,
+  },
+  scroll: {
+    flexGrow: 0,
+  },
+  scrollContent: {
+    paddingHorizontal: 16,
+    paddingVertical: 16,
+    rowGap: 16,
   },
   title: {
     fontSize: 22,
     lineHeight: 24,
-    fontWeight: '700',
     fontFamily: AppStyles.fonts.bold,
     color: AppStyles.color.greydark,
     marginBottom: 16,
     textAlign: 'left',
   },
   section: {
-    marginBottom: 24,
+    marginBottom: 16,
     minWidth: 0,
   },
   sectionTitle: {
     fontSize: 18,
     fontFamily: AppStyles.fonts.bold,
     color: AppStyles.color.greydark,
-    marginBottom: 12,
+    marginBottom: 8,
   },
   address: {
     fontSize: 16,
     fontFamily: AppStyles.fonts.regular,
     color: AppStyles.color.greydark,
     lineHeight: 22,
+    flexShrink: 1,
+    minWidth: 0,
   },
   phone: {
     fontSize: 16,
     fontFamily: AppStyles.fonts.regular,
     color: AppStyles.color.greydark,
+    flexShrink: 1,
+    minWidth: 0,
   },
   hoursContainer: {
     backgroundColor: AppStyles.color.background,
     borderRadius: 12,
-    padding: 8,
-    paddingHorizontal: 12,
+    padding: 12,
+    rowGap: 6,
   },
   hoursRow: {
     flexDirection: 'row',
     justifyContent: 'space-between',
-    paddingVertical: 6,
     flexWrap: 'wrap',
     minWidth: 0,
   },
   dayLabel: {
-    fontSize: 14,
-    fontFamily: AppStyles.fonts.medium,
-    color: AppStyles.color.greydark,
     width: 90,
     minWidth: 0,
+    fontFamily: AppStyles.fonts.medium,
+    fontSize: 14,
+    color: AppStyles.color.greydark,
   },
   dayHours: {
-    fontSize: 14,
-    fontFamily: AppStyles.fonts.regular,
-    color: AppStyles.color.greylight,
     flex: 1,
     textAlign: 'right',
     minWidth: 0,
+    fontSize: 14,
+    color: AppStyles.color.greylight,
+    fontFamily: AppStyles.fonts.regular,
   },
   noHours: {
     fontSize: 14,
@@ -280,26 +294,22 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     gap: 8,
   },
-  buttonContainer: {
-    marginTop: 24,
-  },
   buttonRow: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     gap: 12,
-    marginBottom: 16,
     flexWrap: 'wrap',
   },
   actionButton: {
     flex: 1,
+    minHeight: 44,
     paddingVertical: 12,
-    backgroundColor: AppStyles.color.roulette.gold,
+    paddingHorizontal: 16,
     borderRadius: 12,
     alignItems: 'center',
-    minHeight: 44,
-    justifyContent: 'space-between',
+    justifyContent: 'center',
+    backgroundColor: AppStyles.color.roulette.gold,
     minWidth: 0,
-    maxWidth: 100,
   },
   actionButtonText: {
     fontSize: 14,
@@ -307,12 +317,12 @@ const styles = StyleSheet.create({
     color: AppStyles.color.white,
   },
   closeButton: {
-    paddingVertical: 12,
-    paddingHorizontal: 16,
-    backgroundColor: AppStyles.color.greylight,
-    borderRadius: 12,
-    alignItems: 'center',
+    marginTop: 8,
     minHeight: 44,
+    paddingVertical: 12,
+    borderRadius: 12,
+    backgroundColor: AppStyles.color.greylight,
+    alignItems: 'center',
     justifyContent: 'center',
   },
   closeButtonText: {
