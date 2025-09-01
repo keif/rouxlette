@@ -8,16 +8,23 @@ import { BusinessDetails } from './BusinessDetails';
 import AppStyles from '../../AppStyles';
 
 export function BusinessCardModal() {
+  console.log('Rendering BusinessCardModal');
+  console.log('RootContext state:', useContext(RootContext).state);
   const { state, dispatch } = useContext(RootContext);
   const [showDetails, setShowDetails] = useState(false);
-  const { width: winW } = useWindowDimensions();
+  const { width: winW, height: winH } = useWindowDimensions();
   const insets = useSafeAreaInsets();
-  
-  // Calculate modal container width with safe areas
-  const modalMaxWidth = Math.min(700, winW - 40);
-  
+
+  // Calculate modal container width accounting for safe areas and internal padding
+  const H_PADDING = 16 + insets.left + insets.right; // matches content padding
+  const modalMaxWidth = Math.min(700, Math.max(320, Math.floor(winW - H_PADDING * 2)));
+
+  // Calculate a taller modal max height using window height and safe areas
+  const V_MARGIN = 24; // top/bottom breathing space outside the sheet
+  const modalMaxHeight = Math.floor(winH - insets.top - insets.bottom - V_MARGIN * 2);
+
   const { isBusinessModalOpen, selectedBusiness } = state;
-  
+
   if (!selectedBusiness) {
     return null;
   }
@@ -50,7 +57,7 @@ export function BusinessCardModal() {
       >
         <View style={styles.modalContainer}>
           <Pressable onPress={(e) => e.stopPropagation()}>
-            <View style={[styles.modal, { maxWidth: modalMaxWidth, width: '100%' }]}>
+            <View style={[styles.modal, { maxWidth: modalMaxWidth, width: '100%', maxHeight: modalMaxHeight }]}>
               {/* Tab buttons */}
               <View style={styles.tabContainer}>
                 <Pressable
@@ -74,9 +81,10 @@ export function BusinessCardModal() {
               </View>
 
               {/* Content */}
-              <ScrollView 
-                style={styles.content} 
-                showsVerticalScrollIndicator={false}
+              <ScrollView
+                style={styles.content}
+                contentContainerStyle={{ paddingHorizontal: 16, paddingBottom: insets.bottom + 8 }}
+                showsVerticalScrollIndicator={true}
                 contentInsetAdjustmentBehavior="always"
                 keyboardShouldPersistTaps="handled"
               >
@@ -115,7 +123,6 @@ const styles = StyleSheet.create({
   modal: {
     backgroundColor: AppStyles.color.white,
     borderRadius: 20,
-    maxHeight: '85%',
     alignSelf: 'center',
     shadowColor: AppStyles.color.shadow,
     shadowOffset: {
@@ -125,11 +132,13 @@ const styles = StyleSheet.create({
     shadowOpacity: 0.3,
     shadowRadius: 10,
     elevation: 8,
+    overflow: 'hidden',
   },
   tabContainer: {
     flexDirection: 'row',
     borderBottomWidth: 1,
     borderBottomColor: AppStyles.color.greylight + '40',
+    paddingHorizontal: 16,
   },
   tab: {
     flex: 1,
@@ -152,6 +161,6 @@ const styles = StyleSheet.create({
   },
   content: {
     maxHeight: '100%',
-    paddingHorizontal: 4,
+    // ScrollView gets padding via contentContainerStyle to avoid double padding
   },
 });

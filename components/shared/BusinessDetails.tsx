@@ -1,8 +1,11 @@
 import React from 'react';
-import { View, Text, Pressable, StyleSheet, Linking } from 'react-native';
+import { View, Text, Pressable, StyleSheet, Linking, Platform, ActivityIndicator } from 'react-native';
 import { YelpBusiness } from '../../types/yelp';
 import useBusinessHours from '../../hooks/useBusinessHours';
+import { useBusinessDetails } from '../../hooks/useBusinessDetails';
+import { formatTodayHours } from '../../utils/hours';
 import AppStyles from '../../AppStyles';
+import { BusinessProps } from '../../hooks/useResults';
 
 interface BusinessDetailsProps {
   business: YelpBusiness;
@@ -11,6 +14,40 @@ interface BusinessDetailsProps {
 }
 
 export function BusinessDetails({ business, onYelp, onClose }: BusinessDetailsProps) {
+  console.log('Rendering BusinessDetails for:', business.name);
+  console.log('Business Object:', business);
+  
+  // Convert YelpBusiness to BusinessProps for the hook
+  const businessForHook: BusinessProps = {
+    id: business.id,
+    name: business.name,
+    image_url: business.image_url || '',
+    rating: business.rating || 0,
+    price: business.price || '',
+    location: {
+      city: business.location?.city || '',
+      display_address: business.location?.display_address || [],
+      address1: business.location?.address1 || '',
+    },
+    categories: business.categories?.map(cat => ({ title: cat.title, alias: cat.alias })) || [],
+    is_closed: business.is_closed || false,
+    coordinates: business.coordinates,
+    url: business.url || '',
+    phone: business.phone || '',
+    display_phone: business.display_phone || '',
+    // Add placeholder fields required by BusinessProps
+    alias: business.alias || '',
+    distance: business.distance || 0,
+    photos: business.photos || [],
+    review_count: business.review_count || 0,
+    transactions: business.transactions || [],
+    hours: business.hours || [],
+  };
+
+  // Get enriched business details
+  const { business: richBusiness, loading: detailsLoading } = useBusinessDetails(businessForHook);
+  
+  // Use legacy hook for fallback
   const { weekly } = useBusinessHours(business.hours);
   
   const handleMapPress = () => {
@@ -72,7 +109,35 @@ export function BusinessDetails({ business, onYelp, onClose }: BusinessDetailsPr
       <View style={styles.section}>
         <Text style={styles.sectionTitle} allowFontScaling>Hours</Text>
         <View style={styles.hoursContainer} testID="bd-hours">
-          {weekly ? (
+          {detailsLoading && !richBusiness.hours?.[0] ? (
+            <View style={styles.hoursLoadingRow}>
+              <ActivityIndicator size="small" color={AppStyles.color.roulette.gold} />
+              <Text style={styles.noHours} allowFontScaling>Loading hours...</Text>
+            </View>
+          ) : richBusiness.hours?.[0]?.open?.length ? (
+            richBusiness.hours[0].open.map((slot: any, index: number) => {
+              const dayNames = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'];
+              const formatTime = (hhmm: string): string => {
+                const hour = parseInt(hhmm.slice(0, 2), 10);
+                const minute = hhmm.slice(2);
+                const date = new Date(2000, 0, 1, hour, parseInt(minute, 10));
+                return date.toLocaleTimeString([], { 
+                  hour: 'numeric', 
+                  minute: '2-digit',
+                  hour12: true
+                });
+              };
+              
+              return (
+                <View key={index} style={styles.hoursRow}>
+                  <Text style={styles.dayLabel} allowFontScaling>{dayNames[slot.day]}:</Text>
+                  <Text style={styles.dayHours} allowFontScaling>
+                    {formatTime(slot.start)} – {formatTime(slot.end)}
+                  </Text>
+                </View>
+              );
+            })
+          ) : weekly ? (
             weekly.split('\n').map((line, index) => {
               const [day, hours] = line.split(': ');
               return (
@@ -217,6 +282,11 @@ const styles = StyleSheet.create({
     fontFamily: AppStyles.fonts.regular,
     color: AppStyles.color.greylight,
     fontStyle: 'italic',
+  },
+  hoursLoadingRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
   },
   buttonContainer: {
     marginTop: 24,

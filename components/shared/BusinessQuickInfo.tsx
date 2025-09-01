@@ -1,7 +1,9 @@
 import React from 'react';
-import { View, Text, Pressable, Image, StyleSheet, Linking } from 'react-native';
+import { View, Text, Pressable, Image, StyleSheet, Linking, ActivityIndicator } from 'react-native';
 import { YelpBusiness } from '../../types/yelp';
 import useBusinessHours from '../../hooks/useBusinessHours';
+import { useBusinessDetails } from '../../hooks/useBusinessDetails';
+import { getTodayHours } from '../../utils/hours';
 import AppStyles from '../../AppStyles';
 import { useFavorites } from '../../hooks/useFavorites';
 import { Ionicons } from '@expo/vector-icons';
@@ -14,19 +16,8 @@ interface BusinessQuickInfoProps {
 }
 
 export function BusinessQuickInfo({ business, onDetails, onClose }: BusinessQuickInfoProps) {
-  const { todayLabel, isOpen } = useBusinessHours(business.hours);
-  const { isFavorite, toggleFavorite } = useFavorites();
-  // const { width: winW } = useWindowDimensions();
-  // const insets = useSafeAreaInsets();
-  
-  // Match modal horizontal padding + safe-area so content never bleeds
-  // const H_PADDING = 16 + insets.left + insets.right;
-
-  // Calculate responsive card width
-  // const cardWidth = Math.min(620, Math.max(320, Math.floor(winW - H_PADDING * 2)));
-
-  // Convert YelpBusiness to BusinessProps for favorites
-  const businessForFavorites: BusinessProps = {
+  // Convert YelpBusiness to BusinessProps for the hook
+  const businessForHook: BusinessProps = {
     id: business.id,
     name: business.name,
     image_url: business.image_url || '',
@@ -43,7 +34,24 @@ export function BusinessQuickInfo({ business, onDetails, onClose }: BusinessQuic
     url: business.url || '',
     phone: business.phone || '',
     display_phone: business.display_phone || '',
+    // Add placeholder fields required by BusinessProps
+    alias: business.alias || '',
+    distance: business.distance || 0,
+    photos: business.photos || [],
+    review_count: business.review_count || 0,
+    transactions: business.transactions || [],
+    hours: business.hours || [],
   };
+
+  // Get enriched business details
+  const { business: richBusiness, loading: detailsLoading } = useBusinessDetails(businessForHook);
+  
+  // Use legacy hook for fallback
+  const { todayLabel, isOpen } = useBusinessHours(business.hours);
+  const { isFavorite, toggleFavorite } = useFavorites();
+  
+  // Get today's hours from rich business data
+  const todayHoursText = getTodayHours(richBusiness.hours?.[0]);
 
   const handleYelpPress = () => {
     if (business.url) {
@@ -76,7 +84,7 @@ export function BusinessQuickInfo({ business, onDetails, onClose }: BusinessQuic
         {/* Favorite Button */}
         <Pressable
           style={styles.favoriteButton}
-          onPress={() => toggleFavorite(businessForFavorites)}
+          onPress={() => toggleFavorite(richBusiness)}
           testID="bqi-favorite-btn"
           accessibilityLabel={isFavorite(business.id) ? "Remove from favorites" : "Add to favorites"}
           hitSlop={{ top: 8, right: 8, bottom: 8, left: 8 }}
@@ -127,9 +135,19 @@ export function BusinessQuickInfo({ business, onDetails, onClose }: BusinessQuic
 
       {/* Today's Hours */}
       <View style={styles.hoursRow}>
-        <Text style={styles.hoursLabel} testID="bqi-today">
-          Today: {todayLabel || 'Hours unavailable'}
-        </Text>
+        {detailsLoading && !richBusiness.hours?.[0] ? (
+          <View style={styles.hoursLoadingRow}>
+            <ActivityIndicator size="small" color={AppStyles.color.roulette.gold} />
+            <Text style={styles.hoursLabel} testID="bqi-today">
+              Loading hours...
+            </Text>
+          </View>
+        ) : (
+          <Text style={styles.hoursLabel} testID="bqi-today">
+            {todayHoursText}
+          </Text>
+        )}
+        
         {typeof isOpen === 'boolean' && (
           <View style={[styles.statusTag, isOpen ? styles.openTag : styles.closedTag]}>
             <Text style={[styles.statusText, isOpen ? styles.openText : styles.closedText]} testID="bqi-status">
@@ -193,8 +211,8 @@ const styles = StyleSheet.create({
     shadowOffset: { width: 0, height: 6 },
     elevation: 4,
     overflow: 'hidden',
-    alignSelf: 'center',
-    minWidth: 320,
+    alignSelf: 'stretch',
+    minWidth: 0,
   },
   imageWrap: {
     width: '100%',
@@ -298,6 +316,12 @@ const styles = StyleSheet.create({
     justifyContent: 'space-between',
     marginBottom: 12,
     flexWrap: 'wrap',
+  },
+  hoursLoadingRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    flex: 1,
+    gap: 8,
   },
   hoursLabel: {
     fontSize: 14,

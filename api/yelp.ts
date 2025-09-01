@@ -41,4 +41,14 @@ yelp.interceptors.response.use(function (response) {
 	return Promise.reject(error);
 });
 
+/**
+ * Get detailed business information including hours, photos, and phone
+ * @param id - The Yelp business ID
+ * @returns Promise<YelpBusiness> - Full business details
+ */
+export async function getBusinessDetails(id: string) {
+  const response = await yelp.get(`/businesses/${id}`);
+  return response.data;
+}
+
 export default yelp;
