@@ -367,6 +367,7 @@ const styles = StyleSheet.create({
     minHeight: 44,
     justifyContent: 'center',
     minWidth: 0,
+    maxWidth: 120,
   },
   buttonText: {
     fontSize: 16,

@@ -293,13 +293,13 @@ const styles = StyleSheet.create({
   actionButton: {
     flex: 1,
     paddingVertical: 12,
-    paddingHorizontal: 16,
     backgroundColor: AppStyles.color.roulette.gold,
     borderRadius: 12,
     alignItems: 'center',
     minHeight: 44,
-    justifyContent: 'center',
+    justifyContent: 'space-between',
     minWidth: 0,
+    maxWidth: 100,
   },
   actionButtonText: {
     fontSize: 14,
