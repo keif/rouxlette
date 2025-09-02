@@ -396,6 +396,7 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     backgroundColor: AppStyles.color.roulette.gold,
     minWidth: 0,
+    maxWidth: 140,
   },
   actionButtonText: {
     fontSize: 14,
