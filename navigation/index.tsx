@@ -64,11 +64,11 @@ function TopTabNavigator() {
 			  borderBottomColor: AppStyles.color.background,
 			  // Give the tab bar a little breathing room below the notch even with SafeAreaView
 			  paddingTop: 4,
-			  minHeight: 44,
+			  minHeight: 40,
 			},
 			tabBarIndicatorStyle: {
 			  backgroundColor: AppStyles.color.roulette.gold,
-			  height: 3,
+			  height: 2,
 			},
 			tabBarLabelStyle: {
 			  fontSize: 14,
@@ -77,7 +77,6 @@ function TopTabNavigator() {
 			},
 			tabBarShowIcon: true,
 			tabBarIconStyle: {
-			  marginBottom: 4,
 			},
 		  }}
 		>

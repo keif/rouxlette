@@ -145,8 +145,11 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   activeTab: {
-    borderBottomWidth: 3,
+    backgroundColor: AppStyles.color.roulette.gold + '20',
+    borderBottomWidth: 2,
     borderBottomColor: AppStyles.color.roulette.gold,
+    borderTopLeftRadius: 12,
+    borderTopRightRadius: 12,
   },
   tabText: {
     fontSize: 16,
