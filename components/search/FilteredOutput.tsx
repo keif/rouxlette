@@ -4,7 +4,7 @@ import { ResultsProps } from "../../hooks/useResults";
 import { Pressable, StyleSheet } from "react-native";
 import ResultsList from "../results/ResultsList";
 import Config from "../../Config";
-import Icon from "react-native-vector-icons/MaterialIcons";
+import { MaterialIcons as Icon } from "@expo/vector-icons";
 import AppStyles from "../../AppStyles";
 import { setShowFilter } from "../../context/reducer";
 import { RootContext } from "../../context/RootContext";

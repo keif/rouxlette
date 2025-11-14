@@ -16,7 +16,7 @@ import ErrorMessageView from "../components/shared/ErrorMessageView";
 import FiltersSheet from "../components/filter/FiltersSheet";
 import useFiltersPersistence from "../hooks/useFiltersPersistence";
 import { applyFilters, countActiveFilters } from "../utils/filterBusinesses";
-import Icon from 'react-native-vector-icons/MaterialIcons';
+import { MaterialIcons as Icon } from '@expo/vector-icons';
 import Config from "../Config";
 
 if (Platform.OS === "android" && UIManager.setLayoutAnimationEnabledExperimental) {

@@ -2,7 +2,7 @@ import { Text, View } from "../Themed";
 import { Pressable, StyleSheet } from "react-native";
 import Config from "../../Config";
 import AppStyles from "../../AppStyles";
-import Icon from "react-native-vector-icons/MaterialIcons";
+import { MaterialIcons as Icon } from "@expo/vector-icons";
 import React, { useState } from "react";
 
 const POPULAR_FILTER_LIST = [

@@ -1,6 +1,6 @@
 import React, { useContext } from "react";
 import { Modal, Pressable, SafeAreaView, ScrollView, StatusBar, StyleSheet, View } from "react-native";
-import Icon from "react-native-vector-icons/MaterialIcons";
+import { MaterialIcons as Icon } from "@expo/vector-icons";
 import Config from "../../Config";
 import { RootContext } from "../../context/RootContext";
 import { setShowFilter } from "../../context/reducer";
