@@ -31,7 +31,7 @@ const SearchInput = ({
 	externalQuery, 
 	isLoading = false 
 }: SearchBarProps) => {
-	const [locationErrorMessage, city, canonicalLocation, coords, locationResults, searchLocation, resolveSearchArea, isLocationLoading] = useLocation();
+	const [locationErrorMessage, city, canonicalLocation, coords, locationResults, searchLocation, resolveSearchArea, isLocationLoading, lastResolvedLocation] = useLocation();
 	const [errorMessage, results, searchApi, searchApiWithResolver] = useResults();
 	const [searchClicked, setSearchClick] = useState<boolean>(false);
 	const [internalTerm, setInternalTerm] = useState(term);
@@ -48,58 +48,52 @@ const SearchInput = ({
 		setInternalTerm(term);
 	}, [term]);
 
-	// Enhanced handleDoneEditing that resolves location ambiguity
+	// Simplified search that ONLY uses GPS coordinates (no geocoding)
 	const handleDoneEditing = async (term: string, locationQuery: string) => {
 		// Prevent double submits when loading
 		if (isLoading) return;
-		
+
 		if (__DEV__) {
-			logSafe('[SearchInput] Enhanced handleDoneEditing', { 
-				term, 
-				locationQuery, 
-				hasCoords: !!coords 
-			});
-		}
-		
-		try {
-			// Step 1: Resolve the search area using enhanced location resolver
-			const resolvedLocation = await resolveSearchArea(locationQuery);
-			
-			if (!resolvedLocation) {
-				logSafe('[SearchInput] Failed to resolve location, falling back to legacy search');
-				await searchApi(term, locationQuery, coords);
-				return;
-			}
-			
-			if (__DEV__) {
-				logSafe('[SearchInput] Resolved location:', {
-					query: locationQuery,
-					resolved: resolvedLocation.label,
-					coords: resolvedLocation.coords,
-					source: resolvedLocation.source
-				});
-			}
-			
-			// Step 2: Search using the resolved location
-			await searchApiWithResolver(term, resolvedLocation);
-			
-		} catch (error: any) {
-			logSafe('[SearchInput] Error in enhanced search flow', { 
-				message: error?.message, 
+			logSafe('[SearchInput] handleDoneEditing', {
 				term,
-				locationQuery 
+				locationLabel: canonicalLocation || city,
+				hasCoords: !!coords,
+				coords: coords ? { lat: coords.latitude, lon: coords.longitude } : null
 			});
-			
-			// Fallback to legacy search on error
-			await searchApi(term, locationQuery, coords);
 		}
+
+		// ALWAYS use GPS coordinates for restaurant searches
+		// This prevents ambiguous location geocoding (Powell, OH vs Powell, TN)
+		if (!coords?.latitude || !coords?.longitude) {
+			if (__DEV__) {
+				logSafe('[SearchInput] ERROR: No GPS coordinates available yet');
+			}
+			setErrorMessage('Getting your location...');
+			return;
+		}
+
+		// Use GPS coordinates directly - NO geocoding
+		const resolvedLocation = {
+			coords: { latitude: coords.latitude, longitude: coords.longitude },
+			label: canonicalLocation || city || 'Current Location',
+			source: 'coords' as const,
+			alternatives: lastResolvedLocation?.alternatives
+		};
+
+		if (__DEV__) {
+			logSafe('[SearchInput] Searching with GPS coords:', {
+				term,
+				location: resolvedLocation.label,
+				coords: resolvedLocation.coords
+			});
+		}
+
+		await searchApiWithResolver(term, resolvedLocation);
 	};
 
-	useEffect(() => {
-		// Use canonical location when available, fallback to city
-		const locationToUse = canonicalLocation || city;
-		handleDoneEditing(term, locationToUse);
-	}, [city, canonicalLocation, coords]);
+	// REMOVED: This useEffect was causing re-geocoding on every location change
+	// The search should only trigger when user explicitly submits or changes the search term
+	// Location updates happen automatically through the location watcher
 
 	useEffect(() => {
 		setResults(results);
@@ -128,8 +122,8 @@ const SearchInput = ({
 							setInternalTerm(text);
 							setTerm(text);
 						}}
-						onEndEditing={() => handleDoneEditing(internalTerm, city)}
-						onSubmitEditing={() => handleDoneEditing(internalTerm, city)}
+						onEndEditing={() => handleDoneEditing(internalTerm, canonicalLocation || city)}
+						onSubmitEditing={() => handleDoneEditing(internalTerm, canonicalLocation || city)}
 						onFocus={() => {
 							if (onFocus) onFocus();
 							setSearchClick(true);

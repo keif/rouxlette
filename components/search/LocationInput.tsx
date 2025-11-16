@@ -7,6 +7,7 @@ import { setLocation } from "../../context/reducer";
 import AppStyles from "../../AppStyles";
 import ClearButton from "./ClearButton";
 import { logSafe } from "../../utils/log";
+import LocationDisambiguation from "./LocationDisambiguation";
 
 interface LocationInputProps {
 	onFocus?: () => void;
@@ -15,7 +16,7 @@ interface LocationInputProps {
 
 const LocationInput = ({ onFocus, setErrorMessage }: LocationInputProps) => {
 	const { state, dispatch } = useContext(RootContext);
-	const [locationErrorMessage, city, canonicalLocation, coords, locationResults, searchLocation, resolveSearchArea, isLocationLoading] = useLocation();
+	const [locationErrorMessage, city, canonicalLocation, coords, locationResults, searchLocation, resolveSearchArea, isLocationLoading, lastResolvedLocation] = useLocation();
 	const [locale, setLocale] = useState<string>(``);
 	const [searchClicked, setSearchClick] = useState<boolean>(false);
 
@@ -25,6 +26,14 @@ const LocationInput = ({ onFocus, setErrorMessage }: LocationInputProps) => {
 
 	const handleEndEditing = async (locale: string) => {
 		await fetchLocation(locale);
+	};
+
+	const handleSelectAlternative = async (label: string, coords: { latitude: number; longitude: number }) => {
+		logSafe('LocationInput: Alternative selected', { label, coords });
+		// Update the input field
+		setLocale(label);
+		// Trigger location search with the selected label
+		await fetchLocation(label);
 	};
 
 	useEffect(() => {
@@ -91,6 +100,10 @@ const LocationInput = ({ onFocus, setErrorMessage }: LocationInputProps) => {
 						/>
 					) : null}
 				</View>
+				<LocationDisambiguation
+					resolvedLocation={lastResolvedLocation}
+					onSelectAlternative={handleSelectAlternative}
+				/>
 			</View>
 		</View>
 	);

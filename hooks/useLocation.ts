@@ -22,6 +22,11 @@ export interface ResolvedLocation {
 	label: string;                // Canonical label like "Powell, OH"
 	state?: string;               // State code like "OH"
 	source: 'coords' | 'geocoded' | 'fallback'; // How the location was resolved
+	alternatives?: Array<{        // Alternative location matches (if disambiguation occurred)
+		label: string;
+		coords: Coords;
+		distance?: number;        // Distance from user in km
+	}>;
 }
 
 interface LocationState {
@@ -46,6 +51,7 @@ export default (): [string, string, string, LocationObjectCoords | null, any[], 
 	const [locationResults, setLocationResults] = useState<any[]>([]);
 	const [currentCoords, setCurrentCoords] = useState<LocationObjectCoords | null>(null);
 	const [isLoading, setIsLoading] = useState<boolean>(false);
+	const [lastResolvedLocation, setLastResolvedLocation] = useState<ResolvedLocation | null>(null);
 	const storage = usePersistentStorage({
 		debug: __DEV__,
 		debounceMs: 800, // Longer delay for location data
@@ -498,23 +504,29 @@ export default (): [string, string, string, LocationObjectCoords | null, any[], 
 			
 			// Determine current state for bias (if we have coordinates)
 			let currentState: string | null = null;
+
+			devLog('Building geocode options - currentCoords:', currentCoords ? `${currentCoords.latitude}, ${currentCoords.longitude}` : 'null');
+
 			if (currentCoords) {
 				const reverseResponse = await reverseGeocode(currentCoords.latitude, currentCoords.longitude);
 				if (reverseResponse.ok && reverseResponse.results?.length) {
 					currentState = extractStateFromResult(reverseResponse.results[0]);
+					devLog('Extracted state from coords:', currentState);
 				}
+			} else {
+				devLog('WARNING: No currentCoords available for bias!');
 			}
-			
+
 			// Build geocoding options with bias
 			const geocodeOpts: Parameters<typeof geocodeAddress>[1] = {
 				country: 'US', // Always restrict to US
 			};
-			
+
 			if (currentState) {
 				geocodeOpts.state = currentState;
 				devLog('Adding state bias:', currentState);
 			}
-			
+
 			if (currentCoords) {
 				geocodeOpts.biasCenter = { latitude: currentCoords.latitude, longitude: currentCoords.longitude };
 				geocodeOpts.kmBias = 25; // Reduced from 50km to 25km for stronger bias toward nearby locations
@@ -544,43 +556,57 @@ export default (): [string, string, string, LocationObjectCoords | null, any[], 
 			
 			// Choose the best result
 			let bestResult = response.results[0]; // Default to first result
-			
+			let locationAlternatives: ResolvedLocation['alternatives'] = undefined;
+
 			// If we have current coordinates, find the closest result
 			if (currentCoords && response.results.length > 1) {
 				const currentCoordsForDistance = { latitude: currentCoords.latitude, longitude: currentCoords.longitude };
 				const closest = findClosestResult(response.results, currentCoordsForDistance);
-				
+
 				if (closest) {
 					bestResult = closest;
 					devLog('Selected closest result by distance');
-					
-					// Optional: Log disambiguation info for future UI enhancement
+
+					// Build alternatives array for disambiguation UI
 					if (response.results.length >= 2) {
-						const alternatives = response.results.slice(0, 3).map(r => extractCanonicalLabel(r));
-						devLog('Disambiguation occurred - alternatives were:', alternatives);
-						
-						// Future enhancement: could show disambiguation UI here
-						// For now, we auto-select the closest one
+						locationAlternatives = response.results.slice(0, 5).map(r => {
+							const altCoords = extractCoordsFromResult(r);
+							const altLabel = extractCanonicalLabel(r);
+							const distance = altCoords ? haversineKm(currentCoordsForDistance, altCoords) : undefined;
+							return {
+								label: altLabel,
+								coords: altCoords!,
+								distance
+							};
+						}).filter(alt => alt.coords); // Filter out any with invalid coords
+
+						devLog('Disambiguation occurred - alternatives:', locationAlternatives.map(a => `${a.label} (${a.distance?.toFixed(0)}km)`));
 					}
 				}
 			}
-			
+
 			// Extract data from the best result
 			const coords = extractCoordsFromResult(bestResult);
 			const label = extractCanonicalLabel(bestResult);
 			const state = extractStateFromResult(bestResult);
-			
-			devLog('Resolved location:', { coords, label, state });
-			
+
+			devLog('Resolved location:', { coords, label, state, hasAlternatives: !!locationAlternatives });
+
 			// Update UI state with canonical location
 			setCanonicalLocation(label);
-			
-			return {
+
+			const resolvedLoc: ResolvedLocation = {
 				coords,
 				label,
 				state,
-				source: 'geocoded'
+				source: 'geocoded',
+				alternatives: locationAlternatives
 			};
+
+			// Store for UI components to access
+			setLastResolvedLocation(resolvedLoc);
+
+			return resolvedLoc;
 			
 		} catch (error: any) {
 			logSafe('resolveSearchArea error', { message: error?.message, query: q });
@@ -611,5 +637,5 @@ export default (): [string, string, string, LocationObjectCoords | null, any[], 
 	//   });
 	// }, []);
 
-	return [locationErrorMessage, city, canonicalLocation, currentCoords, locationResults, searchLocation, resolveSearchArea, isLoading] as const;
+	return [locationErrorMessage, city, canonicalLocation, currentCoords, locationResults, searchLocation, resolveSearchArea, isLoading, lastResolvedLocation] as const;
 }
