@@ -2,7 +2,7 @@ import React, { useEffect, useRef } from "react";
 import { Animated, Image, StyleSheet, Text, useWindowDimensions, View, Linking, Pressable, Platform } from "react-native";
 import { BusinessProps } from "../../hooks/useResults";
 import AppStyles from "../../AppStyles";
-import { FontAwesome, MaterialIcons as Icon, Ionicons } from "@expo/vector-icons";
+import {FontAwesome, MaterialIcons as Icon, Ionicons, MaterialIcons} from "@expo/vector-icons";
 import StarRating from "../shared/StarRating";
 import OpenSign from "../results/OpenSign";
 import FlipCard from "../shared/FlipCard";
@@ -284,14 +284,17 @@ const styles = StyleSheet.create({
 	cardContent: {
 		borderRadius: 16,
 		overflow: 'hidden',
+		backgroundColor: AppStyles.color.white,
 	},
 	detail: {
+		backgroundColor: AppStyles.color.white,
 		paddingHorizontal: 16,
 		paddingVertical: 8,
 	},
 	detailHeader: {
-		flex: 1,
 		flexDirection: "row",
+		alignItems: "center",
+		justifyContent: "space-between",
 	},
 	favoriteButton: {
 		padding: 8,
@@ -340,6 +343,7 @@ const styles = StyleSheet.create({
 		fontFamily: AppStyles.fonts.semiBold,
 		fontWeight: "bold",
 		paddingBottom: 6,
+		paddingRight: 8,
 	},
 	subText: {
 		...textStyle,
