@@ -100,9 +100,9 @@ export default (): [string, string, string, LocationObjectCoords | null, any[], 
 			devLog('Setting location from coordinates:', coords);
 			setCurrentCoords(coords);
 			setIsLoading(true);
-			
+
 			const response = await reverseGeocode(coords.latitude, coords.longitude);
-			
+
 			if (!response.ok || !response.results?.length) {
 				logSafe('Failed to reverse geocode coordinates', { status: response.status });
 				handleError(humanizeGeocodeError(response));
@@ -110,16 +110,18 @@ export default (): [string, string, string, LocationObjectCoords | null, any[], 
 			}
 
 			const result = extractCityFromResult(response.results[0]);
+			const canonical = extractCanonicalLabel(response.results[0]);
 			const locationResult = {
 				city: result,
 				results: response.results
 			};
 
 			setCity(result);
+			setCanonicalLocation(canonical);
 			setLocationResults(response.results);
 			dispatch(setLocation(result));
-			
-			devLog('Successfully set location to:', result, 'coords:', normalizeCoords(coords));
+
+			devLog('Successfully set location to:', canonical, 'coords:', normalizeCoords(coords));
 			return locationResult;
 
 		} catch (error: any) {
