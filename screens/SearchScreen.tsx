@@ -2,7 +2,7 @@ import React, { useCallback, useContext, useEffect, useRef, useState } from "rea
 import { useFocusEffect, useNavigation, useRoute } from "@react-navigation/native";
 import { CategoryProps, INIT_RESULTS, PRICE_OPTIONS, ResultsProps } from "../hooks/useResults";
 import { RootTabScreenProps } from "../types";
-import { Animated, LayoutAnimation, Platform, StyleSheet, UIManager, Pressable, ActivityIndicator } from "react-native";
+import { Animated, LayoutAnimation, Platform, StyleSheet, UIManager, Pressable, ActivityIndicator, KeyboardAvoidingView } from "react-native";
 import { View, Text } from "../components/Themed";
 import SearchInput from "../components/search/SearchInput";
 import LocationInput from "../components/search/LocationInput";
@@ -114,12 +114,16 @@ const SearchScreen = () => {
 	const hasSearchResults = searchResults && (searchResults.businesses ?? []).length > 0;
 	return (
 		<SafeAreaProvider>
-			<View style={[
-				styles.container,
-				toggleStyle ? styles.containerRow : styles.containerColumn,
-				hasSearchResults && styles.containerWithResults
-			]}>
-				<View style={styles.controller}>
+			<KeyboardAvoidingView
+				behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+				style={{ flex: 1 }}
+			>
+				<View style={[
+					styles.container,
+					toggleStyle ? styles.containerRow : styles.containerColumn,
+					hasSearchResults && styles.containerWithResults
+				]}>
+					<View style={styles.controller}>
 					<Animated.View
 						style={[styles.animatedContainer, { borderRadius }]}
 					>
@@ -197,6 +201,7 @@ const SearchScreen = () => {
 					onClose={() => setShowFiltersSheet(false)}
 				/>
 			</View>
+		</KeyboardAvoidingView>
 		</SafeAreaProvider>
 	);
 };
