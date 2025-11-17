@@ -317,6 +317,7 @@ const styles = StyleSheet.create({
 		backgroundColor: AppStyles.color.white,
 		paddingHorizontal: 16,
 		paddingVertical: 8,
+		paddingBottom: 68,
 	},
 	detailHeader: {
 		flexDirection: "row",
@@ -421,6 +422,7 @@ const styles = StyleSheet.create({
 		justifyContent: 'space-around',
 		paddingVertical: 16,
 		paddingHorizontal: 16,
+		paddingBottom: 68,
 	},
 	backButton: {
 		backgroundColor: 'rgba(255, 255, 255, 0.9)',
