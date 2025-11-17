@@ -53,6 +53,7 @@ const ResultsList = ({ filterTerm, horizontal = false, results, term, isLoading 
 				keyExtractor={(result) => result.id}
 				renderItem={renderItem}
 				showsHorizontalScrollIndicator={false}
+				showsVerticalScrollIndicator={true}
 			/>
 			<StatusBar style={Platform.OS === "ios" ? "light" : "auto"} />
 		</View>
@@ -61,6 +62,7 @@ const ResultsList = ({ filterTerm, horizontal = false, results, term, isLoading 
 
 const styles = StyleSheet.create({
 	container: {
+		flex: 1,
 		marginBottom: 10,
 	},
 	contentContainer: {

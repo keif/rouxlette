@@ -174,7 +174,7 @@ const SearchScreen = () => {
 						</View>
 					) : null}
 					{hasSearchResults ? (
-						<View>
+						<View style={{ flex: 1 }}>
 							<FilteredOutput
 								term={term}
 								filterTerm={filterTerm}
