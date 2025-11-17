@@ -37,36 +37,40 @@ const FilteredOutput = ({ term, filterTerm, searchResults, filteredResults, isLo
 		return null;
 	}
 
+	const ListHeader = () => (
+		<View style={{ flexDirection: `row`, marginHorizontal: 12, marginVertical: 8 }}>
+			<Text
+				style={styles.titleCount}>{String((mergedResults.businesses ?? []).length)} for {term}{filterTerm !== `` ? `, without ${filterTerm}` : ``}</Text>
+			<Pressable
+				style={({ pressed }) => [
+					styles.button,
+					{ opacity: !Config.isAndroid && pressed ? 0.6 : 1 },
+				]}
+				onPress={handleFilterPress}
+				android_ripple={{
+					color: "grey",
+					radius: 28,
+					borderless: true,
+				}}
+			>
+				<Text
+					style={styles.filterText}>Filters/Don't want?
+				</Text>
+				<Icon name={`filter-list`} size={20} color={AppStyles.color.primary} />
+			</Pressable>
+		</View>
+	);
+
 	return (
 		<>
 			<View style={styles.container}>
-				<View style={{ flexDirection: `row`, marginHorizontal: 12 }}>
-					<Text
-						style={styles.titleCount}>{String((mergedResults.businesses ?? []).length)} for {term}{filterTerm !== `` ? `, without ${filterTerm}` : ``}</Text>
-					<Pressable
-						style={({ pressed }) => [
-							styles.button,
-							{ opacity: !Config.isAndroid && pressed ? 0.6 : 1 },
-						]}
-						onPress={handleFilterPress}
-						android_ripple={{
-							color: "grey",
-							radius: 28,
-							borderless: true,
-						}}
-					>
-						<Text
-							style={styles.filterText}>Filters/Don't want?
-						</Text>
-						<Icon name={`filter-list`} size={20} color={AppStyles.color.primary} />
-					</Pressable>
-				</View>
 				<ResultsList
 					filterTerm={filterTerm}
 					horizontal={false}
 					results={mergedResults}
 					term={term}
 					isLoading={isLoading}
+					ListHeaderComponent={<ListHeader />}
 				/>
 			</View>
 			<FilterModal />
@@ -77,7 +81,6 @@ const FilteredOutput = ({ term, filterTerm, searchResults, filteredResults, isLo
 const styles = StyleSheet.create({
 	container: {
 		flex: 1,
-		paddingVertical: 8,
 	},
 	button: {
 		marginLeft: `auto`,

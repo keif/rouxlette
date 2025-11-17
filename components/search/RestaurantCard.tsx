@@ -382,7 +382,6 @@ const styles = StyleSheet.create({
 	backDetails: {
 		paddingHorizontal: 16,
 		paddingVertical: 12,
-		flex: 1,
 	},
 	backDetailText: {
 		...textStyle,

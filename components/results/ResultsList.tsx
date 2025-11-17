@@ -13,9 +13,10 @@ interface ResultsListProps {
 	results: ResultsProps;
 	term: string;
 	isLoading?: boolean;
+	ListHeaderComponent?: React.ComponentType<any> | React.ReactElement | null;
 }
 
-const ResultsList = ({ filterTerm, horizontal = false, results, term, isLoading = false }: ResultsListProps) => {
+const ResultsList = ({ filterTerm, horizontal = false, results, term, isLoading = false, ListHeaderComponent }: ResultsListProps) => {
 	const inset = useSafeAreaInsets();
 	const hasSearchTerm = term.trim().length > 0;
 
@@ -47,6 +48,7 @@ const ResultsList = ({ filterTerm, horizontal = false, results, term, isLoading 
 	return (
 		<View style={styles.container}>
 			<FlatList
+				ListHeaderComponent={ListHeaderComponent}
 				contentContainerStyle={[styles.contentContainer, { paddingBottom: Math.max(200, 160 + inset.bottom) }]}
 				data={businesses}
 				horizontal={horizontal}
