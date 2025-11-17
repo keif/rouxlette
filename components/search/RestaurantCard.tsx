@@ -165,26 +165,24 @@ const RestaurantCard = ({ index, result }: RestaurantCardProps) => {
 		<View style={styles.cardContent}>
 			<View style={styles.backHeader}>
 				<Text style={styles.backTitle}>{name}</Text>
-				<View style={{ flexDirection: 'row', alignItems: 'center', gap: 8 }}>
-					<OpenSign is_open_now={is_open_now} />
-					<Pressable
-						onPress={() => setIsFlipped(false)}
-						android_ripple={{
-							color: "rgba(255,255,255,0.3)",
-							radius: 20,
-							borderless: true,
-						}}
-						accessibilityLabel="Close details"
-						style={styles.closeButton}
-					>
-						<MaterialIcons name="close" size={24} color={AppStyles.color.white} />
-					</Pressable>
-				</View>
+				<OpenSign is_open_now={is_open_now} />
 			</View>
-			
+
 			<View style={styles.backRating}>
 				<StarRating rating={rating} />
 				<Text style={styles.backReviewText}>{review_count} Review{review_count > 1 ? 's' : ''}</Text>
+				<Pressable
+					style={styles.flipButton}
+					onPress={() => setIsFlipped(false)}
+					android_ripple={{
+						color: "rgba(0,0,0,0.1)",
+						radius: 20,
+						borderless: true,
+					}}
+					accessibilityLabel="Close details"
+				>
+					<MaterialIcons name="rotate-left" size={24} color={AppStyles.color.primary} />
+				</Pressable>
 			</View>
 
 			<View style={styles.backDetails}>
@@ -445,9 +443,6 @@ const styles = StyleSheet.create({
 	},
 	flipButton: {
 		marginLeft: 'auto',
-		padding: 4,
-	},
-	closeButton: {
 		padding: 4,
 	},
 });
