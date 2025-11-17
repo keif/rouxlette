@@ -240,6 +240,7 @@ const styles = StyleSheet.create({
 		},
 		shadowOpacity: 0.3,
 		shadowRadius: 4.65,
+		flexShrink: 0,
 	},
 	searchHeader: {
 		flexDirection: 'row',

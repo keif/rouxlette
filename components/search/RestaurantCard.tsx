@@ -382,6 +382,7 @@ const styles = StyleSheet.create({
 	backDetails: {
 		paddingHorizontal: 16,
 		paddingVertical: 12,
+		flex: 1,
 	},
 	backDetailText: {
 		...textStyle,
@@ -401,9 +402,9 @@ const styles = StyleSheet.create({
 		alignItems: 'center',
 		paddingHorizontal: 12,
 		paddingVertical: 8,
-		borderRadius: 20,
 		shadowColor: AppStyles.input.shadow,
 		...AppStyles.ButtonPressable,
+        borderRadius: 20,
 		shadowOpacity: 0.2,
 		shadowRadius: 3,
 		elevation: 3,
