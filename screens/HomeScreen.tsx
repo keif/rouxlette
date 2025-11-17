@@ -35,7 +35,7 @@ const HomeScreen: React.FC = () => {
   const [errorMessage, setErrorMessage] = useState('');
   const [searchTerm, setSearchTerm] = useState('');
   const [isSearching, setIsSearching] = useState(false);
-  const [, searchResults, searchApi, searchApiWithResolver, resultsLoading] = useResults();
+  const [resultsErrorMessage, searchResults, searchApi, searchApiWithResolver, resultsLoading] = useResults();
   const [, city, canonicalLocation, coords, , searchLocation, resolveSearchArea, isLocationLoading] = useLocation();
   const { addHistoryEntry } = useHistory();
 

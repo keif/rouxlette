@@ -156,7 +156,7 @@ export default function useResults() {
 
 				// Cache the results (this is debounced and change-detected automatically)
 				await resultsPersistence.cacheResults(location, searchTerm, onlyOpenBusinesses, coords);
-				
+
 				setResults(finalResults);
 				return onlyOpenBusinesses;
 			} else {
@@ -280,7 +280,7 @@ export default function useResults() {
 
 				// Cache the results with the specific cache key
 				await resultsPersistence.cacheResultsByKey(cacheKey, onlyOpenBusinesses);
-				
+
 				setResults(finalResults);
 				return onlyOpenBusinesses;
 			} else {

@@ -9,7 +9,8 @@
     "web": "expo start --web",
     "test": "jest --watchAll",
     "lint:unsafe-logging": "node scripts/checkUnsafeLogging.js",
-    "precommit": "npm run lint:unsafe-logging"
+    "precommit": "npm run lint:unsafe-logging",
+    "clean": "watchman watch-del-all && rm -rf /tmp/metro-* && rm -rf node_modules/.cache"
   },
   "jest": {
     "preset": "jest-expo",
