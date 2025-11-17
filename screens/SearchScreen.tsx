@@ -35,6 +35,7 @@ const SearchScreen = () => {
 	const [hasFocus, setFocus] = useState(false);
 	const [errorMessage, setErrorMessage] = useState(``);
 	const [showFiltersSheet, setShowFiltersSheet] = useState(false);
+	const [isSearching, setIsSearching] = useState(false);
 	const borderRadius = useRef(new Animated.Value(0)).current;
 
 	// Initialize filter persistence (now with hardened AsyncStorage handling)
@@ -111,7 +112,6 @@ const SearchScreen = () => {
 	}, [searchResults, state.filters]);
 
 	const hasSearchResults = searchResults && (searchResults.businesses ?? []).length > 0;
-	const isSearching = hasFocus && term.trim().length > 0 && !hasSearchResults && errorMessage === '';
 	return (
 		<SafeAreaProvider>
 			<View style={[styles.container, toggleStyle ? styles.containerRow : styles.containerColumn]}>
@@ -128,6 +128,8 @@ const SearchScreen = () => {
 									setResults={setSearchResults}
 									setTerm={setTerm}
 									term={term}
+									isLoading={isSearching}
+									setIsLoading={setIsSearching}
 								/>
 							</View>
 							{(hasFocus || hasSearchResults) && (

@@ -18,21 +18,23 @@ interface SearchBarProps {
 	term: string;
 	externalQuery?: string;
 	isLoading?: boolean;
+	setIsLoading?: Dispatch<SetStateAction<boolean>>;
 }
 
-const SearchInput = ({ 
-	onBlur, 
-	onFocus, 
-	placeholder, 
-	setErrorMessage, 
-	setResults, 
-	setTerm, 
-	term, 
-	externalQuery, 
-	isLoading = false 
+const SearchInput = ({
+	onBlur,
+	onFocus,
+	placeholder,
+	setErrorMessage,
+	setResults,
+	setTerm,
+	term,
+	externalQuery,
+	isLoading = false,
+	setIsLoading
 }: SearchBarProps) => {
 	const [locationErrorMessage, city, canonicalLocation, coords, locationResults, searchLocation, resolveSearchArea, isLocationLoading, lastResolvedLocation] = useLocation();
-	const [errorMessage, results, searchApi, searchApiWithResolver] = useResults();
+	const [errorMessage, results, searchApi, searchApiWithResolver, internalIsLoading] = useResults();
 	const [searchClicked, setSearchClick] = useState<boolean>(false);
 	const [internalTerm, setInternalTerm] = useState(term);
 
@@ -48,56 +50,65 @@ const SearchInput = ({
 		setInternalTerm(term);
 	}, [term]);
 
-	// Simplified search that ONLY uses GPS coordinates (no geocoding)
+	// Search with GPS coordinates if available, otherwise use location resolver
 	const handleDoneEditing = async (term: string, locationQuery: string) => {
 		// Prevent double submits when loading
 		if (isLoading) return;
 
-		if (__DEV__) {
-			logSafe('[SearchInput] handleDoneEditing', {
-				term,
-				locationLabel: canonicalLocation || city,
-				hasCoords: !!coords,
-				coords: coords ? { lat: coords.latitude, lon: coords.longitude } : null
-			});
-		}
+		try {
+			// Signal loading start to parent
+			setIsLoading?.(true);
 
-		// ALWAYS use GPS coordinates for restaurant searches
-		// This prevents ambiguous location geocoding (Powell, OH vs Powell, TN)
-		if (!coords?.latitude || !coords?.longitude) {
-			if (__DEV__) {
-				logSafe('[SearchInput] ERROR: No GPS coordinates available yet');
+			let resolvedLocation;
+
+			// Prefer GPS coordinates if available
+			if (coords?.latitude && coords?.longitude) {
+				resolvedLocation = {
+					coords: { latitude: coords.latitude, longitude: coords.longitude },
+					label: canonicalLocation || city || 'Current Location',
+					source: 'coords' as const,
+					alternatives: lastResolvedLocation?.alternatives
+				};
+			} else {
+				// Fallback: Use location resolver to get coordinates
+				const locationToResolve = locationQuery || canonicalLocation || city || 'Current Location';
+				resolvedLocation = await resolveSearchArea(locationToResolve);
+
+				if (!resolvedLocation?.coords) {
+					setErrorMessage('Unable to determine location. Please try again.');
+					setIsLoading?.(false);
+					return;
+				}
 			}
-			setErrorMessage('Getting your location...');
-			return;
+
+			// Call the API and get the businesses array
+			const businesses = await searchApiWithResolver(term, resolvedLocation);
+
+			// Create ResultsProps and pass to parent
+			const resultsWithId: ResultsProps = {
+				id: `search-${Date.now()}`,
+				businesses: businesses || []
+			};
+
+			setResults(resultsWithId);
+
+			// Signal loading complete to parent
+			setIsLoading?.(false);
+		} catch (error) {
+			console.error('[SearchInput] Error in handleDoneEditing:', error);
+			setErrorMessage('Search failed. Please try again.');
+			setIsLoading?.(false);
 		}
-
-		// Use GPS coordinates directly - NO geocoding
-		const resolvedLocation = {
-			coords: { latitude: coords.latitude, longitude: coords.longitude },
-			label: canonicalLocation || city || 'Current Location',
-			source: 'coords' as const,
-			alternatives: lastResolvedLocation?.alternatives
-		};
-
-		if (__DEV__) {
-			logSafe('[SearchInput] Searching with GPS coords:', {
-				term,
-				location: resolvedLocation.label,
-				coords: resolvedLocation.coords
-			});
-		}
-
-		await searchApiWithResolver(term, resolvedLocation);
 	};
 
 	// REMOVED: This useEffect was causing re-geocoding on every location change
 	// The search should only trigger when user explicitly submits or changes the search term
 	// Location updates happen automatically through the location watcher
 
-	useEffect(() => {
-		setResults(results);
-	}, [results.id]);
+	// REMOVED: No longer passing results from useResults hook - we handle it directly in handleDoneEditing
+	// useEffect(() => {
+	// 	setResults(results);
+	// }, [results.id]);
 
 	useEffect(() => {
 		setErrorMessage(errorMessage);
