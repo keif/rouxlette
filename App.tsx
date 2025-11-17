@@ -1,4 +1,5 @@
 import "react-native-gesture-handler";
+import { GestureHandlerRootView } from "react-native-gesture-handler";
 import { SafeAreaProvider } from "react-native-safe-area-context";
 
 import useCachedResources from "./hooks/useCachedResources";
@@ -23,16 +24,18 @@ export default function App() {
 		return null;
 	} else {
 		return (
-			<SafeAreaProvider>
-				<RootContext.Provider value={contextValue}>
-					<Navigation colorScheme={colorScheme} />
-					<StatusBar
-						backgroundColor="transparent"
-						translucent
-					/>
-					<BusinessCardModal />
-				</RootContext.Provider>
-			</SafeAreaProvider>
+			<GestureHandlerRootView style={{ flex: 1 }}>
+				<SafeAreaProvider>
+					<RootContext.Provider value={contextValue}>
+						<Navigation colorScheme={colorScheme} />
+						<StatusBar
+							backgroundColor="transparent"
+							translucent
+						/>
+						<BusinessCardModal />
+					</RootContext.Provider>
+				</SafeAreaProvider>
+			</GestureHandlerRootView>
 		);
 	}
 }
