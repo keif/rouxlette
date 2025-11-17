@@ -66,6 +66,14 @@ const FiltersSheet: React.FC<FiltersSheetProps> = ({ visible, onClose, testID })
     updateLocalFilters({ categoryIds: newCategoryIds });
   };
 
+  // Excluded category handlers
+  const toggleExcludedCategory = (categoryId: string) => {
+    const newExcludedCategoryIds = localFilters.excludedCategoryIds.includes(categoryId)
+      ? localFilters.excludedCategoryIds.filter(c => c !== categoryId)
+      : [...localFilters.excludedCategoryIds, categoryId];
+    updateLocalFilters({ excludedCategoryIds: newExcludedCategoryIds });
+  };
+
   return (
     <Modal
       animationType="slide"
@@ -168,6 +176,41 @@ const FiltersSheet: React.FC<FiltersSheetProps> = ({ visible, onClose, testID })
                       <Text style={[
                         styles.categoryChipText,
                         localFilters.categoryIds.includes(category.alias) && styles.categoryChipTextSelected
+                      ]}>
+                        {category.title}
+                      </Text>
+                    </Pressable>
+                  ))}
+                </View>
+              </View>
+
+              <Divider />
+            </>
+          )}
+
+          {/* Excluded Categories Filter */}
+          {state.categories.length > 0 && (
+            <>
+              <View>
+                <View style={styles.sectionTitleWrapper}>
+                  <Text style={styles.sectionTitle}>Exclude Categories</Text>
+                  <Text style={styles.sectionSubtitle}>Hide these types from results</Text>
+                </View>
+                <View style={styles.categoryContainer}>
+                  {state.categories.slice(0, 12).map(category => (
+                    <Pressable
+                      key={category.alias}
+                      onPress={() => toggleExcludedCategory(category.alias)}
+                      style={({ pressed }) => [
+                        styles.categoryChip,
+                        localFilters.excludedCategoryIds.includes(category.alias) && styles.categoryChipExcluded,
+                        { opacity: !Config.isAndroid && pressed ? 0.6 : 1 }
+                      ]}
+                      android_ripple={{ color: 'lightgrey' }}
+                    >
+                      <Text style={[
+                        styles.categoryChipText,
+                        localFilters.excludedCategoryIds.includes(category.alias) && styles.categoryChipTextExcluded
                       ]}>
                         {category.title}
                       </Text>
@@ -393,6 +436,13 @@ const styles = StyleSheet.create({
     color: AppStyles.color.roulette.neutral,
   },
   categoryChipTextSelected: {
+    color: AppStyles.color.white,
+  },
+  categoryChipExcluded: {
+    backgroundColor: AppStyles.color.roulette.red,
+    borderColor: AppStyles.color.roulette.red,
+  },
+  categoryChipTextExcluded: {
     color: AppStyles.color.white,
   },
   switchContainer: {

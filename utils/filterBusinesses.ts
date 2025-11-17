@@ -9,13 +9,24 @@ import { Filters } from '../context/state';
  */
 export function applyFilters(businesses: BusinessProps[], filters: Filters): BusinessProps[] {
   return businesses.filter(business => {
-    // Category filter
+    // Category inclusion filter
     if (filters.categoryIds.length > 0) {
       const businessCategories = business.categories?.map(cat => cat.alias) || [];
-      const hasMatchingCategory = filters.categoryIds.some(categoryId => 
+      const hasMatchingCategory = filters.categoryIds.some(categoryId =>
         businessCategories.includes(categoryId)
       );
       if (!hasMatchingCategory) {
+        return false;
+      }
+    }
+
+    // Category exclusion filter
+    if (filters.excludedCategoryIds.length > 0) {
+      const businessCategories = business.categories?.map(cat => cat.alias) || [];
+      const hasExcludedCategory = filters.excludedCategoryIds.some(categoryId =>
+        businessCategories.includes(categoryId)
+      );
+      if (hasExcludedCategory) {
         return false;
       }
     }
@@ -76,13 +87,14 @@ export function applyFilters(businesses: BusinessProps[], filters: Filters): Bus
  */
 export function countActiveFilters(filters: Filters): number {
   let count = 0;
-  
+
   if (filters.categoryIds.length > 0) count++;
+  if (filters.excludedCategoryIds.length > 0) count++;
   if (filters.priceLevels.length > 0) count++;
   if (filters.openNow) count++;
   if (filters.radiusMeters !== 1600) count++; // Default is 1600m (~1 mile)
   if (filters.minRating > 0) count++;
-  
+
   return count;
 }
 
