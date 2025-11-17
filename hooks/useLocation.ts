@@ -5,7 +5,7 @@ import { LocationObjectCoords } from "expo-location";
 import { GOOGLE_API_KEY } from "@env";
 import usePersistentStorage from "./usePersistentStorage";
 import { RootContext } from "../context/RootContext";
-import { setLocation } from "../context/reducer";
+import { setLocation, setCoords } from "../context/reducer";
 import { GeocodeResponse, geocodeAddress, reverseGeocode, humanizeGeocodeError } from "../api/google";
 import { logSafe, logNetwork } from "../utils/log";
 import { Coords, haversineKm, findClosestResult, extractCanonicalLabel, extractStateFromResult, extractCoordsFromResult } from "./geoUtils";
@@ -44,12 +44,11 @@ interface UseLocationReturn {
 	isLoading: boolean;
 }
 
-export default (): [string, string, string, LocationObjectCoords | null, any[], (query: string | null | undefined) => Promise<LocationResult | null>, (query: string | null | undefined) => Promise<ResolvedLocation | null>, boolean] => {
+export default (): [string, string, string, LocationObjectCoords | null, any[], (query: string | null | undefined) => Promise<LocationResult | null>, (query: string | null | undefined) => Promise<ResolvedLocation | null>, boolean, ResolvedLocation | null] => {
 	const [city, setCity] = useState<string>(``);
 	const [canonicalLocation, setCanonicalLocation] = useState<string>(``); // For display like "Powell, OH"
 	const [locationErrorMessage, setLocationErrorMessage] = useState<string>(``);
 	const [locationResults, setLocationResults] = useState<any[]>([]);
-	const [currentCoords, setCurrentCoords] = useState<LocationObjectCoords | null>(null);
 	const [isLoading, setIsLoading] = useState<boolean>(false);
 	const [lastResolvedLocation, setLastResolvedLocation] = useState<ResolvedLocation | null>(null);
 	const storage = usePersistentStorage({
@@ -57,7 +56,8 @@ export default (): [string, string, string, LocationObjectCoords | null, any[], 
 		debounceMs: 800, // Longer delay for location data
 		keyPrefix: '@roux:location'
 	});
-	const { dispatch } = useContext(RootContext);
+	const { dispatch, state } = useContext(RootContext);
+	const currentCoords = state.currentCoords; // Read from global context
 	const locationWatcher = useRef<Location.LocationSubscription | null>(null);
 
 	// Dev logging helper
@@ -83,7 +83,7 @@ export default (): [string, string, string, LocationObjectCoords | null, any[], 
 		setCanonicalLocation('');
 		setLocationResults([]);
 		setLocationErrorMessage('');
-		setCurrentCoords(null);
+		dispatch(setCoords(null));
 		dispatch(setLocation(''));
 	};
 
@@ -98,7 +98,7 @@ export default (): [string, string, string, LocationObjectCoords | null, any[], 
 	const setLocationFromCoords = async (coords: LocationObjectCoords): Promise<LocationResult | null> => {
 		try {
 			devLog('Setting location from coordinates:', coords);
-			setCurrentCoords(coords);
+			dispatch(setCoords(coords));
 			setIsLoading(true);
 
 			const response = await reverseGeocode(coords.latitude, coords.longitude);
@@ -413,7 +413,7 @@ export default (): [string, string, string, LocationObjectCoords | null, any[], 
 			});
 
 			// Store coordinates for future use
-			setCurrentCoords(location.coords);
+			dispatch(setCoords(location.coords));
 			
 			const result = await getCity(q, location.coords);
 			return result;
@@ -481,7 +481,7 @@ export default (): [string, string, string, LocationObjectCoords | null, any[], 
 					accuracy: Location.Accuracy.Balanced,
 				});
 				
-				setCurrentCoords(location.coords);
+				dispatch(setCoords(location.coords));
 				
 				const response = await reverseGeocode(location.coords.latitude, location.coords.longitude);
 				if (response.ok && response.results?.length) {

@@ -11,6 +11,7 @@ import {
 	ResetFilters,
 	HydrateFilters,
 	SetLocation,
+	SetCoords,
 	SetResults,
 	SetShowFilter,
 	AddFavorite,
@@ -27,6 +28,7 @@ import {
 import { CategoryProps, BusinessProps } from "../hooks/useResults";
 import { YelpBusiness } from "../types/yelp";
 import { FavoriteItem, HistoryItem, HISTORY_MAX_ITEMS } from "../types/favorites";
+import { LocationObjectCoords } from "expo-location";
 
 // Normalize history items with sanitization, stable ordering, and cap
 function normalizeHistory(items: HistoryItem[]): HistoryItem[] {
@@ -100,13 +102,18 @@ export function appReducer(state: AppState, action: AppActions): AppState {
 		case ActionType.SetLocation:
 			const newLocation = action.payload.location;
 			const locationChanged = state.location && state.location !== newLocation;
-			
+
 			// Clear results if location has changed significantly to prevent wrong-city roulette picks
 			return {
 				...state,
 				location: newLocation,
 				// Clear results when location changes to prevent stale results from wrong cities
 				...(locationChanged && { results: [] })
+			};
+		case ActionType.SetCoords:
+			return {
+				...state,
+				currentCoords: action.payload.coords,
 			};
 		case ActionType.SetResults:
 			return {
@@ -221,6 +228,11 @@ export const setFilter = (filter: Filter): SetFilter => ({
 export const setLocation = (location: string): SetLocation => ({
 	type: ActionType.SetLocation,
 	payload: { location },
+});
+
+export const setCoords = (coords: LocationObjectCoords | null): SetCoords => ({
+	type: ActionType.SetCoords,
+	payload: { coords },
 });
 
 export const setResults = (results: BusinessProps[]): SetResults => ({

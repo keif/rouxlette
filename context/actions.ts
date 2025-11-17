@@ -2,6 +2,7 @@ import { CategoryProps, BusinessProps } from "../hooks/useResults";
 import { Filter, Filters, SpinHistory } from "./state";
 import { YelpBusiness } from "../types/yelp";
 import { FavoriteItem, HistoryItem } from "../types/favorites";
+import { LocationObjectCoords } from "expo-location";
 
 export enum ActionType {
 	SetCategories,
@@ -11,6 +12,7 @@ export enum ActionType {
 	ResetFilters,
 	HydrateFilters,
 	SetLocation,
+	SetCoords,
 	SetResults,
 	SetShowFilter,
 	AddFavorite,
@@ -48,6 +50,11 @@ export interface SetFilter {
 export interface SetLocation {
 	type: ActionType.SetLocation;
 	payload: { location: string };
+}
+
+export interface SetCoords {
+	type: ActionType.SetCoords;
+	payload: { coords: LocationObjectCoords | null };
 }
 
 export interface SetResults {
@@ -121,4 +128,4 @@ export interface HydrateFilters {
 	payload: { filters: Filters };
 }
 
-export type AppActions = SetCategories | SetDetail | SetFilter | SetFilters | ResetFilters | HydrateFilters | SetLocation | SetResults | SetShowFilter | AddFavorite | RemoveFavorite | HydrateFavorites | AddHistory | ClearHistory | HydrateHistory | AddSpinHistory | SetSelectedBusiness | ShowBusinessModal | HideBusinessModal;
+export type AppActions = SetCategories | SetDetail | SetFilter | SetFilters | ResetFilters | HydrateFilters | SetLocation | SetCoords | SetResults | SetShowFilter | AddFavorite | RemoveFavorite | HydrateFavorites | AddHistory | ClearHistory | HydrateHistory | AddSpinHistory | SetSelectedBusiness | ShowBusinessModal | HideBusinessModal;

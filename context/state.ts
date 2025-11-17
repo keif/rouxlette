@@ -1,6 +1,7 @@
 import { CategoryProps, BusinessProps } from "../hooks/useResults";
 import { YelpBusiness } from "../types/yelp";
 import { FavoriteItem, HistoryItem } from "../types/favorites";
+import { LocationObjectCoords } from "expo-location";
 
 export interface SpinHistory {
 	restaurant: BusinessProps;
@@ -13,6 +14,7 @@ export interface AppState {
 	filter: Filter;
 	filters: Filters;
 	location: string;
+	currentCoords: LocationObjectCoords | null;
 	results: BusinessProps[];
 	showFilter: boolean;
 	favorites: FavoriteItem[];
@@ -29,7 +31,8 @@ export interface Filter {
 }
 
 export interface Filters {
-	categoryIds: string[];        // Yelp alias ids
+	categoryIds: string[];        // Yelp alias ids (inclusion filter)
+	excludedCategoryIds: string[]; // Yelp alias ids (exclusion filter)
 	priceLevels: Array<1|2|3|4>;  // $, $$, $$$, $$$$
 	openNow: boolean;
 	radiusMeters: number;         // e.g., 1600 default ~1 mile
@@ -38,6 +41,7 @@ export interface Filters {
 
 export const initialFilters: Filters = {
 	categoryIds: [],
+	excludedCategoryIds: [],
 	priceLevels: [],
 	openNow: false,
 	radiusMeters: 1600, // ~1 mile default
@@ -50,6 +54,7 @@ export const initialAppState: AppState = {
 	filter: {} as Filter,
 	filters: initialFilters,
 	location: ``,
+	currentCoords: null,
 	results: [],
 	showFilter: false,
 	favorites: [],
