@@ -1,4 +1,4 @@
-import React, { useEffect, useRef } from "react";
+import React, { useEffect, useRef, useState, useContext } from "react";
 import { Animated, Image, StyleSheet, Text, useWindowDimensions, View, Linking, Pressable, Platform } from "react-native";
 import { BusinessProps } from "../../hooks/useResults";
 import AppStyles from "../../AppStyles";
@@ -10,7 +10,6 @@ import Config from "../../Config";
 import { logSafe } from "../../utils/log";
 import { useFavorites } from "../../hooks/useFavorites";
 import { useHistory } from "../../hooks/useHistory";
-import { useContext } from 'react';
 import { RootContext } from '../../context/RootContext';
 
 interface RestaurantCardProps {
@@ -27,6 +26,7 @@ const RestaurantCard = ({ index, result }: RestaurantCardProps) => {
 	const { isFavorite, toggleFavorite } = useFavorites();
 	const { addHistoryEntry } = useHistory();
 	const { state } = useContext(RootContext);
+	const [isFlipped, setIsFlipped] = useState(false);
 
 	useEffect(() => {
 		Animated.parallel([
@@ -141,9 +141,21 @@ const RestaurantCard = ({ index, result }: RestaurantCardProps) => {
 						{categories.map(cat => cat.title).join(`, `)} • {location.city}
 					</Text>
 				</View>
-				<View style={{ flexDirection: "row", marginTop: 4 }}>
+				<View style={{ flexDirection: "row", marginTop: 4, alignItems: 'center' }}>
 					<StarRating rating={rating} />
 					<Text style={styles.review}>{review_count} Reviews</Text>
+					<Pressable
+						style={styles.flipButton}
+						onPress={() => setIsFlipped(true)}
+						android_ripple={{
+							color: "rgba(0,0,0,0.1)",
+							radius: 20,
+							borderless: true,
+						}}
+						accessibilityLabel="View details"
+					>
+						<MaterialIcons name="info" size={24} color={AppStyles.color.primary} />
+					</Pressable>
 				</View>
 			</View>
 		</View>
@@ -153,7 +165,21 @@ const RestaurantCard = ({ index, result }: RestaurantCardProps) => {
 		<View style={styles.cardContent}>
 			<View style={styles.backHeader}>
 				<Text style={styles.backTitle}>{name}</Text>
-				<OpenSign is_open_now={is_open_now} />
+				<View style={{ flexDirection: 'row', alignItems: 'center', gap: 8 }}>
+					<OpenSign is_open_now={is_open_now} />
+					<Pressable
+						onPress={() => setIsFlipped(false)}
+						android_ripple={{
+							color: "rgba(255,255,255,0.3)",
+							radius: 20,
+							borderless: true,
+						}}
+						accessibilityLabel="Close details"
+						style={styles.closeButton}
+					>
+						<MaterialIcons name="close" size={24} color={AppStyles.color.white} />
+					</Pressable>
+				</View>
 			</View>
 			
 			<View style={styles.backRating}>
@@ -254,6 +280,9 @@ const RestaurantCard = ({ index, result }: RestaurantCardProps) => {
 				front={frontContent}
 				back={backContent}
 				style={styles.flipCard}
+				flipped={isFlipped}
+				onFlipChange={setIsFlipped}
+				disableTapToFlip={true}
 			/>
 		</Animated.View>
 	);
@@ -413,6 +442,13 @@ const styles = StyleSheet.create({
 		fontSize: 14,
 		fontFamily: AppStyles.fonts.medium,
 		color: AppStyles.color.black,
+	},
+	flipButton: {
+		marginLeft: 'auto',
+		padding: 4,
+	},
+	closeButton: {
+		padding: 4,
 	},
 });
 
