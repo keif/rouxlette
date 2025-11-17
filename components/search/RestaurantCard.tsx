@@ -419,10 +419,13 @@ const styles = StyleSheet.create({
 	},
 	backActions: {
 		flexDirection: 'row',
-		justifyContent: 'space-around',
+		justifyContent: 'flex-start',
+		alignItems: 'center',
+		gap: 8,
 		paddingVertical: 12,
 		paddingHorizontal: 16,
 		paddingBottom: 16,
+		paddingRight: 76,
 	},
 	backButton: {
 		backgroundColor: 'rgba(255, 255, 255, 0.9)',
@@ -447,20 +450,12 @@ const styles = StyleSheet.create({
 		position: 'absolute',
 		bottom: 12,
 		right: 12,
-		backgroundColor: 'rgba(255, 255, 255, 0.95)',
+		backgroundColor: 'transparent',
 		borderRadius: 24,
 		width: 48,
 		height: 48,
 		justifyContent: 'center',
 		alignItems: 'center',
-		shadowColor: AppStyles.color.shadow,
-		shadowOffset: {
-			height: 2,
-			width: 2,
-		},
-		shadowOpacity: 0.3,
-		shadowRadius: 4,
-		elevation: 4,
 	},
 });
 
