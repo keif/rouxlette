@@ -114,7 +114,11 @@ const SearchScreen = () => {
 	const hasSearchResults = searchResults && (searchResults.businesses ?? []).length > 0;
 	return (
 		<SafeAreaProvider>
-			<View style={[styles.container, toggleStyle ? styles.containerRow : styles.containerColumn]}>
+			<View style={[
+				styles.container,
+				toggleStyle ? styles.containerRow : styles.containerColumn,
+				hasSearchResults && styles.containerWithResults
+			]}>
 				<View style={styles.controller}>
 					<Animated.View
 						style={[styles.animatedContainer, { borderRadius }]}
@@ -204,6 +208,10 @@ const styles = StyleSheet.create({
 		flex: 1,
 		justifyContent: "center",
 		overflow: "hidden",
+	},
+	containerWithResults: {
+		justifyContent: "flex-start",
+		overflow: "visible",
 	},
 	containerColumn: {
 		flexDirection: `column`,
