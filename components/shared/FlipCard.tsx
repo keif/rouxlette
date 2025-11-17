@@ -17,6 +17,7 @@ interface FlipCardProps {
   style?: ViewStyle;
   flipDurationMs?: number;
   disableTapToFlip?: boolean;
+  disableSwipeToFlip?: boolean;
 }
 
 const FlipCard = ({
@@ -27,6 +28,7 @@ const FlipCard = ({
   style,
   flipDurationMs = 300,
   disableTapToFlip = false,
+  disableSwipeToFlip = false,
 }: FlipCardProps) => {
   const [isFlipped, setIsFlipped] = useState(false);
   const flipValue = useSharedValue(0);
@@ -95,56 +97,64 @@ const FlipCard = ({
     });
   }, [currentFlipped, flipDurationMs]);
 
-  const cardContent = (
-    <PanGestureHandler onHandlerStateChange={onPanStateChange}>
+  const cardView = (
+    <Animated.View
+      style={[
+        {
+          position: 'relative',
+        },
+        style,
+      ]}
+      accessible={true}
+      accessibilityRole="button"
+      accessibilityHint="Flip card to see more details"
+    >
       <Animated.View
         style={[
           {
-            position: 'relative',
+            position: 'absolute',
+            width: '100%',
+            height: '100%',
           },
-          style,
+          frontAnimatedStyle,
         ]}
-        accessible={true}
-        accessibilityRole="button"
-        accessibilityHint="Flip card to see more details"
       >
-        <Animated.View
-          style={[
-            {
-              position: 'absolute',
-              width: '100%',
-              height: '100%',
-            },
-            frontAnimatedStyle,
-          ]}
-        >
-          {front}
-        </Animated.View>
-        <Animated.View
-          style={[
-            {
-              position: 'absolute',
-              width: '100%',
-              height: '100%',
-            },
-            backAnimatedStyle,
-          ]}
-        >
-          {back}
-        </Animated.View>
-        {/* Invisible view to maintain height */}
-        <Animated.View style={{ opacity: 0 }}>
-          {front}
-        </Animated.View>
+        {front}
       </Animated.View>
+      <Animated.View
+        style={[
+          {
+            position: 'absolute',
+            width: '100%',
+            height: '100%',
+          },
+          backAnimatedStyle,
+        ]}
+      >
+        {back}
+      </Animated.View>
+      {/* Invisible view to maintain height */}
+      <Animated.View style={{ opacity: 0 }}>
+        {front}
+      </Animated.View>
+    </Animated.View>
+  );
+
+  // Wrap with PanGestureHandler if swipe is enabled
+  const cardWithPan = disableSwipeToFlip ? (
+    cardView
+  ) : (
+    <PanGestureHandler onHandlerStateChange={onPanStateChange}>
+      {cardView}
     </PanGestureHandler>
   );
 
+  // Wrap with TapGestureHandler if tap is enabled
   return disableTapToFlip ? (
-    cardContent
+    cardWithPan
   ) : (
     <TapGestureHandler onHandlerStateChange={onTapStateChange}>
-      {cardContent}
+      {cardWithPan}
     </TapGestureHandler>
   );
 };

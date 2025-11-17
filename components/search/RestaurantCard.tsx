@@ -1,5 +1,5 @@
 import React, { useEffect, useRef, useState, useContext } from "react";
-import { Animated, Image, StyleSheet, Text, useWindowDimensions, View, Linking, Pressable, Platform } from "react-native";
+import { Animated, Image, StyleSheet, Text, useWindowDimensions, View, Linking, Pressable, Platform, ScrollView } from "react-native";
 import { BusinessProps } from "../../hooks/useResults";
 import AppStyles from "../../AppStyles";
 import {FontAwesome, MaterialIcons as Icon, Ionicons, MaterialIcons} from "@expo/vector-icons";
@@ -17,8 +17,57 @@ interface RestaurantCardProps {
 	result: BusinessProps;
 }
 
+// Helper function to format distance
+const formatDistance = (meters: number): string => {
+	const miles = meters * 0.000621371;
+	return `${miles.toFixed(1)} mi`;
+};
+
+// Helper function to format hours
+const formatHours = (hours: any, is_open_now: boolean): string => {
+	if (!hours || !hours[0]?.open) return '';
+
+	const now = new Date();
+	const currentDay = now.getDay(); // 0-6, Sunday = 0
+	const currentTime = now.getHours() * 100 + now.getMinutes(); // e.g., 1430 for 2:30 PM
+
+	const todayHours = hours[0].open.find((h: any) => h.day === currentDay);
+
+	if (is_open_now && todayHours) {
+		const endTime = parseInt(todayHours.end);
+		const endHour = Math.floor(endTime / 100);
+		const endMin = endTime % 100;
+		const period = endHour >= 12 ? 'PM' : 'AM';
+		const displayHour = endHour > 12 ? endHour - 12 : endHour === 0 ? 12 : endHour;
+		const displayMin = endMin > 0 ? `:${endMin.toString().padStart(2, '0')}` : '';
+		return `Open until ${displayHour}${displayMin} ${period}`;
+	}
+
+	// Find next opening
+	for (let i = 0; i < 7; i++) {
+		const checkDay = (currentDay + i) % 7;
+		const dayHours = hours[0].open.find((h: any) => h.day === checkDay);
+		if (dayHours) {
+			const startTime = parseInt(dayHours.start);
+			const startHour = Math.floor(startTime / 100);
+			const startMin = startTime % 100;
+			const period = startHour >= 12 ? 'PM' : 'AM';
+			const displayHour = startHour > 12 ? startHour - 12 : startHour === 0 ? 12 : startHour;
+			const displayMin = startMin > 0 ? `:${startMin.toString().padStart(2, '0')}` : '';
+
+			if (i === 0 && startTime > currentTime) {
+				return `Opens at ${displayHour}${displayMin} ${period}`;
+			} else if (i === 1) {
+				return `Opens tomorrow at ${displayHour}${displayMin} ${period}`;
+			}
+		}
+	}
+
+	return '';
+};
+
 const RestaurantCard = ({ index, result }: RestaurantCardProps) => {
-	const { categories, hours, image_url, is_closed, location, name, price, rating, review_count, url, phone, display_phone, photos } = result;
+	const { categories, hours, image_url, is_closed, location, name, price, rating, review_count, url, phone, display_phone, photos, distance } = result;
 	const { width } = useWindowDimensions();
 	const translateY = useRef<Animated.Value>(new Animated.Value(50)).current;
 	const opacity = useRef<Animated.Value>(new Animated.Value(0)).current;
@@ -101,9 +150,24 @@ const RestaurantCard = ({ index, result }: RestaurantCardProps) => {
 	};
 
 	const imageSize = width - 24;
+	const cardMinHeight = imageSize / 2 + 120; // Image height + approximate detail section height
+
+	// Format additional info for back card
+	const distanceText = distance ? formatDistance(distance) : '';
+	const hoursText = formatHours(hours, is_open_now);
+	const quickInfo = [price, distanceText, hoursText].filter(Boolean).join(' • ');
+
+	// Debug logging
+	logSafe(`RestaurantCard ${name}`, {
+		photosCount: photos?.length || 0,
+		quickInfo,
+		is_open_now,
+		hoursText,
+		categoriesCount: categories.length
+	});
 
 	const frontContent = (
-		<View style={styles.cardContent}>
+		<View style={[styles.cardContent, { minHeight: cardMinHeight }]}>
 			<View style={styles.imageContainer}>
 				<Image
 					style={{ height: imageSize / 2, width: imageSize }}
@@ -162,16 +226,35 @@ const RestaurantCard = ({ index, result }: RestaurantCardProps) => {
 	);
 
 	const backContent = (
-		<View style={styles.cardContent}>
+		<View style={[styles.cardContent, { minHeight: cardMinHeight }]}>
 			<View style={styles.backHeader}>
 				<Text style={styles.backTitle}>{name}</Text>
 				<OpenSign is_open_now={is_open_now} />
 			</View>
 
+			{quickInfo && (
+				<View style={styles.quickInfo}>
+					<Text style={styles.quickInfoText}>{quickInfo}</Text>
+				</View>
+			)}
+
 			<View style={styles.backRating}>
 				<StarRating rating={rating} />
 				<Text style={styles.backReviewText}>{review_count} Review{review_count > 1 ? 's' : ''}</Text>
 			</View>
+
+			{photos && photos.length > 0 && (
+				<View style={styles.photoContainer}>
+					{photos.slice(0, 3).map((photo, idx) => (
+						<Image
+							key={idx}
+							source={{ uri: photo }}
+							style={styles.photo}
+							resizeMode="cover"
+						/>
+					))}
+				</View>
+			)}
 
 			<View style={styles.backDetails}>
 				<Text style={styles.backDetailText}>
@@ -191,6 +274,8 @@ const RestaurantCard = ({ index, result }: RestaurantCardProps) => {
 					{' '}{categories.map(cat => cat.title).join(', ')}
 				</Text>
 			</View>
+
+			<View style={{ flex: 1 }} />
 
 			<View style={styles.backActions}>
 				<Pressable
@@ -254,19 +339,20 @@ const RestaurantCard = ({ index, result }: RestaurantCardProps) => {
 						<Text style={styles.backButtonText}>Call</Text>
 					</Pressable>
 				)}
+
+				<Pressable
+					style={styles.flipButtonInline}
+					onPress={() => setIsFlipped(false)}
+					android_ripple={{
+						color: "rgba(0,0,0,0.1)",
+						radius: 24,
+						borderless: true,
+					}}
+					accessibilityLabel="Close details"
+				>
+					<MaterialIcons name="rotate-left" size={28} color={AppStyles.color.primary} />
+				</Pressable>
 			</View>
-			<Pressable
-				style={styles.flipButtonCorner}
-				onPress={() => setIsFlipped(false)}
-				android_ripple={{
-					color: "rgba(0,0,0,0.1)",
-					radius: 24,
-					borderless: true,
-				}}
-				accessibilityLabel="Close details"
-			>
-				<MaterialIcons name="rotate-left" size={28} color={AppStyles.color.primary} />
-			</Pressable>
 		</View>
 	);
 
@@ -281,6 +367,7 @@ const RestaurantCard = ({ index, result }: RestaurantCardProps) => {
 				flipped={isFlipped}
 				onFlipChange={setIsFlipped}
 				disableTapToFlip={true}
+				disableSwipeToFlip={true}
 			/>
 		</Animated.View>
 	);
@@ -303,14 +390,16 @@ const styles = StyleSheet.create({
 		borderRadius: 16,
 		overflow: 'hidden',
 		backgroundColor: AppStyles.color.white,
-		elevation: 8,
-		shadowColor: AppStyles.color.shadow,
+		borderWidth: 1,
+		borderColor: 'rgba(0, 0, 0, 0.08)',
+		elevation: 12,
+		shadowColor: '#000',
 		shadowOffset: {
-			height: 4,
-			width: 4,
+			height: 6,
+			width: 0,
 		},
-		shadowOpacity: 0.3,
-		shadowRadius: 12,
+		shadowOpacity: 0.15,
+		shadowRadius: 8,
 	},
 	detail: {
 		backgroundColor: AppStyles.color.white,
@@ -386,7 +475,8 @@ const styles = StyleSheet.create({
 		flexDirection: 'row',
 		justifyContent: 'space-between',
 		alignItems: 'center',
-		padding: 16,
+		paddingHorizontal: 16,
+		paddingVertical: 12,
 		backgroundColor: AppStyles.color.primary,
 	},
 	backTitle: {
@@ -396,11 +486,21 @@ const styles = StyleSheet.create({
 		fontWeight: 'bold',
 		flex: 1,
 	},
+	quickInfo: {
+		paddingHorizontal: 16,
+		paddingTop: 8,
+		paddingBottom: 4,
+	},
+	quickInfoText: {
+		fontSize: 14,
+		fontFamily: AppStyles.fonts.medium,
+		color: AppStyles.color.black,
+	},
 	backRating: {
 		flexDirection: 'row',
 		alignItems: 'center',
 		paddingHorizontal: 16,
-		paddingTop: 8,
+		paddingTop: 2,
 	},
 	backReviewText: {
 		...textStyle,
@@ -408,23 +508,22 @@ const styles = StyleSheet.create({
 	},
 	backDetails: {
 		paddingHorizontal: 16,
-		paddingVertical: 8,
+		paddingVertical: 6,
 	},
 	backDetailText: {
 		...textStyle,
-		fontSize: 16,
-		marginBottom: 8,
-		lineHeight: 22,
+		fontSize: 15,
+		marginBottom: 6,
+		lineHeight: 20,
 	},
 	backActions: {
 		flexDirection: 'row',
 		justifyContent: 'flex-start',
 		alignItems: 'center',
 		gap: 8,
-		paddingVertical: 12,
+		paddingVertical: 8,
 		paddingHorizontal: 16,
-		paddingBottom: 16,
-		paddingRight: 76,
+		paddingBottom: 12,
 	},
 	backButton: {
 		backgroundColor: 'rgba(255, 255, 255, 0.9)',
@@ -445,6 +544,18 @@ const styles = StyleSheet.create({
 		fontFamily: AppStyles.fonts.medium,
 		color: AppStyles.color.black,
 	},
+	photoContainer: {
+		flexDirection: 'row',
+		gap: 8,
+		paddingHorizontal: 16,
+		marginVertical: 8,
+	},
+	photo: {
+		flex: 1,
+		height: 80,
+		borderRadius: 8,
+		maxWidth: 120,
+	},
 	flipButtonCorner: {
 		position: 'absolute',
 		bottom: 12,
@@ -455,6 +566,15 @@ const styles = StyleSheet.create({
 		height: 48,
 		justifyContent: 'center',
 		alignItems: 'center',
+	},
+	flipButtonInline: {
+		backgroundColor: 'transparent',
+		borderRadius: 24,
+		width: 48,
+		height: 48,
+		justifyContent: 'center',
+		alignItems: 'center',
+		marginLeft: 'auto',
 	},
 });
 
