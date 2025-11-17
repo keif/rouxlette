@@ -316,8 +316,8 @@ const styles = StyleSheet.create({
 	detail: {
 		backgroundColor: AppStyles.color.white,
 		paddingHorizontal: 16,
-		paddingVertical: 8,
-		paddingBottom: 68,
+		paddingVertical: 6,
+		paddingBottom: 16,
 	},
 	detailHeader: {
 		flexDirection: "row",
@@ -401,7 +401,7 @@ const styles = StyleSheet.create({
 		flexDirection: 'row',
 		alignItems: 'center',
 		paddingHorizontal: 16,
-		paddingTop: 12,
+		paddingTop: 8,
 	},
 	backReviewText: {
 		...textStyle,
@@ -409,7 +409,7 @@ const styles = StyleSheet.create({
 	},
 	backDetails: {
 		paddingHorizontal: 16,
-		paddingVertical: 12,
+		paddingVertical: 8,
 	},
 	backDetailText: {
 		...textStyle,
@@ -420,9 +420,9 @@ const styles = StyleSheet.create({
 	backActions: {
 		flexDirection: 'row',
 		justifyContent: 'space-around',
-		paddingVertical: 16,
+		paddingVertical: 12,
 		paddingHorizontal: 16,
-		paddingBottom: 68,
+		paddingBottom: 16,
 	},
 	backButton: {
 		backgroundColor: 'rgba(255, 255, 255, 0.9)',
