@@ -141,23 +141,23 @@ const RestaurantCard = ({ index, result }: RestaurantCardProps) => {
 						{categories.map(cat => cat.title).join(`, `)} • {location.city}
 					</Text>
 				</View>
-				<View style={{ flexDirection: "row", marginTop: 4, alignItems: 'center' }}>
+				<View style={{ flexDirection: "row", marginTop: 4 }}>
 					<StarRating rating={rating} />
 					<Text style={styles.review}>{review_count} Reviews</Text>
-					<Pressable
-						style={styles.flipButton}
-						onPress={() => setIsFlipped(true)}
-						android_ripple={{
-							color: "rgba(0,0,0,0.1)",
-							radius: 20,
-							borderless: true,
-						}}
-						accessibilityLabel="View details"
-					>
-						<MaterialIcons name="info" size={24} color={AppStyles.color.primary} />
-					</Pressable>
 				</View>
 			</View>
+			<Pressable
+				style={styles.flipButtonCorner}
+				onPress={() => setIsFlipped(true)}
+				android_ripple={{
+					color: "rgba(0,0,0,0.1)",
+					radius: 24,
+					borderless: true,
+				}}
+				accessibilityLabel="View details"
+			>
+				<MaterialIcons name="info" size={28} color={AppStyles.color.primary} />
+			</Pressable>
 		</View>
 	);
 
@@ -171,18 +171,6 @@ const RestaurantCard = ({ index, result }: RestaurantCardProps) => {
 			<View style={styles.backRating}>
 				<StarRating rating={rating} />
 				<Text style={styles.backReviewText}>{review_count} Review{review_count > 1 ? 's' : ''}</Text>
-				<Pressable
-					style={styles.flipButton}
-					onPress={() => setIsFlipped(false)}
-					android_ripple={{
-						color: "rgba(0,0,0,0.1)",
-						radius: 20,
-						borderless: true,
-					}}
-					accessibilityLabel="Close details"
-				>
-					<MaterialIcons name="rotate-left" size={24} color={AppStyles.color.primary} />
-				</Pressable>
 			</View>
 
 			<View style={styles.backDetails}>
@@ -190,7 +178,7 @@ const RestaurantCard = ({ index, result }: RestaurantCardProps) => {
 					<MaterialIcons name="location-on" size={16} color={AppStyles.color.primary} />
 					{' '}{location.display_address.join(', ')}
 				</Text>
-				
+
 				{phone && (
 					<Text style={styles.backDetailText}>
 						<MaterialIcons name="phone" size={16} color={AppStyles.color.primary} />
@@ -267,6 +255,18 @@ const RestaurantCard = ({ index, result }: RestaurantCardProps) => {
 					</Pressable>
 				)}
 			</View>
+			<Pressable
+				style={styles.flipButtonCorner}
+				onPress={() => setIsFlipped(false)}
+				android_ripple={{
+					color: "rgba(0,0,0,0.1)",
+					radius: 24,
+					borderless: true,
+				}}
+				accessibilityLabel="Close details"
+			>
+				<MaterialIcons name="rotate-left" size={28} color={AppStyles.color.primary} />
+			</Pressable>
 		</View>
 	);
 
@@ -441,9 +441,24 @@ const styles = StyleSheet.create({
 		fontFamily: AppStyles.fonts.medium,
 		color: AppStyles.color.black,
 	},
-	flipButton: {
-		marginLeft: 'auto',
-		padding: 4,
+	flipButtonCorner: {
+		position: 'absolute',
+		bottom: 12,
+		right: 12,
+		backgroundColor: 'rgba(255, 255, 255, 0.95)',
+		borderRadius: 24,
+		width: 48,
+		height: 48,
+		justifyContent: 'center',
+		alignItems: 'center',
+		shadowColor: AppStyles.color.shadow,
+		shadowOffset: {
+			height: 2,
+			width: 2,
+		},
+		shadowOpacity: 0.3,
+		shadowRadius: 4,
+		elevation: 4,
 	},
 });
 
