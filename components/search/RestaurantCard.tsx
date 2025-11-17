@@ -297,8 +297,12 @@ const styles = StyleSheet.create({
 		marginVertical: 12,
 	},
 	flipCard: {
-		backgroundColor: AppStyles.color.white,
+		// Empty - let content handle its own styling for 3D flip effect
+	},
+	cardContent: {
 		borderRadius: 16,
+		overflow: 'hidden',
+		backgroundColor: AppStyles.color.white,
 		elevation: 8,
 		shadowColor: AppStyles.color.shadow,
 		shadowOffset: {
@@ -307,11 +311,6 @@ const styles = StyleSheet.create({
 		},
 		shadowOpacity: 0.3,
 		shadowRadius: 12,
-	},
-	cardContent: {
-		borderRadius: 16,
-		overflow: 'hidden',
-		backgroundColor: AppStyles.color.white,
 	},
 	detail: {
 		backgroundColor: AppStyles.color.white,
