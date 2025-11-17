@@ -1,4 +1,4 @@
-import { FlatList, Platform, StyleSheet, ActivityIndicator } from "react-native";
+import { ScrollView, Platform, StyleSheet, ActivityIndicator } from "react-native";
 
 import RestaurantCard from "../search/RestaurantCard";
 import { Text, View } from "../Themed";
@@ -41,22 +41,18 @@ const ResultsList = ({ filterTerm, horizontal = false, results, term, isLoading 
 		);
 	}
 
-	const renderItem = ({ item, index }: { item: BusinessProps, index: number }) => {
-		return <RestaurantCard index={index} result={item} />;
-	};
-
 	return (
 		<View style={styles.container}>
-			<FlatList
-				ListHeaderComponent={ListHeaderComponent}
+			<ScrollView
 				contentContainerStyle={[styles.contentContainer, { paddingBottom: Math.max(200, 160 + inset.bottom) }]}
-				data={businesses}
-				horizontal={horizontal}
-				keyExtractor={(result) => result.id}
-				renderItem={renderItem}
 				showsHorizontalScrollIndicator={false}
 				showsVerticalScrollIndicator={true}
-			/>
+			>
+				{ListHeaderComponent}
+				{businesses.map((business, index) => (
+					<RestaurantCard key={business.id} index={index} result={business} />
+				))}
+			</ScrollView>
 			<StatusBar style={Platform.OS === "ios" ? "light" : "auto"} />
 		</View>
 	);
