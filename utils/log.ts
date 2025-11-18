@@ -5,7 +5,7 @@
  * the Metro bundler's body-parser and cause "request entity too large" errors.
  */
 
-export interface LogSafeOptions {
+export interface ClipOptions {
   /** Maximum string length before truncation (default: 5000) */
   maxLength?: number;
   /** Maximum object depth to serialize (default: 3) */
@@ -16,12 +16,50 @@ export interface LogSafeOptions {
   showSizes?: boolean;
 }
 
-const DEFAULT_OPTIONS: Required<LogSafeOptions> = {
+export interface LogSafeOptions extends ClipOptions {
+  /** Minimum log level required for this message (default: 'info') */
+  level?: LogLevel;
+}
+
+const DEFAULT_OPTIONS: Required<ClipOptions> = {
   maxLength: 2000,
   maxDepth: 2, // Reduced from 3 to prevent MAX_DEPTH_EXCEEDED issues
   maxItems: 5, // Reduced from 10 to minimize payload size
   showSizes: true,
 };
+
+export type LogLevel = 'debug' | 'info' | 'warn' | 'error' | 'silent';
+
+const LEVEL_WEIGHT: Record<LogLevel, number> = {
+  debug: 10,
+  info: 20,
+  warn: 30,
+  error: 40,
+  silent: 50,
+};
+
+function parseLogLevel(raw?: string | null): LogLevel | undefined {
+  if (!raw) return undefined;
+  const normalized = raw.trim().toLowerCase();
+  if (['debug', 'info', 'warn', 'error', 'silent'].includes(normalized)) {
+    return normalized as LogLevel;
+  }
+  return undefined;
+}
+
+const envLogLevel =
+  parseLogLevel(process.env.EXPO_PUBLIC_LOG_LEVEL || process.env.LOG_LEVEL) ??
+  (process.env.NODE_ENV === 'test' ? 'debug' : undefined);
+
+const ACTIVE_LOG_LEVEL: LogLevel = envLogLevel ?? 'warn';
+const isDev = typeof __DEV__ !== 'undefined' ? __DEV__ : process.env.NODE_ENV !== 'production';
+
+function shouldLog(level: LogLevel): boolean {
+  if (!isDev || ACTIVE_LOG_LEVEL === 'silent') {
+    return false;
+  }
+  return LEVEL_WEIGHT[level] >= LEVEL_WEIGHT[ACTIVE_LOG_LEVEL];
+}
 
 /**
  * Safely clip/truncate any value to prevent large console payloads
@@ -30,14 +68,14 @@ const DEFAULT_OPTIONS: Required<LogSafeOptions> = {
  * @param options - Clipping options
  * @returns Clipped version safe for logging
  */
-export function clip(value: unknown, options: LogSafeOptions = {}): unknown {
+export function clip(value: unknown, options: ClipOptions = {}): unknown {
   const opts = { ...DEFAULT_OPTIONS, ...options };
   return clipValue(value, opts, 0, new Set());
 }
 
 function clipValue(
   value: unknown, 
-  options: Required<LogSafeOptions>, 
+  options: Required<ClipOptions>, 
   depth: number,
   seen: Set<any>
 ): unknown {
@@ -146,12 +184,14 @@ export function logSafe(
   value: unknown, 
   options: LogSafeOptions = {}
 ): void {
-  if (!__DEV__) {
-    return; // No logging in production
-  }
+  const { level: levelOption, ...clipOptions } = options;
+  const level =
+    levelOption ??
+    (/\b(error|fail|failed)\b/i.test(label) ? 'warn' : 'info');
+  if (!shouldLog(level)) return;
 
   try {
-    const clipped = clip(value, options);
+    const clipped = clip(value, clipOptions);
     
     // Additional safety: check final string size
     try {
@@ -182,9 +222,10 @@ export function logSafe(
 export function logArray<T>(
   label: string,
   array: T[],
-  sampleSize: number = 3
+  sampleSize: number = 3,
+  level: LogLevel = 'info'
 ): void {
-  if (!__DEV__) return;
+  if (!shouldLog(level)) return;
 
   if (!Array.isArray(array)) {
     logSafe(`${label} [NOT_ARRAY]`, array);
@@ -210,9 +251,10 @@ export function logArray<T>(
 export function logObject(
   label: string,
   obj: Record<string, unknown>,
-  keySelection: string[] | 'all' | number = 5
+  keySelection: string[] | 'all' | number = 5,
+  level: LogLevel = 'info'
 ): void {
-  if (!__DEV__) return;
+  if (!shouldLog(level)) return;
 
   if (typeof obj !== 'object' || obj === null) {
     logSafe(`${label} [NOT_OBJECT]`, obj);
@@ -255,22 +297,24 @@ export function logObject(
  */
 export async function logPerf<T>(
   label: string,
-  fn: () => T | Promise<T>
+  fn: () => T | Promise<T>,
+  level: LogLevel = 'debug'
 ): Promise<T> {
-  if (!__DEV__) {
-    return await fn();
-  }
-
-  const start = performance.now();
+  const loggingEnabled = shouldLog(level);
+  const start = loggingEnabled ? performance.now() : 0;
   try {
     const result = await fn();
-    const duration = performance.now() - start;
+    const duration = loggingEnabled ? performance.now() - start : 0;
     
-    console.log(`[PERF:${label}] ${duration.toFixed(2)}ms`);
+    if (loggingEnabled) {
+      console.log(`[PERF:${label}] ${duration.toFixed(2)}ms`);
+    }
     return result;
   } catch (error) {
-    const duration = performance.now() - start;
-    console.log(`[PERF:${label}] FAILED after ${duration.toFixed(2)}ms`, clip(error));
+    if (loggingEnabled) {
+      const duration = performance.now() - start;
+      console.log(`[PERF:${label}] FAILED after ${duration.toFixed(2)}ms`, clip(error));
+    }
     throw error;
   }
 }
@@ -287,9 +331,10 @@ export function logNetwork(
   method: string,
   url: string,
   params?: Record<string, unknown>,
-  response?: { status?: number; data?: unknown; duration?: number }
+  response?: { status?: number; data?: unknown; duration?: number },
+  level: LogLevel = 'info'
 ): void {
-  if (!__DEV__) return;
+  if (!shouldLog(level)) return;
 
   const logData: Record<string, unknown> = {
     method: method.toUpperCase(),
@@ -337,9 +382,10 @@ export function logNetwork(
 export function logRender(
   componentName: string,
   props?: Record<string, unknown>,
-  renderCount?: number
+  renderCount?: number,
+  level: LogLevel = 'info'
 ): void {
-  if (!__DEV__) return;
+  if (!shouldLog(level)) return;
 
   const logData: Record<string, unknown> = {
     component: componentName,
@@ -373,7 +419,7 @@ export function logRender(
  */
 export function safeStringify(
   value: unknown,
-  options: LogSafeOptions = {}
+  options: ClipOptions = {}
 ): string {
   try {
     const clipped = clip(value, {

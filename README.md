@@ -30,3 +30,7 @@ goal is to be as low requirement as possible.
   - Ratings by other users (ie. I only want 4 stars and above)
   - A way to track where I’ve gone and then filter by “new to me”
 - "Maybe Next Time": a subset of favorites, to keep certain ones at the top of the list.
+
+## Contributing
+
+See the contributor guide in [AGENTS.md](./AGENTS.md) for project structure, test commands, and PR expectations.
