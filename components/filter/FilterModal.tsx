@@ -1,5 +1,6 @@
 import React, { useContext } from "react";
-import { Modal, Pressable, SafeAreaView, ScrollView, StatusBar, StyleSheet, View } from "react-native";
+import { Modal, Pressable, ScrollView, StatusBar, StyleSheet, View } from "react-native";
+import { SafeAreaView } from "react-native-safe-area-context";
 import { MaterialIcons as Icon } from "@expo/vector-icons";
 import Config from "../../Config";
 import { RootContext } from "../../context/RootContext";
