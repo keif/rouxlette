@@ -215,7 +215,7 @@ const RestaurantCard = ({index, result}: RestaurantCardProps) => {
     );
 
     const backContent = (
-        <View style={[styles.cardContent, {minHeight: cardMinHeight}]}>
+        <View style={styles.cardContent}>
             <View style={styles.backHeader}>
                 <Text style={styles.backTitle}>{name}</Text>
                 <OpenSign is_open_now={is_open_now}/>
@@ -577,9 +577,9 @@ const styles = StyleSheet.create({
         justifyContent: 'flex-start',
         alignItems: 'center',
         gap: 8,
-        paddingVertical: 8,
+        paddingTop: 8,
         paddingHorizontal: 16,
-        paddingBottom: 12,
+        paddingBottom: 20,
     },
     backButton: {
         backgroundColor: 'rgba(255, 255, 255, 0.9)',
