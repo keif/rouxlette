@@ -13,6 +13,7 @@ import {useHistory} from "../../hooks/useHistory";
 import {RootContext} from '../../context/RootContext';
 import {useBusinessDetails} from "../../hooks/useBusinessDetails";
 import useBusinessHours from "../../hooks/useBusinessHours";
+import ImageViewerModal from "../shared/ImageViewerModal";
 
 interface RestaurantCardProps {
     index: number;
@@ -50,6 +51,8 @@ const RestaurantCard = ({index, result}: RestaurantCardProps) => {
     const {addHistoryEntry} = useHistory();
     const {state} = useContext(RootContext);
     const [isFlipped, setIsFlipped] = useState(false);
+    const [imageViewerVisible, setImageViewerVisible] = useState(false);
+    const [selectedImageIndex, setSelectedImageIndex] = useState(0);
 
     // Lazy-load business details (photos, detailed hours)
     const {business: enrichedBusiness, loading: detailsLoading, fetchDetails, hasDetails} = useBusinessDetails(result, false);
@@ -80,6 +83,12 @@ const RestaurantCard = ({index, result}: RestaurantCardProps) => {
         if (flipped && !hasDetails) {
             fetchDetails();
         }
+    };
+
+    // Open image viewer with selected photo
+    const handlePhotoPress = (index: number) => {
+        setSelectedImageIndex(index);
+        setImageViewerVisible(true);
     };
 
     const handleYelpPress = () => {
@@ -233,12 +242,24 @@ const RestaurantCard = ({index, result}: RestaurantCardProps) => {
             {enrichedBusiness.photos && enrichedBusiness.photos.length > 0 && (
                 <View style={styles.photoContainer}>
                     {enrichedBusiness.photos.slice(0, 3).map((photo, idx) => (
-                        <Image
+                        <Pressable
                             key={idx}
-                            source={{uri: photo}}
-                            style={styles.photo}
-                            resizeMode="cover"
-                        />
+                            onPress={() => handlePhotoPress(idx)}
+                            android_ripple={{
+                                color: "rgba(0,0,0,0.1)",
+                            }}
+                            style={styles.photoWrapper}
+                        >
+                            <Image
+                                source={{uri: photo}}
+                                style={styles.photo}
+                                resizeMode="cover"
+                            />
+                            {/* Expand icon overlay */}
+                            <View style={styles.photoOverlay}>
+                                <MaterialIcons name="zoom-out-map" size={20} color={AppStyles.color.white}/>
+                            </View>
+                        </Pressable>
                     ))}
                 </View>
             )}
@@ -344,19 +365,29 @@ const RestaurantCard = ({index, result}: RestaurantCardProps) => {
     );
 
     return (
-        <Animated.View
-            style={[styles.container, {opacity, transform: [{translateY}]}]}
-        >
-            <FlipCard
-                front={frontContent}
-                back={backContent}
-                style={styles.flipCard}
-                flipped={isFlipped}
-                onFlipChange={handleFlip}
-                disableTapToFlip={true}
-                disableSwipeToFlip={true}
+        <>
+            <Animated.View
+                style={[styles.container, {opacity, transform: [{translateY}]}]}
+            >
+                <FlipCard
+                    front={frontContent}
+                    back={backContent}
+                    style={styles.flipCard}
+                    flipped={isFlipped}
+                    onFlipChange={handleFlip}
+                    disableTapToFlip={true}
+                    disableSwipeToFlip={true}
+                />
+            </Animated.View>
+
+            {/* Image Viewer Modal */}
+            <ImageViewerModal
+                visible={imageViewerVisible}
+                images={enrichedBusiness.photos || []}
+                initialIndex={selectedImageIndex}
+                onClose={() => setImageViewerVisible(false)}
             />
-        </Animated.View>
+        </>
     );
 };
 
@@ -512,11 +543,24 @@ const styles = StyleSheet.create({
         paddingHorizontal: 16,
         marginVertical: 8,
     },
-    photo: {
+    photoWrapper: {
         flex: 1,
+        position: 'relative',
+        borderRadius: 8,
+        overflow: 'hidden',
+    },
+    photo: {
+        width: '100%',
         height: 80,
         borderRadius: 8,
-        maxWidth: 120,
+    },
+    photoOverlay: {
+        position: 'absolute',
+        bottom: 4,
+        right: 4,
+        backgroundColor: 'rgba(0,0,0,0.6)',
+        borderRadius: 12,
+        padding: 4,
     },
     backDetails: {
         paddingHorizontal: 16,
