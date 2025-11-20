@@ -29,6 +29,8 @@ export const HomeScreenRedesign: React.FC = () => {
   const [errorMessage, setErrorMessage] = useState('');
   const [searchQuery, setSearchQuery] = useState('');
   const [isSearching, setIsSearching] = useState(false);
+  const [isAutoSpinning, setIsAutoSpinning] = useState(false);
+  const [selectedResult, setSelectedResult] = useState<BusinessProps | null>(null);
   const [resultsErrorMessage, searchResults, searchApi, searchApiWithResolver, resultsLoading] = useResults();
   const [, city, canonicalLocation, coords, , searchLocation, resolveSearchArea, isLocationLoading] = useLocation();
   const { addHistoryEntry } = useHistory();
@@ -152,42 +154,54 @@ export const HomeScreenRedesign: React.FC = () => {
 
       // Auto-spin after successful search
       if (businesses.length > 0) {
-        // Small delay to let results render, then auto-spin
-        setTimeout(() => {
-          const randomIndex = Math.floor(Math.random() * businesses.length);
-          const selectedRestaurant = businesses[randomIndex];
+        // Pick random result
+        const randomIndex = Math.floor(Math.random() * businesses.length);
+        const selectedRestaurant = businesses[randomIndex];
+        setSelectedResult(selectedRestaurant);
 
-          addHistoryEntry({
-            business: selectedRestaurant,
-            source: 'spin',
-            context: {
-              searchTerm: term,
-              locationText: displayLocation,
-              coords: coords,
-              filters: {
-                openNow: state.filters.openNow,
-                categories: state.filters.categoryIds,
-                priceLevels: state.filters.priceLevels,
-                radiusMeters: state.filters.radiusMeters,
-                minRating: state.filters.minRating,
-              },
-            },
-          });
-
-          const spinEntry = {
-            restaurant: selectedRestaurant,
-            timestamp: Date.now(),
-          };
-          dispatch(addSpinHistory(spinEntry));
-          dispatch(setSelectedBusiness(selectedRestaurant));
-          dispatch(showBusinessModal());
-        }, 300);
+        // Start wheel spinning animation
+        setIsAutoSpinning(true);
       }
     } catch (error) {
       setErrorMessage('Failed to search restaurants. Please try again.');
       dispatch(setResults([]));
     } finally {
       setIsSearching(false);
+    }
+  };
+
+  // Called when wheel finishes spinning animation
+  const handleAutoSpinComplete = () => {
+    setIsAutoSpinning(false);
+
+    if (selectedResult) {
+      addHistoryEntry({
+        business: selectedResult,
+        source: 'spin',
+        context: {
+          searchTerm: searchQuery,
+          locationText: displayLocation,
+          coords: coords,
+          filters: {
+            openNow: state.filters.openNow,
+            categories: state.filters.categoryIds,
+            priceLevels: state.filters.priceLevels,
+            radiusMeters: state.filters.radiusMeters,
+            minRating: state.filters.minRating,
+          },
+        },
+      });
+
+      const spinEntry = {
+        restaurant: selectedResult,
+        timestamp: Date.now(),
+      };
+      dispatch(addSpinHistory(spinEntry));
+      dispatch(setSelectedBusiness(selectedResult));
+      dispatch(showBusinessModal());
+
+      // Clear selected result
+      setSelectedResult(null);
     }
   };
 
@@ -236,14 +250,18 @@ export const HomeScreenRedesign: React.FC = () => {
         <View style={styles.wheelContainer}>
           <RouletteWheel
             onSpin={handleSpin}
-            disabled={!hasResults || isLoading}
+            disabled={!hasResults || isLoading || isAutoSpinning}
             size={200}
+            isAutoSpinning={isAutoSpinning}
+            onAutoSpinComplete={handleAutoSpinComplete}
           />
           <Text style={styles.wheelHint}>
             {isLoading
               ? 'Searching...'
+              : isAutoSpinning
+              ? 'Spinning...'
               : hasResults
-              ? 'Tap to spin'
+              ? 'Tap to spin again'
               : 'Search to get started'}
           </Text>
         </View>
@@ -316,38 +334,38 @@ export const HomeScreenRedesign: React.FC = () => {
           <Pressable
             style={({ pressed }) => [
               styles.primaryButton,
-              (!hasResults || isLoading) && styles.primaryButtonDisabled,
-              hasResults && !isLoading && styles.primaryButtonActive,
-              pressed && hasResults && !isLoading && styles.primaryButtonPressed,
+              (!hasResults || isLoading || isAutoSpinning) && styles.primaryButtonDisabled,
+              hasResults && !isLoading && !isAutoSpinning && styles.primaryButtonActive,
+              pressed && hasResults && !isLoading && !isAutoSpinning && styles.primaryButtonPressed,
             ]}
-            disabled={!hasResults || isLoading}
+            disabled={!hasResults || isLoading || isAutoSpinning}
             onPress={handleSpin}
           >
             <Text
               style={[
                 styles.primaryButtonText,
-                (!hasResults || isLoading) && styles.primaryButtonTextDisabled,
+                (!hasResults || isLoading || isAutoSpinning) && styles.primaryButtonTextDisabled,
               ]}
             >
-              {isLoading ? 'Searching...' : 'Spin for Me'}
+              {isLoading ? 'Searching...' : isAutoSpinning ? 'Spinning...' : 'Spin Again'}
             </Text>
           </Pressable>
 
           <Pressable
             style={({ pressed }) => [
               styles.secondaryButton,
-              (!hasResults || isLoading) && styles.secondaryButtonDisabled,
-              hasResults && !isLoading && styles.secondaryButtonActive,
-              pressed && hasResults && !isLoading && styles.secondaryButtonPressed,
+              (!hasResults || isLoading || isAutoSpinning) && styles.secondaryButtonDisabled,
+              hasResults && !isLoading && !isAutoSpinning && styles.secondaryButtonActive,
+              pressed && hasResults && !isLoading && !isAutoSpinning && styles.secondaryButtonPressed,
             ]}
-            disabled={!hasResults || isLoading}
+            disabled={!hasResults || isLoading || isAutoSpinning}
             onPress={handleViewAllResults}
           >
             <Text
               style={[
                 styles.secondaryButtonText,
-                (!hasResults || isLoading) && styles.secondaryButtonTextDisabled,
-                hasResults && !isLoading && styles.secondaryButtonTextActive,
+                (!hasResults || isLoading || isAutoSpinning) && styles.secondaryButtonTextDisabled,
+                hasResults && !isLoading && !isAutoSpinning && styles.secondaryButtonTextActive,
               ]}
             >
               View All Results

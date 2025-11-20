@@ -1,4 +1,4 @@
-import React, { useRef, useState } from 'react';
+import React, { useRef, useState, useEffect } from 'react';
 import { View, StyleSheet, Pressable, Animated, Platform } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import * as Haptics from 'expo-haptics';
@@ -8,16 +8,48 @@ interface RouletteWheelProps {
   onSpin: () => void;
   disabled?: boolean;
   size?: number;
+  isAutoSpinning?: boolean;
+  onAutoSpinComplete?: () => void;
 }
 
 export const RouletteWheel: React.FC<RouletteWheelProps> = ({
   onSpin,
   disabled = false,
   size = 180,
+  isAutoSpinning = false,
+  onAutoSpinComplete,
 }) => {
   const spinAnim = useRef(new Animated.Value(0)).current;
   const scaleAnim = useRef(new Animated.Value(1)).current;
   const [isSpinning, setIsSpinning] = useState(false);
+
+  // Handle auto-spinning triggered by parent
+  useEffect(() => {
+    if (isAutoSpinning && !isSpinning) {
+      setIsSpinning(true);
+      spinAnim.setValue(0);
+
+      Animated.timing(spinAnim, {
+        toValue: 1,
+        duration: 1400,
+        useNativeDriver: true,
+      }).start(async () => {
+        // Success haptic
+        if (Platform.OS === 'ios') {
+          await Haptics.notificationAsync(
+            Haptics.NotificationFeedbackType.Success
+          );
+        }
+
+        setIsSpinning(false);
+        spinAnim.setValue(0);
+
+        if (onAutoSpinComplete) {
+          onAutoSpinComplete();
+        }
+      });
+    }
+  }, [isAutoSpinning]);
 
   const handlePress = async () => {
     if (disabled || isSpinning) return;
