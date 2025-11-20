@@ -1,6 +1,6 @@
 import React, { useContext, useState } from 'react';
 import { StyleSheet, ScrollView, Text, Pressable, TouchableOpacity } from 'react-native';
-import { MaterialIcons as Icon } from '@expo/vector-icons';
+import { Ionicons } from '@expo/vector-icons';
 import { SafeAreaProvider, SafeAreaView } from 'react-native-safe-area-context';
 import { StatusBar } from 'expo-status-bar';
 import { View } from '../components/Themed';
@@ -8,26 +8,26 @@ import RouletteButton from '../components/shared/RouletteButton';
 import QuickActionsPanel from '../components/search/QuickActionsPanel';
 import PopularCategories from '../components/search/PopularCategories';
 import ErrorMessageView from '../components/shared/ErrorMessageView';
-import DevLocationDebug from '../components/shared/DevLocationDebug';
 import FiltersSheet from '../components/filter/FiltersSheet';
+import FilterChip from '../components/shared/FilterChip';
 import { countActiveFilters } from '../utils/filterBusinesses';
 import AppStyles from '../AppStyles';
 import Config from '../Config';
 import { RootContext } from '../context/RootContext';
 import { addSpinHistory, setSelectedBusiness, showBusinessModal, setShowFilter } from '../context/reducer';
 import { BusinessProps } from '../hooks/useResults';
-import useResults, { INIT_RESULTS } from '../hooks/useResults';
+import useResults from '../hooks/useResults';
 import useLocation from '../hooks/useLocation';
 import { setResults } from '../context/reducer';
 import { useHistory } from '../hooks/useHistory';
 
 const FEATURED_CATEGORIES = [
-  { title: 'Pizza', emoji: '🍕', term: 'pizza' },
-  { title: 'Sushi', emoji: '🍣', term: 'sushi' },
-  { title: 'Coffee', emoji: '☕', term: 'coffee' },
-  { title: 'Burgers', emoji: '🍔', term: 'burgers' },
-  { title: 'Mexican', emoji: '🌮', term: 'mexican' },
-  { title: 'Thai', emoji: '🍜', term: 'thai' },
+  { title: 'Pizza', emoji: '', term: 'pizza' },
+  { title: 'Sushi', emoji: '', term: 'sushi' },
+  { title: 'Coffee', emoji: '', term: 'coffee' },
+  { title: 'Burgers', emoji: '', term: 'burgers' },
+  { title: 'Mexican', emoji: '', term: 'mexican' },
+  { title: 'Thai', emoji: '', term: 'thai' },
 ];
 
 const HomeScreen: React.FC = () => {
@@ -39,35 +39,27 @@ const HomeScreen: React.FC = () => {
   const [, city, canonicalLocation, coords, , searchLocation, resolveSearchArea, isLocationLoading] = useLocation();
   const { addHistoryEntry } = useHistory();
 
-  // Use results hook loading state for UI
   const isLoading = resultsLoading || isSearching;
-
-  // Filter persistence is handled by SearchScreen
-
   const hasResults = state.results && state.results.length > 0;
 
   const handleRouletteSpIn = () => {
     if (!hasResults) {
-      setErrorMessage('Please search for restaurants first!');
+      setErrorMessage('Please search for restaurants first');
       return;
     }
 
-    // Debug logging to identify wrong city issues
     if (__DEV__) {
       console.log('[[spin] context]', {
         searchTerm: searchTerm,
         currentLocation: state.location || city,
         coords: coords ? `${coords.latitude.toFixed(3)},${coords.longitude.toFixed(3)}` : 'none',
         resultCount: state.results.length,
-        sampleBusinessLocations: state.results.slice(0, 3).map(r => `${r.name} in ${r.location?.display_address?.[1] || 'unknown'}`),
       });
     }
 
-    // Pick random restaurant from results
     const randomIndex = Math.floor(Math.random() * state.results.length);
     const selectedRestaurant = state.results[randomIndex];
 
-    // Add to new history tracking system
     addHistoryEntry({
       business: selectedRestaurant,
       source: 'spin',
@@ -85,14 +77,11 @@ const HomeScreen: React.FC = () => {
       },
     });
 
-    // Also keep the old spin history for backward compatibility (for now)
     const spinEntry = {
       restaurant: selectedRestaurant,
       timestamp: Date.now(),
     };
     dispatch(addSpinHistory(spinEntry));
-
-    // Show the selected restaurant in modal
     dispatch(setSelectedBusiness(selectedRestaurant));
     dispatch(showBusinessModal());
   };
@@ -103,21 +92,18 @@ const HomeScreen: React.FC = () => {
       setIsSearching(true);
       try {
         let businesses: BusinessProps[] = [];
-        
-        // Use enhanced resolver for better location accuracy
         const resolvedLocation = await resolveSearchArea(state.location || canonicalLocation);
+
         if (resolvedLocation) {
           businesses = await searchApiWithResolver(term, resolvedLocation);
         } else {
-          // Fallback to legacy search
           businesses = await searchApi(term, state.location || 'Current Location', coords);
         }
-        
-        // Always dispatch results, even if empty
+
         dispatch(setResults(businesses));
       } catch (error) {
         setErrorMessage('Failed to search restaurants. Please try again.');
-        dispatch(setResults([])); // Clear results on error
+        dispatch(setResults([]));
       } finally {
         setIsSearching(false);
       }
@@ -125,27 +111,23 @@ const HomeScreen: React.FC = () => {
   };
 
   const handleCategoryPress = async (categoryTerm: string) => {
-    // Immediately update search term for UI
     setSearchTerm(categoryTerm);
     setIsSearching(true);
-    
+
     try {
       let businesses: BusinessProps[] = [];
-      
-      // Use enhanced resolver for better location accuracy
       const resolvedLocation = await resolveSearchArea(state.location || canonicalLocation);
+
       if (resolvedLocation) {
         businesses = await searchApiWithResolver(categoryTerm, resolvedLocation);
       } else {
-        // Fallback to legacy search
         businesses = await searchApi(categoryTerm, state.location || 'Current Location', coords);
       }
-      
-      // Always dispatch results, even if empty
+
       dispatch(setResults(businesses));
     } catch (error) {
       setErrorMessage('Failed to search restaurants. Please try again.');
-      dispatch(setResults([])); // Clear results on error
+      dispatch(setResults([]));
     } finally {
       setIsSearching(false);
     }
@@ -154,39 +136,86 @@ const HomeScreen: React.FC = () => {
   return (
     <SafeAreaProvider>
       <SafeAreaView style={styles.container}>
-        {/* Filter Button */}
-        <TouchableOpacity
-          testID="filters-open-button-home"
-          onPress={() => dispatch(setShowFilter(true))}
-          style={styles.headerFiltersButton}
-        >
-          <Icon name="tune" size={22} color={AppStyles.color.roulette.accent} />
-          {countActiveFilters(state.filters) > 0 && (
-            <View style={styles.headerFiltersBadge}>
-              <Text style={styles.headerFiltersBadgeText}>
-                {countActiveFilters(state.filters).toString()}
-              </Text>
-            </View>
-          )}
-        </TouchableOpacity>
-        
-        <ScrollView contentContainerStyle={styles.scrollContent}>
-          {/* Header */}
-          <View style={styles.header}>
-            <View style={styles.titleContainer}>
-              <Text style={styles.appTitle}>🎲 Rouxlette</Text>
-            </View>
-            <Text style={styles.subtitle}>
-              Your personal restaurant roulette
-            </Text>
+        {/* Header with filter button */}
+        <View style={styles.header}>
+          <View style={styles.headerContent}>
+            <Text style={styles.appTitle}>Rouxlette</Text>
+            <Text style={styles.subtitle}>Find your next meal</Text>
           </View>
+          <TouchableOpacity
+            testID="filters-open-button-home"
+            onPress={() => dispatch(setShowFilter(true))}
+            style={styles.filterButton}
+          >
+            <Ionicons name="options" size={24} color={AppStyles.color.primary} />
+            {countActiveFilters(state.filters) > 0 && (
+              <View style={styles.filterBadge}>
+                <Text style={styles.filterBadgeText}>
+                  {countActiveFilters(state.filters)}
+                </Text>
+              </View>
+            )}
+          </TouchableOpacity>
+        </View>
 
-          {/* Main Roulette Section */}
-          <View style={styles.heroSection}>
+        <ScrollView
+          contentContainerStyle={styles.scrollContent}
+          showsVerticalScrollIndicator={false}
+        >
+          {/* Roulette Wheel */}
+          <View style={styles.wheelSection}>
             <RouletteButton
               onSpin={handleRouletteSpIn}
               disabled={!hasResults || isLoading}
             />
+          </View>
+
+          {/* Active Filters */}
+          {hasResults && countActiveFilters(state.filters) > 0 && (
+            <View style={styles.filtersSection}>
+              <ScrollView
+                horizontal
+                showsHorizontalScrollIndicator={false}
+                contentContainerStyle={styles.filtersScroll}
+              >
+                {state.filters.openNow && (
+                  <FilterChip
+                    label="Open Now"
+                    variant="active"
+                    icon="time"
+                    style={styles.filterChip}
+                  />
+                )}
+                {state.filters.priceLevels && state.filters.priceLevels.length > 0 && (
+                  <FilterChip
+                    label={'$'.repeat(Math.max(...state.filters.priceLevels))}
+                    variant="active"
+                    style={styles.filterChip}
+                  />
+                )}
+              </ScrollView>
+            </View>
+          )}
+
+          {/* Search Trigger */}
+          <Pressable
+            style={({ pressed }) => [
+              styles.searchTrigger,
+              pressed && !Config.isAndroid && styles.searchTriggerPressed,
+            ]}
+            onPress={() => {/* Navigate to search tab */}}
+            android_ripple={{ color: AppStyles.color.gray100 }}
+          >
+            <Ionicons name="search" size={20} color={AppStyles.color.gray500} />
+            <Text style={styles.searchTriggerText}>Search restaurants</Text>
+          </Pressable>
+
+          {/* Location Display */}
+          <View style={styles.locationContainer}>
+            <Ionicons name="location" size={16} color={AppStyles.color.primary} />
+            <Text style={styles.locationText}>
+              {state.location || city || 'Current Location'}
+            </Text>
           </View>
 
           {/* Quick Actions */}
@@ -199,55 +228,66 @@ const HomeScreen: React.FC = () => {
             />
           </View>
 
-          {/* Error Message - Reserve space to prevent layout jump */}
-          <View style={styles.errorContainer}>
-            {errorMessage ? <ErrorMessageView text={errorMessage} /> : null}
-          </View>
+          {/* Error Message */}
+          {errorMessage ? (
+            <View style={styles.errorContainer}>
+              <ErrorMessageView text={errorMessage} />
+            </View>
+          ) : null}
 
-          {/* Dev Location Debug */}
-          {/* <DevLocationDebug
-            coords={coords}
-            city={city}
-            isLoading={isLocationLoading}
-          /> */}
-
-          {/* Results Summary - Reserve space to prevent layout jump */}
-          <View style={styles.resultsInfoContainer}>
-            {hasResults ? (
-              <View style={styles.resultsInfo}>
-                <Text style={styles.resultsText}>
-                  🎯 Found {state.results.length.toString()} restaurants ready for roulette!
-                </Text>
-              </View>
-            ) : null}
-          </View>
+          {/* Results Summary */}
+          {hasResults && (
+            <View style={styles.resultsInfo}>
+              <Ionicons name="checkmark-circle" size={20} color={AppStyles.color.success} />
+              <Text style={styles.resultsText}>
+                {state.results.length} restaurants ready
+              </Text>
+            </View>
+          )}
 
           {/* Featured Categories */}
-          <PopularCategories
-            categories={FEATURED_CATEGORIES}
-            onSelect={handleCategoryPress}
-            disabled={isLoading}
-          />
+          <View style={styles.categoriesSection}>
+            <Text style={styles.sectionTitle}>Quick Search</Text>
+            <PopularCategories
+              categories={FEATURED_CATEGORIES}
+              onSelect={handleCategoryPress}
+              disabled={isLoading}
+            />
+          </View>
 
           {/* Recent Spins */}
           {state.spinHistory.length > 0 && (
             <View style={styles.historySection}>
-              <Text style={styles.sectionTitle}>Recent Spins</Text>
-              {state.spinHistory.slice(0, 3).map((spin, index) => (
-                <View key={spin.timestamp} style={styles.historyItem}>
-                  <Text style={styles.historyText}>
-                    🎲 {spin.restaurant.name}
-                  </Text>
-                  <Text style={styles.historyTime}>
-                    {new Date(spin.timestamp).toLocaleDateString()}
-                  </Text>
-                </View>
+              <View style={styles.sectionHeader}>
+                <Ionicons name="time" size={20} color={AppStyles.color.gray700} />
+                <Text style={styles.sectionTitle}>Recent Spins</Text>
+              </View>
+              {state.spinHistory.slice(0, 3).map((spin) => (
+                <Pressable
+                  key={spin.timestamp}
+                  style={({ pressed }) => [
+                    styles.historyItem,
+                    pressed && !Config.isAndroid && styles.historyItemPressed,
+                  ]}
+                  android_ripple={{ color: AppStyles.color.gray100 }}
+                >
+                  <View style={styles.historyContent}>
+                    <Text style={styles.historyName} numberOfLines={1}>
+                      {spin.restaurant.name}
+                    </Text>
+                    <Text style={styles.historyTime}>
+                      {new Date(spin.timestamp).toLocaleDateString()}
+                    </Text>
+                  </View>
+                  <Ionicons name="chevron-forward" size={20} color={AppStyles.color.gray300} />
+                </Pressable>
               ))}
             </View>
           )}
         </ScrollView>
+
         <StatusBar style="auto" />
-        
+
         {/* Filters Sheet */}
         <FiltersSheet
           testID="filters-sheet"
@@ -264,129 +304,175 @@ const styles = StyleSheet.create({
     flex: 1,
     backgroundColor: AppStyles.color.background,
   },
-  scrollContent: {
-    flexGrow: 1,
-    paddingBottom: 32,
-  },
   header: {
+    flexDirection: 'row',
     alignItems: 'center',
-    paddingTop: 20,
-    paddingBottom: 16,
-    position: 'relative',
+    justifyContent: 'space-between',
+    paddingHorizontal: AppStyles.spacing.m,
+    paddingTop: AppStyles.spacing.m,
+    paddingBottom: AppStyles.spacing.s,
+    backgroundColor: AppStyles.color.white,
+    borderBottomWidth: 1,
+    borderBottomColor: AppStyles.color.border,
   },
-  titleContainer: {
-    alignItems: 'center',
-    width: '100%',
-    paddingHorizontal: 16,
+  headerContent: {
+    flex: 1,
   },
-  headerFiltersButton: {
-    position: 'absolute',
-    top: 60,
-    right: 16,
-    width: 44,
-    height: 44,
+  appTitle: {
+    ...AppStyles.typography.largeTitle,
+    color: AppStyles.color.gray900,
+  },
+  subtitle: {
+    ...AppStyles.typography.callout,
+    color: AppStyles.color.gray500,
+    marginTop: 2,
+  },
+  filterButton: {
+    ...AppStyles.button.icon,
+    backgroundColor: AppStyles.color.gray100,
     justifyContent: 'center',
     alignItems: 'center',
-    borderRadius: 22,
-    zIndex: 9999,
-    backgroundColor: 'transparent',
+    position: 'relative',
   },
-  headerFiltersBadge: {
+  filterBadge: {
     position: 'absolute',
     top: 2,
     right: 2,
-    backgroundColor: AppStyles.color.roulette.red,
-    borderRadius: 10,
+    backgroundColor: AppStyles.color.accentRed,
+    borderRadius: AppStyles.radius.full,
     minWidth: 18,
     height: 18,
     justifyContent: 'center',
     alignItems: 'center',
+    paddingHorizontal: 4,
   },
-  headerFiltersBadgeText: {
+  filterBadgeText: {
+    ...AppStyles.typography.caption2,
     color: AppStyles.color.white,
-    fontSize: 11,
-    fontFamily: AppStyles.fonts.bold,
   },
-  appTitle: {
-    fontSize: 32,
-    fontFamily: AppStyles.fonts.bold,
-    color: AppStyles.color.roulette.accent,
-    textAlign: 'center',
-    marginBottom: 8,
+  scrollContent: {
+    flexGrow: 1,
+    paddingBottom: AppStyles.spacing.xl,
   },
-  subtitle: {
-    fontSize: 16,
-    fontFamily: AppStyles.fonts.medium,
-    color: AppStyles.color.greydark,
-    textAlign: 'center',
-  },
-  heroSection: {
+  wheelSection: {
     alignItems: 'center',
-    paddingVertical: 8,
+    paddingVertical: AppStyles.spacing.l,
+  },
+  filtersSection: {
+    marginBottom: AppStyles.spacing.m,
+  },
+  filtersScroll: {
+    paddingHorizontal: AppStyles.spacing.m,
+    gap: AppStyles.spacing.s,
+  },
+  filterChip: {
+    marginRight: AppStyles.spacing.s,
+  },
+  searchTrigger: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginHorizontal: AppStyles.spacing.m,
+    marginBottom: AppStyles.spacing.s,
+    paddingHorizontal: AppStyles.spacing.m,
+    paddingVertical: 12,
+    backgroundColor: AppStyles.color.white,
+    borderRadius: AppStyles.radius.m,
+    borderWidth: 1,
+    borderColor: AppStyles.color.gray300,
+    ...AppStyles.shadow.level1,
+  },
+  searchTriggerPressed: {
+    opacity: 0.7,
+  },
+  searchTriggerText: {
+    ...AppStyles.typography.body,
+    color: AppStyles.color.gray500,
+    marginLeft: AppStyles.spacing.s,
+  },
+  locationContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginHorizontal: AppStyles.spacing.m,
+    marginBottom: AppStyles.spacing.m,
+    paddingHorizontal: AppStyles.spacing.m,
+    paddingVertical: AppStyles.spacing.s,
+  },
+  locationText: {
+    ...AppStyles.typography.callout,
+    color: AppStyles.color.gray700,
+    marginLeft: AppStyles.spacing.xs,
   },
   actionsSection: {
-    paddingHorizontal: 16,
+    paddingHorizontal: AppStyles.spacing.m,
+    marginBottom: AppStyles.spacing.m,
   },
   errorContainer: {
-    marginHorizontal: 16,
-  },
-  resultsInfoContainer: {
-    // No minHeight - let content dictate size
+    marginHorizontal: AppStyles.spacing.m,
+    marginBottom: AppStyles.spacing.m,
   },
   resultsInfo: {
-    marginHorizontal: 16,
-    marginVertical: 16,
-    padding: 16,
-    backgroundColor: AppStyles.color.roulette.green + '20',
-    borderRadius: 12,
-    borderLeftWidth: 4,
-    borderLeftColor: AppStyles.color.roulette.green,
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginHorizontal: AppStyles.spacing.m,
+    marginBottom: AppStyles.spacing.m,
+    paddingHorizontal: AppStyles.spacing.m,
+    paddingVertical: AppStyles.spacing.m,
+    backgroundColor: AppStyles.color.success + '15',
+    borderRadius: AppStyles.radius.m,
+    borderLeftWidth: 3,
+    borderLeftColor: AppStyles.color.success,
   },
   resultsText: {
-    fontSize: 16,
-    fontFamily: AppStyles.fonts.medium,
-    color: AppStyles.color.roulette.green,
-    textAlign: 'center',
+    ...AppStyles.typography.callout,
+    fontWeight: '600',
+    color: AppStyles.color.success,
+    marginLeft: AppStyles.spacing.s,
+  },
+  categoriesSection: {
+    marginTop: AppStyles.spacing.s,
   },
   sectionTitle: {
-    fontSize: 20,
-    fontFamily: AppStyles.fonts.bold,
-    color: AppStyles.color.greydark,
-    marginHorizontal: 16,
-    marginBottom: 16,
+    ...AppStyles.typography.title3,
+    color: AppStyles.color.gray900,
+    marginHorizontal: AppStyles.spacing.m,
+    marginBottom: AppStyles.spacing.m,
   },
   historySection: {
-    marginTop: 32,
-    marginHorizontal: 16,
+    marginTop: AppStyles.spacing.xl,
+    paddingHorizontal: AppStyles.spacing.m,
+  },
+  sectionHeader: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginBottom: AppStyles.spacing.m,
+    gap: AppStyles.spacing.s,
   },
   historyItem: {
     flexDirection: 'row',
-    justifyContent: 'space-between',
     alignItems: 'center',
-    paddingVertical: 12,
-    paddingHorizontal: 16,
+    justifyContent: 'space-between',
+    paddingVertical: AppStyles.spacing.m,
+    paddingHorizontal: AppStyles.spacing.m,
     backgroundColor: AppStyles.color.white,
-    borderRadius: 8,
-    marginBottom: 8,
-    shadowColor: AppStyles.color.shadow,
-    shadowOffset: {
-      width: 0,
-      height: 1,
-    },
-    shadowOpacity: 0.1,
-    shadowRadius: 2,
-    elevation: 2,
+    borderRadius: AppStyles.radius.m,
+    marginBottom: AppStyles.spacing.s,
+    ...AppStyles.shadow.level1,
   },
-  historyText: {
-    fontSize: 16,
-    fontFamily: AppStyles.fonts.medium,
-    color: AppStyles.color.greydark,
+  historyItemPressed: {
+    opacity: 0.7,
+  },
+  historyContent: {
     flex: 1,
+    marginRight: AppStyles.spacing.m,
+  },
+  historyName: {
+    ...AppStyles.typography.headline,
+    color: AppStyles.color.gray900,
+    marginBottom: 2,
   },
   historyTime: {
-    fontSize: 14,
-    fontFamily: AppStyles.fonts.regular,
-    color: AppStyles.color.greylight,
+    ...AppStyles.typography.footnote,
+    color: AppStyles.color.gray500,
   },
 });
 
