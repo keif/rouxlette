@@ -160,7 +160,7 @@ const HomeScreen: React.FC = () => {
           onPress={() => dispatch(setShowFilter(true))}
           style={styles.headerFiltersButton}
         >
-          <Icon name="tune" size={22} color={AppStyles.color.roulette.gold} />
+          <Icon name="tune" size={22} color={AppStyles.color.roulette.accent} />
           {countActiveFilters(state.filters) > 0 && (
             <View style={styles.headerFiltersBadge}>
               <Text style={styles.headerFiltersBadgeText}>
@@ -199,28 +199,28 @@ const HomeScreen: React.FC = () => {
             />
           </View>
 
-          {/* Error Message */}
-          {errorMessage ? (
-            <View style={styles.errorContainer}>
-              <ErrorMessageView text={errorMessage} />
-            </View>
-          ) : null}
+          {/* Error Message - Reserve space to prevent layout jump */}
+          <View style={styles.errorContainer}>
+            {errorMessage ? <ErrorMessageView text={errorMessage} /> : null}
+          </View>
 
           {/* Dev Location Debug */}
-          {/* <DevLocationDebug 
+          {/* <DevLocationDebug
             coords={coords}
             city={city}
             isLoading={isLocationLoading}
           /> */}
 
-          {/* Results Summary */}
-          {hasResults ? (
-            <View style={styles.resultsInfo}>
-              <Text style={styles.resultsText}>
-                🎯 Found {state.results.length.toString()} restaurants ready for roulette!
-              </Text>
-            </View>
-          ) : null}
+          {/* Results Summary - Reserve space to prevent layout jump */}
+          <View style={styles.resultsInfoContainer}>
+            {hasResults ? (
+              <View style={styles.resultsInfo}>
+                <Text style={styles.resultsText}>
+                  🎯 Found {state.results.length.toString()} restaurants ready for roulette!
+                </Text>
+              </View>
+            ) : null}
+          </View>
 
           {/* Featured Categories */}
           <PopularCategories
@@ -310,7 +310,7 @@ const styles = StyleSheet.create({
   appTitle: {
     fontSize: 32,
     fontFamily: AppStyles.fonts.bold,
-    color: AppStyles.color.roulette.gold,
+    color: AppStyles.color.roulette.accent,
     textAlign: 'center',
     marginBottom: 8,
   },
@@ -322,14 +322,16 @@ const styles = StyleSheet.create({
   },
   heroSection: {
     alignItems: 'center',
-    paddingVertical: 20,
+    paddingVertical: 8,
   },
   actionsSection: {
     paddingHorizontal: 16,
   },
   errorContainer: {
     marginHorizontal: 16,
-    marginVertical: 8,
+  },
+  resultsInfoContainer: {
+    // No minHeight - let content dictate size
   },
   resultsInfo: {
     marginHorizontal: 16,

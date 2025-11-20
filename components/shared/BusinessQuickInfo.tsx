@@ -146,7 +146,7 @@ export function BusinessQuickInfo({ business, onDetails, onClose }: BusinessQuic
           <View style={styles.hoursRow}>
             {detailsLoading && !richBusiness.hours?.[0] ? (
               <View style={styles.hoursLoadingRow}>
-                <ActivityIndicator size="small" color={AppStyles.color.roulette.gold} />
+                <ActivityIndicator size="small" color={AppStyles.color.roulette.accent} />
                 <Text style={styles.hoursLabel} testID="bqi-today">
                   Loading hours...
                 </Text>
@@ -291,7 +291,7 @@ const styles = StyleSheet.create({
     minWidth: 0,
   },
   ratingPill: {
-    backgroundColor: AppStyles.color.roulette.gold + '15',
+    backgroundColor: AppStyles.color.roulette.accent + '15',
     paddingHorizontal: 8,
     paddingVertical: 4,
     borderRadius: 12,
@@ -311,7 +311,7 @@ const styles = StyleSheet.create({
   rating: {
     fontSize: 14,
     fontFamily: AppStyles.fonts.medium,
-    color: AppStyles.color.roulette.gold,
+    color: AppStyles.color.roulette.accent,
   },
   reviews: {
     fontSize: 14,
@@ -394,7 +394,7 @@ const styles = StyleSheet.create({
     borderRadius: 12,
     alignItems: 'center',
     justifyContent: 'center',
-    backgroundColor: AppStyles.color.roulette.gold,
+    backgroundColor: AppStyles.color.roulette.accent,
     minWidth: 0,
     maxWidth: 140,
   },

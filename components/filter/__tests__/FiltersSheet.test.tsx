@@ -117,12 +117,12 @@ describe('FiltersSheet', () => {
         ],
       };
 
-      const { getByText } = renderFiltersSheet(contextState);
-      
-      expect(getByText('Categories')).toBeTruthy();
-      expect(getByText('Pizza')).toBeTruthy();
-      expect(getByText('Italian')).toBeTruthy();
-      expect(getByText('Sushi')).toBeTruthy();
+      const { getAllByText } = renderFiltersSheet(contextState);
+
+      expect(getAllByText('Categories').length).toBeGreaterThan(0);
+      expect(getAllByText('Pizza').length).toBeGreaterThan(0);
+      expect(getAllByText('Italian').length).toBeGreaterThan(0);
+      expect(getAllByText('Sushi').length).toBeGreaterThan(0);
     });
 
     it('should not display categories section when no categories available', () => {
@@ -145,15 +145,15 @@ describe('FiltersSheet', () => {
         categories: manyCategories,
       };
 
-      const { queryByText } = renderFiltersSheet(contextState);
-      
-      // Should display first 12 categories
-      expect(queryByText('Category 0')).toBeTruthy();
-      expect(queryByText('Category 11')).toBeTruthy();
-      
+      const { queryAllByText } = renderFiltersSheet(contextState);
+
+      // Should display first 12 categories (may appear multiple times due to include/exclude)
+      expect(queryAllByText('Category 0').length).toBeGreaterThan(0);
+      expect(queryAllByText('Category 11').length).toBeGreaterThan(0);
+
       // Should not display 13th+ categories
-      expect(queryByText('Category 12')).toBeFalsy();
-      expect(queryByText('Category 19')).toBeFalsy();
+      expect(queryAllByText('Category 12').length).toBe(0);
+      expect(queryAllByText('Category 19').length).toBe(0);
     });
   });
 

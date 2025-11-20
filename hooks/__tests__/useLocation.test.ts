@@ -63,7 +63,12 @@ describe('useLocation', () => {
     mockGeocoder.from.mockResolvedValueOnce(mockEmptyResponse as any);
 
     const { result } = renderHook(() => useLocation());
-    
+    const [, , , , , searchLocation] = result.current;
+
+    await act(async () => {
+      await searchLocation('nonexistent place');
+    });
+
     // Should not throw and should handle gracefully
     expect(console.error).toHaveBeenCalledWith(
       expect.stringContaining('Geocoding API error'),
@@ -84,7 +89,12 @@ describe('useLocation', () => {
     mockGeocoder.from.mockResolvedValueOnce(mockErrorResponse as any);
 
     const { result } = renderHook(() => useLocation());
-    
+    const [, , , , , searchLocation] = result.current;
+
+    await act(async () => {
+      await searchLocation('some place');
+    });
+
     expect(console.error).toHaveBeenCalledWith(
       expect.stringContaining('Geocoding API error'),
       expect.objectContaining({
@@ -115,7 +125,12 @@ describe('useLocation', () => {
     mockGeocoder.from.mockResolvedValueOnce(malformedResponse as any);
 
     const { result } = renderHook(() => useLocation());
-    
+    const [, , , , , searchLocation] = result.current;
+
+    await act(async () => {
+      await searchLocation('test place');
+    });
+
     expect(console.error).toHaveBeenCalledWith(
       expect.stringContaining('No results in response'),
       malformedResponse
@@ -137,7 +152,12 @@ describe('useLocation', () => {
     mockGeocoder.from.mockResolvedValueOnce(responseWithoutComponents as any);
 
     const { result } = renderHook(() => useLocation());
-    
+    const [, , , , , searchLocation] = result.current;
+
+    await act(async () => {
+      await searchLocation('test place');
+    });
+
     expect(console.error).toHaveBeenCalledWith(
       expect.stringContaining('Invalid result structure - missing address_components'),
       expect.any(Object)

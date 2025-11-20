@@ -148,7 +148,7 @@ const SearchInput = ({
 						<ActivityIndicator 
 							testID="qa-search-spinner"
 							size="small" 
-							color={AppStyles.color.roulette.gold} 
+							color={AppStyles.color.roulette.accent} 
 							style={styles.spinner}
 						/>
 					) : searchClicked ? (

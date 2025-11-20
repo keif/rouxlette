@@ -62,7 +62,7 @@ const QuickActionsPanel: React.FC<QuickActionsPanelProps> = ({
 const styles = StyleSheet.create({
   container: {
     marginHorizontal: 16,
-    marginVertical: 20,
+    marginVertical: 8,
   },
   searchContainer: {
     marginBottom: 12,

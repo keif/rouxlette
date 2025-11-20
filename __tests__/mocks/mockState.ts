@@ -1,23 +1,27 @@
-import { RootState } from '../../context/state';
+import { AppState, initialFilters } from '../../context/state';
 
-export const mockInitialState: RootState = {
+export const mockInitialState: AppState = {
   categories: [],
-  businessDetails: {
-    business: null,
-    isLoading: false,
-    isVisible: false,
-  },
-  results: [],
-  spinHistory: [],
+  detail: null,
+  filter: {},
   filters: {
+    ...initialFilters,
     categoryIds: [],
+    excludedCategoryIds: [],
     priceLevels: [],
     openNow: false,
-    radiusMeters: 1600, // ~1 mile default
+    radiusMeters: 1600,
     minRating: 0,
   },
   location: '',
+  currentCoords: null,
+  results: [],
   showFilter: false,
+  favorites: [],
+  history: [],
+  spinHistory: [],
+  selectedBusiness: null,
+  isBusinessModalOpen: false,
 };
 
 // Simple test to avoid "must contain at least one test" error

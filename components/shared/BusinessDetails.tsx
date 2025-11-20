@@ -114,7 +114,7 @@ export function BusinessDetails({ business, onYelp, onClose }: BusinessDetailsPr
           <View style={styles.hoursContainer} testID="bd-hours">
             {detailsLoading && !richBusiness.hours?.[0] ? (
               <View style={styles.hoursLoadingRow}>
-                <ActivityIndicator size="small" color={AppStyles.color.roulette.gold} />
+                <ActivityIndicator size="small" color={AppStyles.color.roulette.accent} />
                 <Text style={styles.noHours} allowFontScaling>Loading hours...</Text>
               </View>
             ) : richBusiness.hours?.[0]?.open?.length ? (
@@ -307,7 +307,7 @@ const styles = StyleSheet.create({
     borderRadius: 12,
     alignItems: 'center',
     justifyContent: 'center',
-    backgroundColor: AppStyles.color.roulette.gold,
+    backgroundColor: AppStyles.color.roulette.accent,
     minWidth: 0,
     maxWidth: 100,
   },
