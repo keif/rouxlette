@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useContext } from 'react';
 import {
   View,
   Text,
@@ -10,29 +10,159 @@ import {
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
+import { useNavigation } from '@react-navigation/native';
 import { RouletteWheel } from '../components/RouletteWheel';
 import { ActiveFilterBar, ActiveFilter } from '../components/ActiveFilterBar';
 import { colors, spacing, radius, typography } from '../theme';
+import { RootContext } from '../context/RootContext';
+import { setResults, setShowFilter, addSpinHistory, setSelectedBusiness, showBusinessModal, setFilters } from '../context/reducer';
+import useResults, { BusinessProps } from '../hooks/useResults';
+import useLocation from '../hooks/useLocation';
+import { useHistory } from '../hooks/useHistory';
+import FiltersSheet from '../components/filter/FiltersSheet';
+import { countActiveFilters } from '../utils/filterBusinesses';
+import { RootTabScreenProps } from '../types';
 
 export const HomeScreenRedesign: React.FC = () => {
+  const { state, dispatch } = useContext(RootContext);
+  const navigation = useNavigation<RootTabScreenProps<'Home'>['navigation']>();
+  const [errorMessage, setErrorMessage] = useState('');
   const [searchQuery, setSearchQuery] = useState('');
-  const [location, setLocation] = useState('Columbus, OH');
-  const [activeFilters, setActiveFilters] = useState<ActiveFilter[]>([
-    { id: '1', label: 'Pizza', variant: 'included', onRemove: () => {} },
-    { id: '2', label: '$$', variant: 'included', onRemove: () => {} },
-    { id: '3', label: 'Bars', variant: 'excluded', onRemove: () => {} },
-  ]);
-  const [restaurantCount, setRestaurantCount] = useState(42);
+  const [isSearching, setIsSearching] = useState(false);
+  const [resultsErrorMessage, searchResults, searchApi, searchApiWithResolver, resultsLoading] = useResults();
+  const [, city, canonicalLocation, coords, , searchLocation, resolveSearchArea, isLocationLoading] = useLocation();
+  const { addHistoryEntry } = useHistory();
 
-  const hasResults = restaurantCount > 0;
+  const isLoading = resultsLoading || isSearching;
+  const hasResults = state.results && state.results.length > 0;
+  const restaurantCount = state.results.length;
+  const displayLocation = state.location || city || 'Current Location';
+
+  // Build active filters array for display
+  const activeFilters: ActiveFilter[] = [];
+
+  // Price filters
+  if (state.filters.priceLevels && state.filters.priceLevels.length > 0) {
+    const priceLabel = '$'.repeat(Math.max(...state.filters.priceLevels));
+    activeFilters.push({
+      id: 'price',
+      label: priceLabel,
+      variant: 'included',
+      onRemove: () => {
+        dispatch(setFilters({ priceLevels: [] }));
+      },
+    });
+  }
+
+  // Open Now filter
+  if (state.filters.openNow) {
+    activeFilters.push({
+      id: 'open-now',
+      label: 'Open Now',
+      variant: 'included',
+      onRemove: () => {
+        dispatch(setFilters({ openNow: false }));
+      },
+    });
+  }
+
+  // Category inclusions
+  state.filters.categoryIds.forEach((categoryId, index) => {
+    // Find category name from state.categories if available
+    const category = state.categories.find(c => c.alias === categoryId);
+    const label = category?.title || categoryId;
+    activeFilters.push({
+      id: `cat-${categoryId}`,
+      label,
+      variant: 'included',
+      onRemove: () => {
+        const newCategoryIds = state.filters.categoryIds.filter(id => id !== categoryId);
+        dispatch(setFilters({ categoryIds: newCategoryIds }));
+      },
+    });
+  });
+
+  // Category exclusions
+  state.filters.excludedCategoryIds.forEach((categoryId, index) => {
+    const category = state.categories.find(c => c.alias === categoryId);
+    const label = category?.title || categoryId;
+    activeFilters.push({
+      id: `exc-${categoryId}`,
+      label: label,
+      variant: 'excluded',
+      onRemove: () => {
+        const newExcludedIds = state.filters.excludedCategoryIds.filter(id => id !== categoryId);
+        dispatch(setFilters({ excludedCategoryIds: newExcludedIds }));
+      },
+    });
+  });
 
   const handleSpin = () => {
-    console.log('Spinning!');
-    // Navigate to result or show modal
+    if (!hasResults) {
+      setErrorMessage('Please search for restaurants first');
+      return;
+    }
+
+    const randomIndex = Math.floor(Math.random() * state.results.length);
+    const selectedRestaurant = state.results[randomIndex];
+
+    addHistoryEntry({
+      business: selectedRestaurant,
+      source: 'spin',
+      context: {
+        searchTerm: searchQuery,
+        locationText: displayLocation,
+        coords: coords,
+        filters: {
+          openNow: state.filters.openNow,
+          categories: state.filters.categoryIds,
+          priceLevels: state.filters.priceLevels,
+          radiusMeters: state.filters.radiusMeters,
+          minRating: state.filters.minRating,
+        },
+      },
+    });
+
+    const spinEntry = {
+      restaurant: selectedRestaurant,
+      timestamp: Date.now(),
+    };
+    dispatch(addSpinHistory(spinEntry));
+    dispatch(setSelectedBusiness(selectedRestaurant));
+    dispatch(showBusinessModal());
+  };
+
+  const handleSearch = async () => {
+    const term = searchQuery.trim();
+    if (!term) return;
+
+    setIsSearching(true);
+    try {
+      let businesses: BusinessProps[] = [];
+      const resolvedLocation = await resolveSearchArea(state.location || canonicalLocation);
+
+      if (resolvedLocation) {
+        businesses = await searchApiWithResolver(term, resolvedLocation);
+      } else {
+        businesses = await searchApi(term, state.location || 'Current Location', coords);
+      }
+
+      dispatch(setResults(businesses));
+    } catch (error) {
+      setErrorMessage('Failed to search restaurants. Please try again.');
+      dispatch(setResults([]));
+    } finally {
+      setIsSearching(false);
+    }
   };
 
   const handleFiltersPress = () => {
-    console.log('Open filters modal');
+    dispatch(setShowFilter(true));
+  };
+
+  const handleViewAllResults = () => {
+    // Navigate to Search tab
+    navigation.navigate('Search');
   };
 
   return (
@@ -57,9 +187,11 @@ export const HomeScreenRedesign: React.FC = () => {
             ]}
           >
             <Ionicons name="options-outline" size={24} color={colors.primary} />
-            {activeFilters.length > 0 && (
+            {countActiveFilters(state.filters) > 0 && (
               <View style={styles.filtersBadge}>
-                <Text style={styles.filtersBadgeText}>{activeFilters.length}</Text>
+                <Text style={styles.filtersBadgeText}>
+                  {countActiveFilters(state.filters)}
+                </Text>
               </View>
             )}
           </Pressable>
@@ -69,18 +201,22 @@ export const HomeScreenRedesign: React.FC = () => {
         <View style={styles.wheelContainer}>
           <RouletteWheel
             onSpin={handleSpin}
-            disabled={!hasResults}
+            disabled={!hasResults || isLoading}
             size={200}
           />
           <Text style={styles.wheelHint}>
-            {hasResults
-              ? "Tap to spin"
-              : "Search to get started"}
+            {isLoading
+              ? 'Searching...'
+              : hasResults
+              ? 'Tap to spin'
+              : 'Search to get started'}
           </Text>
         </View>
 
         {/* Active Filters */}
-        <ActiveFilterBar filters={activeFilters} />
+        {activeFilters.length > 0 && (
+          <ActiveFilterBar filters={activeFilters} />
+        )}
 
         {/* Search Input */}
         <View style={styles.searchContainer}>
@@ -98,6 +234,8 @@ export const HomeScreenRedesign: React.FC = () => {
               value={searchQuery}
               onChangeText={setSearchQuery}
               returnKeyType="search"
+              onSubmitEditing={handleSearch}
+              editable={!isLoading}
             />
             {searchQuery.length > 0 && (
               <Pressable
@@ -117,16 +255,23 @@ export const HomeScreenRedesign: React.FC = () => {
         {/* Location */}
         <Pressable style={styles.locationButton}>
           <Ionicons name="location" size={16} color={colors.primary} />
-          <Text style={styles.locationText}>{location}</Text>
+          <Text style={styles.locationText}>{displayLocation}</Text>
           <Ionicons name="chevron-down" size={16} color={colors.gray500} />
         </Pressable>
+
+        {/* Error Message */}
+        {errorMessage ? (
+          <View style={styles.errorContainer}>
+            <Text style={styles.errorText}>{errorMessage}</Text>
+          </View>
+        ) : null}
 
         {/* Results Count */}
         {hasResults && (
           <View style={styles.resultsInfo}>
             <Ionicons name="checkmark-circle" size={20} color={colors.success} />
             <Text style={styles.resultsText}>
-              {restaurantCount} restaurants found
+              {restaurantCount} restaurant{restaurantCount !== 1 ? 's' : ''} found
             </Text>
           </View>
         )}
@@ -136,32 +281,41 @@ export const HomeScreenRedesign: React.FC = () => {
           <Pressable
             style={({ pressed }) => [
               styles.primaryButton,
-              !hasResults && styles.primaryButtonDisabled,
-              pressed && hasResults && styles.primaryButtonPressed,
+              (!hasResults || isLoading) && styles.primaryButtonDisabled,
+              pressed && hasResults && !isLoading && styles.primaryButtonPressed,
             ]}
-            disabled={!hasResults}
+            disabled={!hasResults || isLoading}
             onPress={handleSpin}
           >
             <Text
               style={[
                 styles.primaryButtonText,
-                !hasResults && styles.primaryButtonTextDisabled,
+                (!hasResults || isLoading) && styles.primaryButtonTextDisabled,
               ]}
             >
-              Spin for Me
+              {isLoading ? 'Searching...' : 'Spin for Me'}
             </Text>
           </Pressable>
 
-          <Pressable
-            style={({ pressed }) => [
-              styles.secondaryButton,
-              pressed && styles.secondaryButtonPressed,
-            ]}
-          >
-            <Text style={styles.secondaryButtonText}>View All Results</Text>
-          </Pressable>
+          {hasResults && (
+            <Pressable
+              style={({ pressed }) => [
+                styles.secondaryButton,
+                pressed && styles.secondaryButtonPressed,
+              ]}
+              onPress={handleViewAllResults}
+            >
+              <Text style={styles.secondaryButtonText}>View All Results</Text>
+            </Pressable>
+          )}
         </View>
       </ScrollView>
+
+      {/* Filters Modal */}
+      <FiltersSheet
+        visible={state.showFilter}
+        onClose={() => dispatch(setShowFilter(false))}
+      />
     </SafeAreaView>
   );
 };
@@ -285,6 +439,20 @@ const styles = StyleSheet.create({
   locationText: {
     ...typography.callout,
     color: colors.gray700,
+  },
+  errorContainer: {
+    marginHorizontal: spacing.md,
+    marginBottom: spacing.md,
+    backgroundColor: colors.error + '15',
+    paddingHorizontal: spacing.md,
+    paddingVertical: spacing.md,
+    borderRadius: radius.md,
+    borderLeftWidth: 3,
+    borderLeftColor: colors.error,
+  },
+  errorText: {
+    ...typography.callout,
+    color: colors.error,
   },
   resultsInfo: {
     flexDirection: 'row',
