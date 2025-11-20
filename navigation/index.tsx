@@ -8,8 +8,8 @@ import useColorScheme from "../hooks/useColorScheme";
 import NotFoundScreen from "../screens/NotFoundScreen";
 import { RootStackParamList, RootTabParamList } from "../types";
 import LinkingConfiguration from "./LinkingConfiguration";
-import SearchScreen from "../screens/SearchScreen";
-import HomeScreen from "../screens/HomeScreen";
+import { SearchScreenRedesign } from "../screens/SearchScreenRedesign";
+import { HomeScreenRedesign } from "../screens/HomeScreenRedesign";
 import { SavedTabNavigator } from "./SavedTabNavigator";
 import AppStyles from "../AppStyles";
 
@@ -82,7 +82,7 @@ function BottomTabNavigator() {
 		>
 			<BottomTabs.Screen
 				name="Home"
-				component={HomeScreen}
+				component={HomeScreenRedesign}
 				options={{
 					title: "Home",
 					tabBarIcon: ({ color, focused }) => (
@@ -96,7 +96,7 @@ function BottomTabNavigator() {
 			/>
 			<BottomTabs.Screen
 				name="Search"
-				component={SearchScreen}
+				component={SearchScreenRedesign}
 				options={{
 					title: "Search",
 					tabBarIcon: ({ color, focused }) => (
