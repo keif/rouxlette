@@ -1,5 +1,6 @@
 import React, { useRef } from 'react';
 import { Pressable, Text, StyleSheet, Animated } from 'react-native';
+import { Ionicons } from '@expo/vector-icons';
 import { View } from '../Themed';
 import AppStyles from '../../AppStyles';
 
@@ -10,18 +11,33 @@ interface RouletteButtonProps {
 
 const RouletteButton: React.FC<RouletteButtonProps> = ({ onSpin, disabled = false }) => {
   const spinValue = useRef(new Animated.Value(0)).current;
+  const scaleValue = useRef(new Animated.Value(1)).current;
 
   const handlePress = () => {
     if (disabled) return;
-    
-    // Animate the spin
+
+    // Scale animation on press
+    Animated.sequence([
+      Animated.timing(scaleValue, {
+        toValue: 0.95,
+        duration: 100,
+        useNativeDriver: true,
+      }),
+      Animated.timing(scaleValue, {
+        toValue: 1,
+        duration: 150,
+        useNativeDriver: true,
+      }),
+    ]).start();
+
+    // Spin animation
     spinValue.setValue(0);
     Animated.timing(spinValue, {
       toValue: 1,
       duration: 2000,
       useNativeDriver: true,
     }).start(() => {
-      // Reset animation and trigger callback
+      // Reset and trigger callback
       spinValue.setValue(0);
       onSpin();
     });
@@ -29,33 +45,44 @@ const RouletteButton: React.FC<RouletteButtonProps> = ({ onSpin, disabled = fals
 
   const spin = spinValue.interpolate({
     inputRange: [0, 1],
-    outputRange: ['0deg', '1440deg'], // 4 full rotations
+    outputRange: ['0deg', '1800deg'], // 5 full rotations
   });
 
   return (
     <View style={styles.container}>
       <Animated.View
         style={[
-          styles.rouletteWheel,
-          { transform: [{ rotate: spin }] },
-          disabled && styles.disabled,
+          styles.wheelContainer,
+          { transform: [{ scale: scaleValue }] },
         ]}
       >
         <Pressable
-          style={[styles.button, disabled && styles.buttonDisabled]}
+          style={[
+            styles.wheel,
+            disabled && styles.wheelDisabled,
+          ]}
           onPress={handlePress}
           disabled={disabled}
         >
-          <Text style={[styles.buttonText, disabled && styles.buttonTextDisabled]}>
-            🎰
-          </Text>
-          <Text style={[styles.buttonLabel, disabled && styles.buttonTextDisabled]}>
-            SPIN THE WHEEL
+          <Animated.View
+            style={[
+              styles.iconContainer,
+              { transform: [{ rotate: spin }] },
+            ]}
+          >
+            <Ionicons
+              name="sync-circle"
+              size={48}
+              color={disabled ? AppStyles.color.gray500 : AppStyles.color.white}
+            />
+          </Animated.View>
+          <Text style={[styles.label, disabled && styles.labelDisabled]}>
+            SPIN
           </Text>
         </Pressable>
       </Animated.View>
-      <Text style={styles.subtitle}>
-        {disabled ? "Search for restaurants first!" : "Can't decide? Let us pick for you!"}
+      <Text style={[styles.subtitle, disabled && styles.subtitleDisabled]}>
+        {disabled ? "Search for restaurants first" : "Can't decide? Let us pick for you"}
       </Text>
     </View>
   );
@@ -64,61 +91,48 @@ const RouletteButton: React.FC<RouletteButtonProps> = ({ onSpin, disabled = fals
 const styles = StyleSheet.create({
   container: {
     alignItems: 'center',
-    marginVertical: 32,
+    marginVertical: 24,
   },
-  rouletteWheel: {
-    width: 200,
-    height: 200,
-    borderRadius: 100,
-    borderWidth: 8,
-    borderColor: AppStyles.color.roulette.accent,
-    backgroundColor: AppStyles.color.roulette.red,
-    shadowColor: AppStyles.color.shadow,
-    shadowOffset: {
-      width: 0,
-      height: 8,
-    },
-    shadowOpacity: 0.3,
-    shadowRadius: 10,
-    elevation: 8,
+  wheelContainer: {
+    // Container for scale animation
   },
-  button: {
-    flex: 1,
+  wheel: {
+    width: 160,
+    height: 160,
+    borderRadius: 80,
+    borderWidth: 3,
+    borderColor: AppStyles.color.primary,
+    backgroundColor: AppStyles.color.primary,
     justifyContent: 'center',
     alignItems: 'center',
-    borderRadius: 92,
-    margin: 4,
-    backgroundColor: AppStyles.color.roulette.accent,
+    ...AppStyles.shadow.level2,
   },
-  buttonDisabled: {
-    backgroundColor: AppStyles.color.greylight,
-    borderColor: AppStyles.color.greylight,
+  wheelDisabled: {
+    borderColor: AppStyles.color.gray300,
+    backgroundColor: AppStyles.color.gray300,
   },
-  disabled: {
-    borderColor: AppStyles.color.greylight,
-    backgroundColor: AppStyles.color.greylight,
+  iconContainer: {
+    marginBottom: 4,
   },
-  buttonText: {
-    fontSize: 40,
-    marginBottom: 8,
-  },
-  buttonLabel: {
-    fontSize: 16,
-    fontFamily: AppStyles.fonts.bold,
+  label: {
+    ...AppStyles.typography.subhead,
+    fontWeight: '600',
     color: AppStyles.color.white,
-    textAlign: 'center',
-    letterSpacing: 1,
+    letterSpacing: 1.2,
+    marginTop: 4,
   },
-  buttonTextDisabled: {
-    color: AppStyles.color.greydark,
+  labelDisabled: {
+    color: AppStyles.color.gray500,
   },
   subtitle: {
-    marginTop: 16,
-    fontSize: 16,
-    fontFamily: AppStyles.fonts.medium,
-    color: AppStyles.color.greydark,
+    ...AppStyles.typography.callout,
+    color: AppStyles.color.gray700,
     textAlign: 'center',
+    marginTop: 16,
     maxWidth: 280,
+  },
+  subtitleDisabled: {
+    color: AppStyles.color.gray500,
   },
 });
 
