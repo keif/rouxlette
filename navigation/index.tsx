@@ -56,7 +56,7 @@ function TopTabNavigator() {
 		<Tabs.Navigator
 		  initialRouteName={"Home"}
 		  screenOptions={{
-			tabBarActiveTintColor: AppStyles.color.roulette.gold,
+			tabBarActiveTintColor: AppStyles.color.roulette.accent,
 			tabBarInactiveTintColor: AppStyles.color.greylight,
 			tabBarStyle: {
 			  backgroundColor: AppStyles.color.white,
@@ -67,7 +67,7 @@ function TopTabNavigator() {
 			  minHeight: 40,
 			},
 			tabBarIndicatorStyle: {
-			  backgroundColor: AppStyles.color.roulette.gold,
+			  backgroundColor: AppStyles.color.roulette.accent,
 			  height: 2,
 			},
 			tabBarLabelStyle: {
@@ -84,9 +84,9 @@ function TopTabNavigator() {
 			component={HomeScreen}
 			name="Home"
 			options={{
-			  title: "Home",
+			  title: "Rouxlette",
 			  tabBarIcon: ({ color, focused }) => (
-				<Ionicons name={focused ? "home" : "home-outline"} size={20} color={color} />
+				<Ionicons name={focused ? "dice" : "dice-outline"} size={20} color={color} />
 			  ),
 			}}
 		  />

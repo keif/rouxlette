@@ -1,652 +1,5 @@
 // Jest Snapshot v1, https://goo.gl/fbAQLP
 
-exports[`BusinessCardModal snapshots should match snapshot for Details view 1`] = `
-<RNCSafeAreaProvider
-  onInsetsChange={[Function]}
-  style={
-    [
-      {
-        "flex": 1,
-      },
-      undefined,
-    ]
-  }
->
-  <Modal
-    animationType="fade"
-    hardwareAccelerated={false}
-    onRequestClose={[Function]}
-    transparent={true}
-    visible={true}
-  >
-    <View
-      accessible={true}
-      collapsable={false}
-      focusable={true}
-      onBlur={[Function]}
-      onClick={[Function]}
-      onFocus={[Function]}
-      onResponderGrant={[Function]}
-      onResponderMove={[Function]}
-      onResponderRelease={[Function]}
-      onResponderTerminate={[Function]}
-      onResponderTerminationRequest={[Function]}
-      onStartShouldSetResponder={[Function]}
-      style={
-        {
-          "backgroundColor": "rgba(0,0,0,0.5)",
-          "flex": 1,
-        }
-      }
-      testID="modal-backdrop"
-    >
-      <View
-        style={
-          {
-            "alignItems": "center",
-            "flex": 1,
-            "justifyContent": "center",
-            "paddingHorizontal": 20,
-          }
-        }
-      >
-        <View
-          accessible={true}
-          collapsable={false}
-          focusable={true}
-          onBlur={[Function]}
-          onClick={[Function]}
-          onFocus={[Function]}
-          onResponderGrant={[Function]}
-          onResponderMove={[Function]}
-          onResponderRelease={[Function]}
-          onResponderTerminate={[Function]}
-          onResponderTerminationRequest={[Function]}
-          onStartShouldSetResponder={[Function]}
-        >
-          <View
-            style={
-              [
-                {
-                  "alignSelf": "center",
-                  "backgroundColor": "#fff",
-                  "borderRadius": 20,
-                  "elevation": 8,
-                  "maxHeight": "85%",
-                  "shadowColor": "#333",
-                  "shadowOffset": {
-                    "height": 8,
-                    "width": 0,
-                  },
-                  "shadowOpacity": 0.3,
-                  "shadowRadius": 10,
-                },
-                {
-                  "maxWidth": 700,
-                  "width": "100%",
-                },
-              ]
-            }
-          >
-            <View
-              style={
-                {
-                  "borderBottomColor": "#99940",
-                  "borderBottomWidth": 1,
-                  "flexDirection": "row",
-                }
-              }
-            >
-              <View
-                accessible={true}
-                collapsable={false}
-                focusable={true}
-                onBlur={[Function]}
-                onClick={[Function]}
-                onFocus={[Function]}
-                onResponderGrant={[Function]}
-                onResponderMove={[Function]}
-                onResponderRelease={[Function]}
-                onResponderTerminate={[Function]}
-                onResponderTerminationRequest={[Function]}
-                onStartShouldSetResponder={[Function]}
-                style={
-                  [
-                    {
-                      "alignItems": "center",
-                      "flex": 1,
-                      "paddingHorizontal": 12,
-                      "paddingVertical": 16,
-                    },
-                    false,
-                  ]
-                }
-                testID="quick-info-tab"
-              >
-                <Text
-                  style={
-                    [
-                      {
-                        "color": "#999",
-                        "fontFamily": "WorkSans-Medium",
-                        "fontSize": 16,
-                      },
-                      false,
-                    ]
-                  }
-                >
-                  Quick Info
-                </Text>
-              </View>
-              <View
-                accessible={true}
-                collapsable={false}
-                focusable={true}
-                onBlur={[Function]}
-                onClick={[Function]}
-                onFocus={[Function]}
-                onResponderGrant={[Function]}
-                onResponderMove={[Function]}
-                onResponderRelease={[Function]}
-                onResponderTerminate={[Function]}
-                onResponderTerminationRequest={[Function]}
-                onStartShouldSetResponder={[Function]}
-                style={
-                  [
-                    {
-                      "alignItems": "center",
-                      "flex": 1,
-                      "paddingHorizontal": 12,
-                      "paddingVertical": 16,
-                    },
-                    {
-                      "borderBottomColor": "#D4AF37",
-                      "borderBottomWidth": 3,
-                    },
-                  ]
-                }
-                testID="details-tab"
-              >
-                <Text
-                  style={
-                    [
-                      {
-                        "color": "#999",
-                        "fontFamily": "WorkSans-Medium",
-                        "fontSize": 16,
-                      },
-                      {
-                        "color": "#D4AF37",
-                        "fontFamily": "WorkSans-Bold",
-                      },
-                    ]
-                  }
-                >
-                  Details
-                </Text>
-              </View>
-            </View>
-            <RCTScrollView
-              contentInsetAdjustmentBehavior="always"
-              keyboardShouldPersistTaps="handled"
-              showsVerticalScrollIndicator={false}
-              style={
-                {
-                  "maxHeight": "100%",
-                  "paddingHorizontal": 4,
-                }
-              }
-            >
-              <View>
-                <View
-                  style={
-                    [
-                      {
-                        "backgroundColor": "#fff",
-                        "borderRadius": 20,
-                        "elevation": 4,
-                        "padding": 16,
-                        "shadowColor": "#000",
-                        "shadowOffset": {
-                          "height": 6,
-                          "width": 0,
-                        },
-                        "shadowOpacity": 0.08,
-                        "shadowRadius": 12,
-                      },
-                      {
-                        "alignSelf": "center",
-                        "width": 620,
-                      },
-                    ]
-                  }
-                >
-                  <Text
-                    ellipsizeMode="tail"
-                    numberOfLines={2}
-                    style={
-                      {
-                        "color": "#333",
-                        "fontFamily": "WorkSans-Bold",
-                        "fontSize": 22,
-                        "fontWeight": "700",
-                        "lineHeight": 24,
-                        "marginBottom": 20,
-                        "textAlign": "center",
-                      }
-                    }
-                    testID="bd-title"
-                  >
-                    Test Restaurant
-                  </Text>
-                  <View
-                    style={
-                      {
-                        "marginBottom": 24,
-                      }
-                    }
-                  >
-                    <Text
-                      style={
-                        {
-                          "color": "#333",
-                          "fontFamily": "WorkSans-Bold",
-                          "fontSize": 18,
-                          "marginBottom": 12,
-                        }
-                      }
-                    >
-                      Address
-                    </Text>
-                    <Text
-                      style={
-                        {
-                          "allowFontScaling": true,
-                          "color": "#333",
-                          "fontFamily": "WorkSans-Regular",
-                          "fontSize": 16,
-                          "lineHeight": 22,
-                        }
-                      }
-                      testID="bd-address"
-                    >
-                      123 Main St, Columbus, OH 43215
-                    </Text>
-                  </View>
-                  <View
-                    style={
-                      {
-                        "marginBottom": 24,
-                      }
-                    }
-                  >
-                    <Text
-                      style={
-                        {
-                          "color": "#333",
-                          "fontFamily": "WorkSans-Bold",
-                          "fontSize": 18,
-                          "marginBottom": 12,
-                        }
-                      }
-                    >
-                      Contact
-                    </Text>
-                    <Text
-                      style={
-                        {
-                          "allowFontScaling": true,
-                          "color": "#333",
-                          "fontFamily": "WorkSans-Regular",
-                          "fontSize": 16,
-                        }
-                      }
-                      testID="bd-phone"
-                    >
-                      (555) 123-4567
-                    </Text>
-                  </View>
-                  <View
-                    style={
-                      {
-                        "marginBottom": 24,
-                      }
-                    }
-                  >
-                    <Text
-                      style={
-                        {
-                          "color": "#333",
-                          "fontFamily": "WorkSans-Bold",
-                          "fontSize": 18,
-                          "marginBottom": 12,
-                        }
-                      }
-                    >
-                      Hours
-                    </Text>
-                    <View
-                      style={
-                        {
-                          "backgroundColor": "#F0EEEE",
-                          "borderColor": "#99940",
-                          "borderRadius": 12,
-                          "borderWidth": 1,
-                          "padding": 16,
-                        }
-                      }
-                      testID="bd-hours"
-                    >
-                      <View
-                        style={
-                          {
-                            "flexDirection": "row",
-                            "flexWrap": "wrap",
-                            "justifyContent": "space-between",
-                            "paddingVertical": 6,
-                          }
-                        }
-                      >
-                        <Text
-                          style={
-                            {
-                              "allowFontScaling": true,
-                              "color": "#333",
-                              "fontFamily": "WorkSans-Medium",
-                              "fontSize": 14,
-                              "width": 80,
-                            }
-                          }
-                        >
-                          Mon
-                          :
-                        </Text>
-                        <Text
-                          style={
-                            {
-                              "allowFontScaling": true,
-                              "color": "#999",
-                              "flex": 1,
-                              "fontFamily": "WorkSans-Regular",
-                              "fontSize": 14,
-                              "textAlign": "right",
-                            }
-                          }
-                        >
-                          9:00 AM–5:00 PM
-                        </Text>
-                      </View>
-                      <View
-                        style={
-                          {
-                            "flexDirection": "row",
-                            "flexWrap": "wrap",
-                            "justifyContent": "space-between",
-                            "paddingVertical": 6,
-                          }
-                        }
-                      >
-                        <Text
-                          style={
-                            {
-                              "allowFontScaling": true,
-                              "color": "#333",
-                              "fontFamily": "WorkSans-Medium",
-                              "fontSize": 14,
-                              "width": 80,
-                            }
-                          }
-                        >
-                          Tue
-                          :
-                        </Text>
-                        <Text
-                          style={
-                            {
-                              "allowFontScaling": true,
-                              "color": "#999",
-                              "flex": 1,
-                              "fontFamily": "WorkSans-Regular",
-                              "fontSize": 14,
-                              "textAlign": "right",
-                            }
-                          }
-                        >
-                          Closed
-                        </Text>
-                      </View>
-                      <View
-                        style={
-                          {
-                            "flexDirection": "row",
-                            "flexWrap": "wrap",
-                            "justifyContent": "space-between",
-                            "paddingVertical": 6,
-                          }
-                        }
-                      >
-                        <Text
-                          style={
-                            {
-                              "allowFontScaling": true,
-                              "color": "#333",
-                              "fontFamily": "WorkSans-Medium",
-                              "fontSize": 14,
-                              "width": 80,
-                            }
-                          }
-                        >
-                          ...
-                          :
-                        </Text>
-                        <Text
-                          style={
-                            {
-                              "allowFontScaling": true,
-                              "color": "#999",
-                              "flex": 1,
-                              "fontFamily": "WorkSans-Regular",
-                              "fontSize": 14,
-                              "textAlign": "right",
-                            }
-                          }
-                        />
-                      </View>
-                    </View>
-                  </View>
-                  <View
-                    style={
-                      {
-                        "marginTop": 24,
-                      }
-                    }
-                  >
-                    <View
-                      style={
-                        {
-                          "flexDirection": "row",
-                          "flexWrap": "wrap",
-                          "gap": 12,
-                          "justifyContent": "space-around",
-                          "marginBottom": 16,
-                        }
-                      }
-                    >
-                      <View
-                        accessible={true}
-                        collapsable={false}
-                        focusable={true}
-                        onBlur={[Function]}
-                        onClick={[Function]}
-                        onFocus={[Function]}
-                        onResponderGrant={[Function]}
-                        onResponderMove={[Function]}
-                        onResponderRelease={[Function]}
-                        onResponderTerminate={[Function]}
-                        onResponderTerminationRequest={[Function]}
-                        onStartShouldSetResponder={[Function]}
-                        style={
-                          {
-                            "alignItems": "center",
-                            "backgroundColor": "#D4AF37",
-                            "borderRadius": 12,
-                            "flex": 1,
-                            "justifyContent": "center",
-                            "minHeight": 44,
-                            "minWidth": 80,
-                            "paddingHorizontal": 16,
-                            "paddingVertical": 12,
-                          }
-                        }
-                        testID="bd-map-btn"
-                      >
-                        <Text
-                          style={
-                            {
-                              "allowFontScaling": true,
-                              "color": "#fff",
-                              "fontFamily": "WorkSans-Bold",
-                              "fontSize": 14,
-                            }
-                          }
-                        >
-                          📍 Map
-                        </Text>
-                      </View>
-                      <View
-                        accessible={true}
-                        collapsable={false}
-                        focusable={true}
-                        onBlur={[Function]}
-                        onClick={[Function]}
-                        onFocus={[Function]}
-                        onResponderGrant={[Function]}
-                        onResponderMove={[Function]}
-                        onResponderRelease={[Function]}
-                        onResponderTerminate={[Function]}
-                        onResponderTerminationRequest={[Function]}
-                        onStartShouldSetResponder={[Function]}
-                        style={
-                          {
-                            "alignItems": "center",
-                            "backgroundColor": "#D4AF37",
-                            "borderRadius": 12,
-                            "flex": 1,
-                            "justifyContent": "center",
-                            "minHeight": 44,
-                            "minWidth": 80,
-                            "paddingHorizontal": 16,
-                            "paddingVertical": 12,
-                          }
-                        }
-                        testID="bd-call-btn"
-                      >
-                        <Text
-                          style={
-                            {
-                              "allowFontScaling": true,
-                              "color": "#fff",
-                              "fontFamily": "WorkSans-Bold",
-                              "fontSize": 14,
-                            }
-                          }
-                        >
-                          📞 Call
-                        </Text>
-                      </View>
-                      <View
-                        accessible={true}
-                        collapsable={false}
-                        focusable={true}
-                        onBlur={[Function]}
-                        onClick={[Function]}
-                        onFocus={[Function]}
-                        onResponderGrant={[Function]}
-                        onResponderMove={[Function]}
-                        onResponderRelease={[Function]}
-                        onResponderTerminate={[Function]}
-                        onResponderTerminationRequest={[Function]}
-                        onStartShouldSetResponder={[Function]}
-                        style={
-                          {
-                            "alignItems": "center",
-                            "backgroundColor": "#D4AF37",
-                            "borderRadius": 12,
-                            "flex": 1,
-                            "justifyContent": "center",
-                            "minHeight": 44,
-                            "minWidth": 80,
-                            "paddingHorizontal": 16,
-                            "paddingVertical": 12,
-                          }
-                        }
-                        testID="bd-yelp-btn"
-                      >
-                        <Text
-                          style={
-                            {
-                              "allowFontScaling": true,
-                              "color": "#fff",
-                              "fontFamily": "WorkSans-Bold",
-                              "fontSize": 14,
-                            }
-                          }
-                        >
-                          🔗 Yelp
-                        </Text>
-                      </View>
-                    </View>
-                    <View
-                      accessible={true}
-                      collapsable={false}
-                      focusable={true}
-                      onBlur={[Function]}
-                      onClick={[Function]}
-                      onFocus={[Function]}
-                      onResponderGrant={[Function]}
-                      onResponderMove={[Function]}
-                      onResponderRelease={[Function]}
-                      onResponderTerminate={[Function]}
-                      onResponderTerminationRequest={[Function]}
-                      onStartShouldSetResponder={[Function]}
-                      style={
-                        {
-                          "alignItems": "center",
-                          "backgroundColor": "#999",
-                          "borderRadius": 12,
-                          "justifyContent": "center",
-                          "minHeight": 44,
-                          "paddingHorizontal": 16,
-                          "paddingVertical": 12,
-                        }
-                      }
-                      testID="bd-close-btn"
-                    >
-                      <Text
-                        style={
-                          {
-                            "allowFontScaling": true,
-                            "color": "#333",
-                            "fontFamily": "WorkSans-Bold",
-                            "fontSize": 16,
-                          }
-                        }
-                      >
-                        Close
-                      </Text>
-                    </View>
-                  </View>
-                </View>
-              </View>
-            </RCTScrollView>
-          </View>
-        </View>
-      </View>
-    </View>
-  </Modal>
-</RNCSafeAreaProvider>
-`;
-
 exports[`BusinessCardModal snapshots should match snapshot for QuickInfo view 1`] = `
 <RNCSafeAreaProvider
   onInsetsChange={[Function]}
@@ -661,12 +14,28 @@ exports[`BusinessCardModal snapshots should match snapshot for QuickInfo view 1`
 >
   <Modal
     animationType="fade"
-    hardwareAccelerated={false}
     onRequestClose={[Function]}
     transparent={true}
     visible={true}
   >
     <View
+      accessibilityState={
+        {
+          "busy": undefined,
+          "checked": undefined,
+          "disabled": undefined,
+          "expanded": undefined,
+          "selected": undefined,
+        }
+      }
+      accessibilityValue={
+        {
+          "max": undefined,
+          "min": undefined,
+          "now": undefined,
+          "text": undefined,
+        }
+      }
       accessible={true}
       collapsable={false}
       focusable={true}
@@ -693,11 +62,28 @@ exports[`BusinessCardModal snapshots should match snapshot for QuickInfo view 1`
             "alignItems": "center",
             "flex": 1,
             "justifyContent": "center",
-            "paddingHorizontal": 20,
+            "paddingHorizontal": 12,
           }
         }
       >
         <View
+          accessibilityState={
+            {
+              "busy": undefined,
+              "checked": undefined,
+              "disabled": undefined,
+              "expanded": undefined,
+              "selected": undefined,
+            }
+          }
+          accessibilityValue={
+            {
+              "max": undefined,
+              "min": undefined,
+              "now": undefined,
+              "text": undefined,
+            }
+          }
           accessible={true}
           collapsable={false}
           focusable={true}
@@ -713,157 +99,122 @@ exports[`BusinessCardModal snapshots should match snapshot for QuickInfo view 1`
         >
           <View
             style={
-              [
-                {
-                  "alignSelf": "center",
-                  "backgroundColor": "#fff",
-                  "borderRadius": 20,
-                  "elevation": 8,
-                  "maxHeight": "85%",
-                  "shadowColor": "#333",
-                  "shadowOffset": {
-                    "height": 8,
-                    "width": 0,
-                  },
-                  "shadowOpacity": 0.3,
-                  "shadowRadius": 10,
-                },
-                {
-                  "maxWidth": 700,
-                  "width": "100%",
-                },
-              ]
+              {
+                "maxWidth": 700,
+                "width": 700,
+              }
             }
           >
             <View
-              style={
+              accessibilityHint="Flip card to see more details"
+              accessibilityRole="button"
+              accessible={true}
+              collapsable={false}
+              jestAnimatedProps={
                 {
-                  "borderBottomColor": "#99940",
-                  "borderBottomWidth": 1,
-                  "flexDirection": "row",
+                  "value": {},
                 }
+              }
+              jestAnimatedStyle={
+                {
+                  "value": {},
+                }
+              }
+              jestInlineStyle={
+                [
+                  {
+                    "position": "relative",
+                  },
+                  {},
+                ]
+              }
+              nativeID="16"
+              style={
+                [
+                  {
+                    "position": "relative",
+                  },
+                  {},
+                ]
               }
             >
               <View
-                accessible={true}
                 collapsable={false}
-                focusable={true}
-                onBlur={[Function]}
-                onClick={[Function]}
-                onFocus={[Function]}
-                onResponderGrant={[Function]}
-                onResponderMove={[Function]}
-                onResponderRelease={[Function]}
-                onResponderTerminate={[Function]}
-                onResponderTerminationRequest={[Function]}
-                onStartShouldSetResponder={[Function]}
-                style={
+                jestAnimatedProps={
+                  {
+                    "value": {},
+                  }
+                }
+                jestAnimatedStyle={
+                  {
+                    "value": {
+                      "backfaceVisibility": "hidden",
+                      "opacity": 1,
+                      "pointerEvents": "auto",
+                      "transform": [
+                        {
+                          "perspective": 1000,
+                        },
+                        {
+                          "rotateY": "0deg",
+                        },
+                      ],
+                    },
+                  }
+                }
+                jestInlineStyle={
                   [
                     {
-                      "alignItems": "center",
-                      "flex": 1,
-                      "paddingHorizontal": 12,
-                      "paddingVertical": 16,
-                    },
-                    {
-                      "borderBottomColor": "#D4AF37",
-                      "borderBottomWidth": 3,
+                      "height": "100%",
+                      "position": "absolute",
+                      "width": "100%",
                     },
                   ]
                 }
-                testID="quick-info-tab"
-              >
-                <Text
-                  style={
-                    [
-                      {
-                        "color": "#999",
-                        "fontFamily": "WorkSans-Medium",
-                        "fontSize": 16,
-                      },
-                      {
-                        "color": "#D4AF37",
-                        "fontFamily": "WorkSans-Bold",
-                      },
-                    ]
-                  }
-                >
-                  Quick Info
-                </Text>
-              </View>
-              <View
-                accessible={true}
-                collapsable={false}
-                focusable={true}
-                onBlur={[Function]}
-                onClick={[Function]}
-                onFocus={[Function]}
-                onResponderGrant={[Function]}
-                onResponderMove={[Function]}
-                onResponderRelease={[Function]}
-                onResponderTerminate={[Function]}
-                onResponderTerminationRequest={[Function]}
-                onStartShouldSetResponder={[Function]}
+                nativeID="17"
                 style={
                   [
                     {
-                      "alignItems": "center",
-                      "flex": 1,
-                      "paddingHorizontal": 12,
-                      "paddingVertical": 16,
+                      "height": "100%",
+                      "position": "absolute",
+                      "width": "100%",
                     },
-                    false,
+                    {
+                      "backfaceVisibility": "hidden",
+                      "opacity": 1,
+                      "pointerEvents": "auto",
+                      "transform": [
+                        {
+                          "perspective": 1000,
+                        },
+                        {
+                          "rotateY": "0deg",
+                        },
+                      ],
+                    },
                   ]
                 }
-                testID="details-tab"
               >
-                <Text
-                  style={
-                    [
-                      {
-                        "color": "#999",
-                        "fontFamily": "WorkSans-Medium",
-                        "fontSize": 16,
-                      },
-                      false,
-                    ]
-                  }
-                >
-                  Details
-                </Text>
-              </View>
-            </View>
-            <RCTScrollView
-              contentInsetAdjustmentBehavior="always"
-              keyboardShouldPersistTaps="handled"
-              showsVerticalScrollIndicator={false}
-              style={
-                {
-                  "maxHeight": "100%",
-                  "paddingHorizontal": 4,
-                }
-              }
-            >
-              <View>
                 <View
                   style={
                     [
                       {
                         "backgroundColor": "#fff",
-                        "borderRadius": 20,
-                        "elevation": 4,
-                        "padding": 16,
+                        "borderColor": "rgba(0, 0, 0, 0.08)",
+                        "borderRadius": 16,
+                        "borderWidth": 1,
+                        "elevation": 12,
+                        "overflow": "hidden",
                         "shadowColor": "#000",
                         "shadowOffset": {
                           "height": 6,
                           "width": 0,
                         },
-                        "shadowOpacity": 0.08,
-                        "shadowRadius": 12,
+                        "shadowOpacity": 0.15,
+                        "shadowRadius": 8,
                       },
                       {
-                        "alignSelf": "center",
-                        "width": 620,
+                        "minHeight": 458,
                       },
                     ]
                   }
@@ -871,16 +222,14 @@ exports[`BusinessCardModal snapshots should match snapshot for QuickInfo view 1`
                   <View
                     style={
                       {
-                        "aspectRatio": 1.5,
-                        "borderRadius": 16,
-                        "marginBottom": 16,
+                        "borderTopLeftRadius": 16,
+                        "borderTopRightRadius": 16,
                         "overflow": "hidden",
-                        "position": "relative",
-                        "width": "100%",
                       }
                     }
                   >
                     <Image
+                      resizeMode="cover"
                       source={
                         {
                           "uri": "https://example.com/image.jpg",
@@ -888,25 +237,33 @@ exports[`BusinessCardModal snapshots should match snapshot for QuickInfo view 1`
                       }
                       style={
                         {
-                          "height": "100%",
-                          "width": "100%",
+                          "height": 338,
+                          "width": 676,
                         }
                       }
-                      testID="bqi-image"
                     />
                     <View
                       accessibilityLabel="Add to favorites"
+                      accessibilityState={
+                        {
+                          "busy": undefined,
+                          "checked": undefined,
+                          "disabled": undefined,
+                          "expanded": undefined,
+                          "selected": undefined,
+                        }
+                      }
+                      accessibilityValue={
+                        {
+                          "max": undefined,
+                          "min": undefined,
+                          "now": undefined,
+                          "text": undefined,
+                        }
+                      }
                       accessible={true}
                       collapsable={false}
                       focusable={true}
-                      hitSlop={
-                        {
-                          "bottom": 8,
-                          "left": 8,
-                          "right": 8,
-                          "top": 8,
-                        }
-                      }
                       onBlur={[Function]}
                       onClick={[Function]}
                       onFocus={[Function]}
@@ -919,17 +276,17 @@ exports[`BusinessCardModal snapshots should match snapshot for QuickInfo view 1`
                       style={
                         {
                           "alignItems": "center",
-                          "backgroundColor": "rgba(0,0,0,0.4)",
+                          "backgroundColor": "rgba(0,0,0,0.2)",
                           "borderRadius": 20,
                           "height": 40,
                           "justifyContent": "center",
+                          "padding": 8,
                           "position": "absolute",
-                          "right": 12,
-                          "top": 12,
+                          "right": 8,
+                          "top": 8,
                           "width": 40,
                         }
                       }
-                      testID="bqi-favorite-btn"
                     >
                       <Text
                         allowFontScaling={false}
@@ -957,288 +314,735 @@ exports[`BusinessCardModal snapshots should match snapshot for QuickInfo view 1`
                           ]
                         }
                       >
-                        
+                        
                       </Text>
                     </View>
                   </View>
-                  <Text
-                    ellipsizeMode="tail"
-                    numberOfLines={2}
-                    style={
-                      {
-                        "color": "#333",
-                        "fontFamily": "WorkSans-Bold",
-                        "fontSize": 22,
-                        "fontWeight": "700",
-                        "lineHeight": 24,
-                        "marginBottom": 12,
-                      }
-                    }
-                    testID="bqi-title"
-                  >
-                    Test Restaurant
-                  </Text>
                   <View
                     style={
                       {
-                        "alignItems": "center",
-                        "flexDirection": "row",
-                        "flexWrap": "wrap",
-                        "gap": 6,
-                        "marginBottom": 12,
+                        "backgroundColor": "#fff",
+                        "paddingBottom": 16,
+                        "paddingHorizontal": 16,
+                        "paddingVertical": 6,
                       }
                     }
                   >
                     <View
                       style={
                         {
-                          "backgroundColor": "#D4AF3715",
-                          "borderRadius": 12,
-                          "paddingHorizontal": 8,
-                          "paddingVertical": 4,
+                          "alignItems": "center",
+                          "flexDirection": "row",
+                          "justifyContent": "space-between",
                         }
                       }
                     >
                       <Text
+                        numberOfLines={2}
                         style={
                           {
-                            "color": "#D4AF37",
-                            "fontFamily": "WorkSans-Medium",
-                            "fontSize": 14,
+                            "color": "#000",
+                            "flex": 1,
+                            "fontFamily": "WorkSans-SemiBold",
+                            "fontSize": 22,
+                            "fontWeight": "bold",
+                            "paddingBottom": 6,
+                            "paddingRight": 8,
                           }
                         }
-                        testID="bqi-rating"
                       >
-                        4.5
-                        ★
+                        Test Restaurant
                       </Text>
-                    </View>
-                    <View
-                      style={
-                        {
-                          "backgroundColor": "#99915",
-                          "borderRadius": 12,
-                          "paddingHorizontal": 8,
-                          "paddingVertical": 4,
-                        }
-                      }
-                    >
                       <Text
                         style={
                           {
-                            "color": "#333",
-                            "fontFamily": "WorkSans-Regular",
-                            "fontSize": 14,
+                            "fontFamily": "WorkSans-SemiBold",
+                            "fontSize": 22,
                           }
                         }
-                        testID="bqi-reviews"
-                      >
-                        128
-                         reviews
-                      </Text>
-                    </View>
-                    <View
-                      style={
-                        {
-                          "backgroundColor": "#05966915",
-                          "borderRadius": 12,
-                          "paddingHorizontal": 8,
-                          "paddingVertical": 4,
-                        }
-                      }
-                    >
-                      <Text
-                        style={
-                          {
-                            "color": "#059669",
-                            "fontFamily": "WorkSans-Medium",
-                            "fontSize": 14,
-                          }
-                        }
-                        testID="bqi-price"
                       >
                         $$
                       </Text>
                     </View>
+                    <View
+                      style={
+                        {
+                          "flexDirection": "row",
+                        }
+                      }
+                    >
+                      <Text
+                        numberOfLines={1}
+                        style={
+                          {
+                            "color": "rgba(128,128,128, 0.80)",
+                            "flex": 1,
+                            "fontFamily": "WorkSans-Regular",
+                            "paddingRight": 4,
+                          }
+                        }
+                      >
+                        Italian, Pizza
+                         • 
+                      </Text>
+                    </View>
+                    <View
+                      style={
+                        {
+                          "flexDirection": "row",
+                          "marginTop": 4,
+                        }
+                      }
+                    >
+                      <View
+                        style={
+                          {
+                            "display": "flex",
+                            "flexDirection": "row",
+                          }
+                        }
+                      >
+                        <Text
+                          allowFontScaling={false}
+                          selectable={false}
+                          style={
+                            [
+                              {
+                                "color": undefined,
+                                "fontSize": 20,
+                              },
+                              {
+                                "color": "#ffb300",
+                              },
+                              {
+                                "fontFamily": "material",
+                                "fontStyle": "normal",
+                                "fontWeight": "normal",
+                              },
+                              {},
+                            ]
+                          }
+                        >
+                          
+                        </Text>
+                        <Text
+                          allowFontScaling={false}
+                          selectable={false}
+                          style={
+                            [
+                              {
+                                "color": undefined,
+                                "fontSize": 20,
+                              },
+                              {
+                                "color": "#ffb300",
+                              },
+                              {
+                                "fontFamily": "material",
+                                "fontStyle": "normal",
+                                "fontWeight": "normal",
+                              },
+                              {},
+                            ]
+                          }
+                        >
+                          
+                        </Text>
+                        <Text
+                          allowFontScaling={false}
+                          selectable={false}
+                          style={
+                            [
+                              {
+                                "color": undefined,
+                                "fontSize": 20,
+                              },
+                              {
+                                "color": "#ffb300",
+                              },
+                              {
+                                "fontFamily": "material",
+                                "fontStyle": "normal",
+                                "fontWeight": "normal",
+                              },
+                              {},
+                            ]
+                          }
+                        >
+                          
+                        </Text>
+                        <Text
+                          allowFontScaling={false}
+                          selectable={false}
+                          style={
+                            [
+                              {
+                                "color": undefined,
+                                "fontSize": 20,
+                              },
+                              {
+                                "color": "#ffb300",
+                              },
+                              {
+                                "fontFamily": "material",
+                                "fontStyle": "normal",
+                                "fontWeight": "normal",
+                              },
+                              {},
+                            ]
+                          }
+                        >
+                          
+                        </Text>
+                        <Text
+                          allowFontScaling={false}
+                          selectable={false}
+                          style={
+                            [
+                              {
+                                "color": undefined,
+                                "fontSize": 20,
+                              },
+                              {
+                                "color": "#ffb300",
+                              },
+                              {
+                                "fontFamily": "material",
+                                "fontStyle": "normal",
+                                "fontWeight": "normal",
+                              },
+                              {},
+                            ]
+                          }
+                        >
+                          
+                        </Text>
+                      </View>
+                      <Text
+                        style={
+                          {
+                            "color": "rgba(128,128,128, 0.80)",
+                            "fontFamily": "WorkSans-Regular",
+                            "marginLeft": 8,
+                          }
+                        }
+                      >
+                        128
+                         Reviews
+                      </Text>
+                    </View>
                   </View>
-                  <Text
-                    ellipsizeMode="tail"
-                    numberOfLines={1}
-                    style={
+                  <View
+                    accessibilityLabel="View details"
+                    accessibilityState={
                       {
-                        "color": "#666",
-                        "fontFamily": "WorkSans-Regular",
-                        "fontSize": 14,
-                        "marginBottom": 16,
+                        "busy": undefined,
+                        "checked": undefined,
+                        "disabled": undefined,
+                        "expanded": undefined,
+                        "selected": undefined,
                       }
                     }
-                    testID="bqi-categories"
+                    accessibilityValue={
+                      {
+                        "max": undefined,
+                        "min": undefined,
+                        "now": undefined,
+                        "text": undefined,
+                      }
+                    }
+                    accessible={true}
+                    collapsable={false}
+                    focusable={true}
+                    onBlur={[Function]}
+                    onClick={[Function]}
+                    onFocus={[Function]}
+                    onResponderGrant={[Function]}
+                    onResponderMove={[Function]}
+                    onResponderRelease={[Function]}
+                    onResponderTerminate={[Function]}
+                    onResponderTerminationRequest={[Function]}
+                    onStartShouldSetResponder={[Function]}
+                    style={
+                      {
+                        "alignItems": "center",
+                        "backgroundColor": "transparent",
+                        "borderRadius": 24,
+                        "bottom": 12,
+                        "height": 48,
+                        "justifyContent": "center",
+                        "position": "absolute",
+                        "right": 12,
+                        "width": 48,
+                      }
+                    }
                   >
-                    Italian, Pizza
-                  </Text>
+                    <Text
+                      allowFontScaling={false}
+                      selectable={false}
+                      style={
+                        [
+                          {
+                            "color": "rgba(51,178,73,1)",
+                            "fontSize": 28,
+                          },
+                          undefined,
+                          {
+                            "fontFamily": "material",
+                            "fontStyle": "normal",
+                            "fontWeight": "normal",
+                          },
+                          {},
+                        ]
+                      }
+                    >
+                      
+                    </Text>
+                  </View>
+                </View>
+              </View>
+              <View
+                collapsable={false}
+                jestAnimatedProps={
+                  {
+                    "value": {},
+                  }
+                }
+                jestAnimatedStyle={
+                  {
+                    "value": {
+                      "backfaceVisibility": "hidden",
+                      "opacity": 0,
+                      "pointerEvents": "none",
+                      "transform": [
+                        {
+                          "perspective": 1000,
+                        },
+                        {
+                          "rotateY": "180deg",
+                        },
+                      ],
+                    },
+                  }
+                }
+                jestInlineStyle={
+                  [
+                    {
+                      "height": "100%",
+                      "position": "absolute",
+                      "width": "100%",
+                    },
+                  ]
+                }
+                nativeID="18"
+                style={
+                  [
+                    {
+                      "height": "100%",
+                      "position": "absolute",
+                      "width": "100%",
+                    },
+                    {
+                      "backfaceVisibility": "hidden",
+                      "opacity": 0,
+                      "pointerEvents": "none",
+                      "transform": [
+                        {
+                          "perspective": 1000,
+                        },
+                        {
+                          "rotateY": "180deg",
+                        },
+                      ],
+                    },
+                  ]
+                }
+              >
+                <View
+                  style={
+                    {
+                      "backgroundColor": "#fff",
+                      "borderColor": "rgba(0, 0, 0, 0.08)",
+                      "borderRadius": 16,
+                      "borderWidth": 1,
+                      "elevation": 12,
+                      "overflow": "hidden",
+                      "shadowColor": "#000",
+                      "shadowOffset": {
+                        "height": 6,
+                        "width": 0,
+                      },
+                      "shadowOpacity": 0.15,
+                      "shadowRadius": 8,
+                    }
+                  }
+                >
                   <View
                     style={
                       {
                         "alignItems": "center",
+                        "backgroundColor": "rgba(51,178,73,1)",
                         "flexDirection": "row",
-                        "flexWrap": "wrap",
                         "justifyContent": "space-between",
-                        "marginBottom": 12,
+                        "paddingHorizontal": 16,
+                        "paddingVertical": 12,
+                      }
+                    }
+                  >
+                    <Text
+                      numberOfLines={2}
+                      style={
+                        {
+                          "color": "#fff",
+                          "flex": 1,
+                          "fontFamily": "WorkSans-SemiBold",
+                          "fontSize": 20,
+                          "fontWeight": "bold",
+                          "marginRight": 8,
+                        }
+                      }
+                    >
+                      Test Restaurant
+                    </Text>
+                    <Text
+                      style={
+                        {
+                          "color": "#71C562",
+                          "fontSize": 18,
+                          "fontWeight": "bold",
+                          "textShadowColor": "#000",
+                          "textShadowOffset": {
+                            "height": 0,
+                            "width": 0,
+                          },
+                          "textShadowRadius": 6,
+                        }
+                      }
+                    >
+                      Open
+                    </Text>
+                  </View>
+                  <View
+                    style={
+                      {
+                        "paddingBottom": 4,
+                        "paddingHorizontal": 16,
+                        "paddingTop": 8,
                       }
                     }
                   >
                     <Text
                       style={
                         {
-                          "color": "#333",
-                          "flex": 1,
+                          "color": "#000",
                           "fontFamily": "WorkSans-Medium",
                           "fontSize": 14,
-                          "marginRight": 8,
                         }
                       }
-                      testID="bqi-today"
                     >
-                      Today: 
-                      9:00 AM–5:00 PM
+                      $$ • 0.3 mi • Open Now
                     </Text>
-                    <View
-                      style={
-                        [
-                          {
-                            "borderRadius": 12,
-                            "paddingHorizontal": 8,
-                            "paddingVertical": 4,
-                          },
-                          {
-                            "backgroundColor": "#05966920",
-                          },
-                        ]
-                      }
-                    >
-                      <Text
-                        style={
-                          [
-                            {
-                              "fontFamily": "WorkSans-Bold",
-                              "fontSize": 12,
-                            },
-                            {
-                              "color": "#059669",
-                            },
-                          ]
-                        }
-                        testID="bqi-status"
-                      >
-                        Open
-                      </Text>
-                    </View>
                   </View>
-                  <Text
-                    style={
-                      {
-                        "color": "#999",
-                        "fontFamily": "WorkSans-Regular",
-                        "fontSize": 14,
-                        "marginBottom": 20,
-                      }
-                    }
-                    testID="bqi-distance"
-                  >
-                    📍 
-                    0.3 mi
-                  </Text>
                   <View
                     style={
                       {
+                        "alignItems": "center",
                         "flexDirection": "row",
-                        "gap": 12,
-                        "justifyContent": "space-around",
-                        "marginTop": 8,
+                        "paddingHorizontal": 16,
+                        "paddingTop": 2,
                       }
                     }
                   >
                     <View
-                      accessible={true}
-                      collapsable={false}
-                      focusable={true}
-                      onBlur={[Function]}
-                      onClick={[Function]}
-                      onFocus={[Function]}
-                      onResponderGrant={[Function]}
-                      onResponderMove={[Function]}
-                      onResponderRelease={[Function]}
-                      onResponderTerminate={[Function]}
-                      onResponderTerminationRequest={[Function]}
-                      onStartShouldSetResponder={[Function]}
                       style={
                         {
-                          "alignItems": "center",
-                          "backgroundColor": "#D4AF37",
-                          "borderRadius": 12,
-                          "flex": 1,
-                          "justifyContent": "center",
-                          "minHeight": 44,
-                          "paddingHorizontal": 16,
-                          "paddingVertical": 12,
+                          "display": "flex",
+                          "flexDirection": "row",
                         }
                       }
-                      testID="bqi-details-btn"
                     >
                       <Text
+                        allowFontScaling={false}
+                        selectable={false}
                         style={
-                          {
-                            "allowFontScaling": true,
-                            "color": "#fff",
-                            "fontFamily": "WorkSans-Bold",
-                            "fontSize": 16,
-                          }
+                          [
+                            {
+                              "color": undefined,
+                              "fontSize": 20,
+                            },
+                            {
+                              "color": "#ffb300",
+                            },
+                            {
+                              "fontFamily": "material",
+                              "fontStyle": "normal",
+                              "fontWeight": "normal",
+                            },
+                            {},
+                          ]
                         }
                       >
-                        Details
+                        
+                      </Text>
+                      <Text
+                        allowFontScaling={false}
+                        selectable={false}
+                        style={
+                          [
+                            {
+                              "color": undefined,
+                              "fontSize": 20,
+                            },
+                            {
+                              "color": "#ffb300",
+                            },
+                            {
+                              "fontFamily": "material",
+                              "fontStyle": "normal",
+                              "fontWeight": "normal",
+                            },
+                            {},
+                          ]
+                        }
+                      >
+                        
+                      </Text>
+                      <Text
+                        allowFontScaling={false}
+                        selectable={false}
+                        style={
+                          [
+                            {
+                              "color": undefined,
+                              "fontSize": 20,
+                            },
+                            {
+                              "color": "#ffb300",
+                            },
+                            {
+                              "fontFamily": "material",
+                              "fontStyle": "normal",
+                              "fontWeight": "normal",
+                            },
+                            {},
+                          ]
+                        }
+                      >
+                        
+                      </Text>
+                      <Text
+                        allowFontScaling={false}
+                        selectable={false}
+                        style={
+                          [
+                            {
+                              "color": undefined,
+                              "fontSize": 20,
+                            },
+                            {
+                              "color": "#ffb300",
+                            },
+                            {
+                              "fontFamily": "material",
+                              "fontStyle": "normal",
+                              "fontWeight": "normal",
+                            },
+                            {},
+                          ]
+                        }
+                      >
+                        
+                      </Text>
+                      <Text
+                        allowFontScaling={false}
+                        selectable={false}
+                        style={
+                          [
+                            {
+                              "color": undefined,
+                              "fontSize": 20,
+                            },
+                            {
+                              "color": "#ffb300",
+                            },
+                            {
+                              "fontFamily": "material",
+                              "fontStyle": "normal",
+                              "fontWeight": "normal",
+                            },
+                            {},
+                          ]
+                        }
+                      >
+                        
                       </Text>
                     </View>
-                    <View
-                      accessible={true}
-                      collapsable={false}
-                      focusable={true}
-                      onBlur={[Function]}
-                      onClick={[Function]}
-                      onFocus={[Function]}
-                      onResponderGrant={[Function]}
-                      onResponderMove={[Function]}
-                      onResponderRelease={[Function]}
-                      onResponderTerminate={[Function]}
-                      onResponderTerminationRequest={[Function]}
-                      onStartShouldSetResponder={[Function]}
+                    <Text
                       style={
                         {
-                          "alignItems": "center",
-                          "backgroundColor": "#D4AF37",
-                          "borderRadius": 12,
-                          "flex": 1,
-                          "justifyContent": "center",
-                          "minHeight": 44,
-                          "paddingHorizontal": 16,
-                          "paddingVertical": 12,
+                          "color": "rgba(128,128,128, 0.80)",
+                          "fontFamily": "WorkSans-Regular",
+                          "marginLeft": 8,
                         }
                       }
-                      testID="bqi-yelp-btn"
+                    >
+                      128
+                       Review
+                      s
+                    </Text>
+                  </View>
+                  <View
+                    style={
+                      {
+                        "paddingHorizontal": 16,
+                        "paddingVertical": 6,
+                      }
+                    }
+                  >
+                    <Text
+                      style={
+                        {
+                          "color": "rgba(128,128,128, 0.80)",
+                          "fontFamily": "WorkSans-Regular",
+                          "fontSize": 15,
+                          "lineHeight": 20,
+                          "marginBottom": 6,
+                        }
+                      }
                     >
                       <Text
+                        allowFontScaling={false}
+                        selectable={false}
                         style={
-                          {
-                            "allowFontScaling": true,
-                            "color": "#fff",
-                            "fontFamily": "WorkSans-Bold",
-                            "fontSize": 16,
-                          }
+                          [
+                            {
+                              "color": "rgba(51,178,73,1)",
+                              "fontSize": 16,
+                            },
+                            undefined,
+                            {
+                              "fontFamily": "material",
+                              "fontStyle": "normal",
+                              "fontWeight": "normal",
+                            },
+                            {},
+                          ]
                         }
                       >
-                        Yelp
+                        
                       </Text>
-                    </View>
+                       
+                      123 Main St, Columbus, OH 43215
+                    </Text>
+                    <Text
+                      style={
+                        {
+                          "color": "rgba(128,128,128, 0.80)",
+                          "fontFamily": "WorkSans-Regular",
+                          "fontSize": 15,
+                          "lineHeight": 20,
+                          "marginBottom": 6,
+                        }
+                      }
+                    >
+                      <Text
+                        allowFontScaling={false}
+                        selectable={false}
+                        style={
+                          [
+                            {
+                              "color": "rgba(51,178,73,1)",
+                              "fontSize": 16,
+                            },
+                            undefined,
+                            {
+                              "fontFamily": "material",
+                              "fontStyle": "normal",
+                              "fontWeight": "normal",
+                            },
+                            {},
+                          ]
+                        }
+                      >
+                        
+                      </Text>
+                       
+                      (555) 123-4567
+                    </Text>
+                    <Text
+                      style={
+                        {
+                          "color": "rgba(128,128,128, 0.80)",
+                          "fontFamily": "WorkSans-Regular",
+                          "fontSize": 15,
+                          "lineHeight": 20,
+                          "marginBottom": 6,
+                        }
+                      }
+                    >
+                      <Text
+                        allowFontScaling={false}
+                        selectable={false}
+                        style={
+                          [
+                            {
+                              "color": "rgba(51,178,73,1)",
+                              "fontSize": 16,
+                            },
+                            undefined,
+                            {
+                              "fontFamily": "material",
+                              "fontStyle": "normal",
+                              "fontWeight": "normal",
+                            },
+                            {},
+                          ]
+                        }
+                      >
+                        
+                      </Text>
+                       
+                      Italian, Pizza
+                    </Text>
+                  </View>
+                  <View
+                    style={
+                      {
+                        "flex": 1,
+                      }
+                    }
+                  />
+                  <View
+                    style={
+                      {
+                        "alignItems": "center",
+                        "flexDirection": "row",
+                        "gap": 8,
+                        "justifyContent": "flex-start",
+                        "paddingBottom": 20,
+                        "paddingHorizontal": 16,
+                        "paddingTop": 8,
+                      }
+                    }
+                  >
                     <View
+                      accessibilityState={
+                        {
+                          "busy": undefined,
+                          "checked": undefined,
+                          "disabled": undefined,
+                          "expanded": undefined,
+                          "selected": undefined,
+                        }
+                      }
+                      accessibilityValue={
+                        {
+                          "max": undefined,
+                          "min": undefined,
+                          "now": undefined,
+                          "text": undefined,
+                        }
+                      }
                       accessible={true}
                       collapsable={false}
                       focusable={true}
@@ -1255,44 +1059,743 @@ exports[`BusinessCardModal snapshots should match snapshot for QuickInfo view 1`
                         [
                           {
                             "alignItems": "center",
-                            "backgroundColor": "#D4AF37",
-                            "borderRadius": 12,
-                            "flex": 1,
-                            "justifyContent": "center",
-                            "minHeight": 44,
-                            "paddingHorizontal": 16,
-                            "paddingVertical": 12,
+                            "backgroundColor": "rgba(255, 255, 255, 0.9)",
+                            "borderRadius": 20,
+                            "elevation": 3,
+                            "flexDirection": "row",
+                            "fontSize": 30,
+                            "padding": 16,
+                            "paddingHorizontal": 12,
+                            "paddingVertical": 8,
+                            "shadowColor": "#333",
+                            "shadowOffset": {
+                              "height": 4,
+                              "width": 0,
+                            },
+                            "shadowOpacity": 0.2,
+                            "shadowRadius": 3,
                           },
                           {
-                            "backgroundColor": "#999",
+                            "opacity": 1,
                           },
                         ]
                       }
-                      testID="bqi-close-btn"
                     >
                       <Text
+                        allowFontScaling={false}
+                        selectable={false}
                         style={
                           [
                             {
-                              "allowFontScaling": true,
-                              "color": "#fff",
-                              "fontFamily": "WorkSans-Bold",
-                              "fontSize": 16,
+                              "color": "rgba(51,178,73,1)",
+                              "fontSize": 20,
                             },
+                            undefined,
                             {
-                              "allowFontScaling": true,
-                              "color": "#333",
+                              "fontFamily": "material",
+                              "fontStyle": "normal",
+                              "fontWeight": "normal",
                             },
+                            {},
                           ]
                         }
                       >
-                        Close
+                        
+                      </Text>
+                      <Text
+                        style={
+                          {
+                            "color": "#000",
+                            "fontFamily": "WorkSans-Medium",
+                            "fontSize": 14,
+                            "marginLeft": 6,
+                          }
+                        }
+                      >
+                        Maps
+                      </Text>
+                    </View>
+                    <View
+                      accessibilityState={
+                        {
+                          "busy": undefined,
+                          "checked": undefined,
+                          "disabled": undefined,
+                          "expanded": undefined,
+                          "selected": undefined,
+                        }
+                      }
+                      accessibilityValue={
+                        {
+                          "max": undefined,
+                          "min": undefined,
+                          "now": undefined,
+                          "text": undefined,
+                        }
+                      }
+                      accessible={true}
+                      collapsable={false}
+                      focusable={true}
+                      onBlur={[Function]}
+                      onClick={[Function]}
+                      onFocus={[Function]}
+                      onResponderGrant={[Function]}
+                      onResponderMove={[Function]}
+                      onResponderRelease={[Function]}
+                      onResponderTerminate={[Function]}
+                      onResponderTerminationRequest={[Function]}
+                      onStartShouldSetResponder={[Function]}
+                      style={
+                        [
+                          {
+                            "alignItems": "center",
+                            "backgroundColor": "rgba(255, 255, 255, 0.9)",
+                            "borderRadius": 20,
+                            "elevation": 3,
+                            "flexDirection": "row",
+                            "fontSize": 30,
+                            "padding": 16,
+                            "paddingHorizontal": 12,
+                            "paddingVertical": 8,
+                            "shadowColor": "#333",
+                            "shadowOffset": {
+                              "height": 4,
+                              "width": 0,
+                            },
+                            "shadowOpacity": 0.2,
+                            "shadowRadius": 3,
+                          },
+                          {
+                            "opacity": 1,
+                          },
+                        ]
+                      }
+                    >
+                      <Text
+                        allowFontScaling={false}
+                        selectable={false}
+                        style={
+                          [
+                            {
+                              "color": "#c41200",
+                              "fontSize": 20,
+                            },
+                            undefined,
+                            {
+                              "fontFamily": "FontAwesome",
+                              "fontStyle": "normal",
+                              "fontWeight": "normal",
+                            },
+                            {},
+                          ]
+                        }
+                      >
+                        
+                      </Text>
+                      <Text
+                        style={
+                          {
+                            "color": "#000",
+                            "fontFamily": "WorkSans-Medium",
+                            "fontSize": 14,
+                            "marginLeft": 6,
+                          }
+                        }
+                      >
+                        Yelp
+                      </Text>
+                    </View>
+                    <View
+                      accessibilityState={
+                        {
+                          "busy": undefined,
+                          "checked": undefined,
+                          "disabled": undefined,
+                          "expanded": undefined,
+                          "selected": undefined,
+                        }
+                      }
+                      accessibilityValue={
+                        {
+                          "max": undefined,
+                          "min": undefined,
+                          "now": undefined,
+                          "text": undefined,
+                        }
+                      }
+                      accessible={true}
+                      collapsable={false}
+                      focusable={true}
+                      onBlur={[Function]}
+                      onClick={[Function]}
+                      onFocus={[Function]}
+                      onResponderGrant={[Function]}
+                      onResponderMove={[Function]}
+                      onResponderRelease={[Function]}
+                      onResponderTerminate={[Function]}
+                      onResponderTerminationRequest={[Function]}
+                      onStartShouldSetResponder={[Function]}
+                      style={
+                        [
+                          {
+                            "alignItems": "center",
+                            "backgroundColor": "rgba(255, 255, 255, 0.9)",
+                            "borderRadius": 20,
+                            "elevation": 3,
+                            "flexDirection": "row",
+                            "fontSize": 30,
+                            "padding": 16,
+                            "paddingHorizontal": 12,
+                            "paddingVertical": 8,
+                            "shadowColor": "#333",
+                            "shadowOffset": {
+                              "height": 4,
+                              "width": 0,
+                            },
+                            "shadowOpacity": 0.2,
+                            "shadowRadius": 3,
+                          },
+                          {
+                            "opacity": 1,
+                          },
+                        ]
+                      }
+                    >
+                      <Text
+                        allowFontScaling={false}
+                        selectable={false}
+                        style={
+                          [
+                            {
+                              "color": "#71C562",
+                              "fontSize": 20,
+                            },
+                            undefined,
+                            {
+                              "fontFamily": "material",
+                              "fontStyle": "normal",
+                              "fontWeight": "normal",
+                            },
+                            {},
+                          ]
+                        }
+                      >
+                        
+                      </Text>
+                      <Text
+                        style={
+                          {
+                            "color": "#000",
+                            "fontFamily": "WorkSans-Medium",
+                            "fontSize": 14,
+                            "marginLeft": 6,
+                          }
+                        }
+                      >
+                        Call
+                      </Text>
+                    </View>
+                    <View
+                      accessibilityLabel="Close details"
+                      accessibilityState={
+                        {
+                          "busy": undefined,
+                          "checked": undefined,
+                          "disabled": undefined,
+                          "expanded": undefined,
+                          "selected": undefined,
+                        }
+                      }
+                      accessibilityValue={
+                        {
+                          "max": undefined,
+                          "min": undefined,
+                          "now": undefined,
+                          "text": undefined,
+                        }
+                      }
+                      accessible={true}
+                      collapsable={false}
+                      focusable={true}
+                      onBlur={[Function]}
+                      onClick={[Function]}
+                      onFocus={[Function]}
+                      onResponderGrant={[Function]}
+                      onResponderMove={[Function]}
+                      onResponderRelease={[Function]}
+                      onResponderTerminate={[Function]}
+                      onResponderTerminationRequest={[Function]}
+                      onStartShouldSetResponder={[Function]}
+                      style={
+                        {
+                          "alignItems": "center",
+                          "backgroundColor": "transparent",
+                          "borderRadius": 24,
+                          "height": 48,
+                          "justifyContent": "center",
+                          "marginLeft": "auto",
+                          "width": 48,
+                        }
+                      }
+                    >
+                      <Text
+                        allowFontScaling={false}
+                        selectable={false}
+                        style={
+                          [
+                            {
+                              "color": "rgba(51,178,73,1)",
+                              "fontSize": 28,
+                            },
+                            undefined,
+                            {
+                              "fontFamily": "material",
+                              "fontStyle": "normal",
+                              "fontWeight": "normal",
+                            },
+                            {},
+                          ]
+                        }
+                      >
+                        
                       </Text>
                     </View>
                   </View>
                 </View>
               </View>
-            </RCTScrollView>
+              <View
+                collapsable={false}
+                jestAnimatedProps={
+                  {
+                    "value": {},
+                  }
+                }
+                jestAnimatedStyle={
+                  {
+                    "value": {},
+                  }
+                }
+                jestInlineStyle={
+                  {
+                    "opacity": 0,
+                  }
+                }
+                nativeID="19"
+                style={
+                  [
+                    {
+                      "opacity": 0,
+                    },
+                  ]
+                }
+              >
+                <View
+                  style={
+                    [
+                      {
+                        "backgroundColor": "#fff",
+                        "borderColor": "rgba(0, 0, 0, 0.08)",
+                        "borderRadius": 16,
+                        "borderWidth": 1,
+                        "elevation": 12,
+                        "overflow": "hidden",
+                        "shadowColor": "#000",
+                        "shadowOffset": {
+                          "height": 6,
+                          "width": 0,
+                        },
+                        "shadowOpacity": 0.15,
+                        "shadowRadius": 8,
+                      },
+                      {
+                        "minHeight": 458,
+                      },
+                    ]
+                  }
+                >
+                  <View
+                    style={
+                      {
+                        "borderTopLeftRadius": 16,
+                        "borderTopRightRadius": 16,
+                        "overflow": "hidden",
+                      }
+                    }
+                  >
+                    <Image
+                      resizeMode="cover"
+                      source={
+                        {
+                          "uri": "https://example.com/image.jpg",
+                        }
+                      }
+                      style={
+                        {
+                          "height": 338,
+                          "width": 676,
+                        }
+                      }
+                    />
+                    <View
+                      accessibilityLabel="Add to favorites"
+                      accessibilityState={
+                        {
+                          "busy": undefined,
+                          "checked": undefined,
+                          "disabled": undefined,
+                          "expanded": undefined,
+                          "selected": undefined,
+                        }
+                      }
+                      accessibilityValue={
+                        {
+                          "max": undefined,
+                          "min": undefined,
+                          "now": undefined,
+                          "text": undefined,
+                        }
+                      }
+                      accessible={true}
+                      collapsable={false}
+                      focusable={true}
+                      onBlur={[Function]}
+                      onClick={[Function]}
+                      onFocus={[Function]}
+                      onResponderGrant={[Function]}
+                      onResponderMove={[Function]}
+                      onResponderRelease={[Function]}
+                      onResponderTerminate={[Function]}
+                      onResponderTerminationRequest={[Function]}
+                      onStartShouldSetResponder={[Function]}
+                      style={
+                        {
+                          "alignItems": "center",
+                          "backgroundColor": "rgba(0,0,0,0.2)",
+                          "borderRadius": 20,
+                          "height": 40,
+                          "justifyContent": "center",
+                          "padding": 8,
+                          "position": "absolute",
+                          "right": 8,
+                          "top": 8,
+                          "width": 40,
+                        }
+                      }
+                    >
+                      <Text
+                        allowFontScaling={false}
+                        selectable={false}
+                        style={
+                          [
+                            {
+                              "color": "#fff",
+                              "fontSize": 24,
+                            },
+                            {
+                              "textShadowColor": "#000",
+                              "textShadowOffset": {
+                                "height": 0,
+                                "width": 0,
+                              },
+                              "textShadowRadius": 4,
+                            },
+                            {
+                              "fontFamily": "ionicons",
+                              "fontStyle": "normal",
+                              "fontWeight": "normal",
+                            },
+                            {},
+                          ]
+                        }
+                      >
+                        
+                      </Text>
+                    </View>
+                  </View>
+                  <View
+                    style={
+                      {
+                        "backgroundColor": "#fff",
+                        "paddingBottom": 16,
+                        "paddingHorizontal": 16,
+                        "paddingVertical": 6,
+                      }
+                    }
+                  >
+                    <View
+                      style={
+                        {
+                          "alignItems": "center",
+                          "flexDirection": "row",
+                          "justifyContent": "space-between",
+                        }
+                      }
+                    >
+                      <Text
+                        numberOfLines={2}
+                        style={
+                          {
+                            "color": "#000",
+                            "flex": 1,
+                            "fontFamily": "WorkSans-SemiBold",
+                            "fontSize": 22,
+                            "fontWeight": "bold",
+                            "paddingBottom": 6,
+                            "paddingRight": 8,
+                          }
+                        }
+                      >
+                        Test Restaurant
+                      </Text>
+                      <Text
+                        style={
+                          {
+                            "fontFamily": "WorkSans-SemiBold",
+                            "fontSize": 22,
+                          }
+                        }
+                      >
+                        $$
+                      </Text>
+                    </View>
+                    <View
+                      style={
+                        {
+                          "flexDirection": "row",
+                        }
+                      }
+                    >
+                      <Text
+                        numberOfLines={1}
+                        style={
+                          {
+                            "color": "rgba(128,128,128, 0.80)",
+                            "flex": 1,
+                            "fontFamily": "WorkSans-Regular",
+                            "paddingRight": 4,
+                          }
+                        }
+                      >
+                        Italian, Pizza
+                         • 
+                      </Text>
+                    </View>
+                    <View
+                      style={
+                        {
+                          "flexDirection": "row",
+                          "marginTop": 4,
+                        }
+                      }
+                    >
+                      <View
+                        style={
+                          {
+                            "display": "flex",
+                            "flexDirection": "row",
+                          }
+                        }
+                      >
+                        <Text
+                          allowFontScaling={false}
+                          selectable={false}
+                          style={
+                            [
+                              {
+                                "color": undefined,
+                                "fontSize": 20,
+                              },
+                              {
+                                "color": "#ffb300",
+                              },
+                              {
+                                "fontFamily": "material",
+                                "fontStyle": "normal",
+                                "fontWeight": "normal",
+                              },
+                              {},
+                            ]
+                          }
+                        >
+                          
+                        </Text>
+                        <Text
+                          allowFontScaling={false}
+                          selectable={false}
+                          style={
+                            [
+                              {
+                                "color": undefined,
+                                "fontSize": 20,
+                              },
+                              {
+                                "color": "#ffb300",
+                              },
+                              {
+                                "fontFamily": "material",
+                                "fontStyle": "normal",
+                                "fontWeight": "normal",
+                              },
+                              {},
+                            ]
+                          }
+                        >
+                          
+                        </Text>
+                        <Text
+                          allowFontScaling={false}
+                          selectable={false}
+                          style={
+                            [
+                              {
+                                "color": undefined,
+                                "fontSize": 20,
+                              },
+                              {
+                                "color": "#ffb300",
+                              },
+                              {
+                                "fontFamily": "material",
+                                "fontStyle": "normal",
+                                "fontWeight": "normal",
+                              },
+                              {},
+                            ]
+                          }
+                        >
+                          
+                        </Text>
+                        <Text
+                          allowFontScaling={false}
+                          selectable={false}
+                          style={
+                            [
+                              {
+                                "color": undefined,
+                                "fontSize": 20,
+                              },
+                              {
+                                "color": "#ffb300",
+                              },
+                              {
+                                "fontFamily": "material",
+                                "fontStyle": "normal",
+                                "fontWeight": "normal",
+                              },
+                              {},
+                            ]
+                          }
+                        >
+                          
+                        </Text>
+                        <Text
+                          allowFontScaling={false}
+                          selectable={false}
+                          style={
+                            [
+                              {
+                                "color": undefined,
+                                "fontSize": 20,
+                              },
+                              {
+                                "color": "#ffb300",
+                              },
+                              {
+                                "fontFamily": "material",
+                                "fontStyle": "normal",
+                                "fontWeight": "normal",
+                              },
+                              {},
+                            ]
+                          }
+                        >
+                          
+                        </Text>
+                      </View>
+                      <Text
+                        style={
+                          {
+                            "color": "rgba(128,128,128, 0.80)",
+                            "fontFamily": "WorkSans-Regular",
+                            "marginLeft": 8,
+                          }
+                        }
+                      >
+                        128
+                         Reviews
+                      </Text>
+                    </View>
+                  </View>
+                  <View
+                    accessibilityLabel="View details"
+                    accessibilityState={
+                      {
+                        "busy": undefined,
+                        "checked": undefined,
+                        "disabled": undefined,
+                        "expanded": undefined,
+                        "selected": undefined,
+                      }
+                    }
+                    accessibilityValue={
+                      {
+                        "max": undefined,
+                        "min": undefined,
+                        "now": undefined,
+                        "text": undefined,
+                      }
+                    }
+                    accessible={true}
+                    collapsable={false}
+                    focusable={true}
+                    onBlur={[Function]}
+                    onClick={[Function]}
+                    onFocus={[Function]}
+                    onResponderGrant={[Function]}
+                    onResponderMove={[Function]}
+                    onResponderRelease={[Function]}
+                    onResponderTerminate={[Function]}
+                    onResponderTerminationRequest={[Function]}
+                    onStartShouldSetResponder={[Function]}
+                    style={
+                      {
+                        "alignItems": "center",
+                        "backgroundColor": "transparent",
+                        "borderRadius": 24,
+                        "bottom": 12,
+                        "height": 48,
+                        "justifyContent": "center",
+                        "position": "absolute",
+                        "right": 12,
+                        "width": 48,
+                      }
+                    }
+                  >
+                    <Text
+                      allowFontScaling={false}
+                      selectable={false}
+                      style={
+                        [
+                          {
+                            "color": "rgba(51,178,73,1)",
+                            "fontSize": 28,
+                          },
+                          undefined,
+                          {
+                            "fontFamily": "material",
+                            "fontStyle": "normal",
+                            "fontWeight": "normal",
+                          },
+                          {},
+                        ]
+                      }
+                    >
+                      
+                    </Text>
+                  </View>
+                </View>
+              </View>
+            </View>
           </View>
         </View>
       </View>

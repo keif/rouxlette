@@ -43,8 +43,8 @@ const DevLocationDebug: React.FC<DevLocationDebugProps> = ({ coords, city, isLoa
 
 const styles = StyleSheet.create({
   container: {
-    backgroundColor: AppStyles.color.roulette.gold + '20',
-    borderColor: AppStyles.color.roulette.gold,
+    backgroundColor: AppStyles.color.roulette.accent + '20',
+    borderColor: AppStyles.color.roulette.accent,
     borderWidth: 1,
     borderRadius: 8,
     padding: 12,

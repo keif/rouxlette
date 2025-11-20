@@ -68,7 +68,7 @@ describe('useLocation - Clear Behavior', () => {
 
   it('clears location without making API call when empty string passed', async () => {
     const { result } = renderHook(() => useLocation());
-    const [, , , searchLocation] = result.current;
+    const [, , , , , searchLocation] = result.current;
 
     await act(async () => {
       await searchLocation('');
@@ -77,7 +77,7 @@ describe('useLocation - Clear Behavior', () => {
     // Should not make any API calls for empty query
     expect(mockGeocode).not.toHaveBeenCalled();
     expect(mockReverseGeocode).not.toHaveBeenCalled();
-    
+
     // Should not log errors for empty query
     expect(console.error).not.toHaveBeenCalledWith(
       expect.stringMatching(/Geocoding API error/)
@@ -86,7 +86,7 @@ describe('useLocation - Clear Behavior', () => {
 
   it('handles null/undefined query gracefully', async () => {
     const { result } = renderHook(() => useLocation());
-    const [, , , searchLocation] = result.current;
+    const [, , , , , searchLocation] = result.current;
 
     await act(async () => {
       await searchLocation(null as any);
@@ -130,7 +130,7 @@ describe('useLocation - Clear Behavior', () => {
     });
 
     const { result } = renderHook(() => useLocation());
-    const [, , , searchLocation] = result.current;
+    const [, , , , , searchLocation] = result.current;
 
     await act(async () => {
       await searchLocation('');
@@ -149,7 +149,7 @@ describe('useLocation - Clear Behavior', () => {
     });
 
     const { result } = renderHook(() => useLocation());
-    const [, city, results, searchLocation] = result.current;
+    const [, city, , , results, searchLocation] = result.current;
 
     await act(async () => {
       await searchLocation('');
@@ -173,7 +173,7 @@ describe('useLocation - Clear Behavior', () => {
     });
 
     const { result } = renderHook(() => useLocation());
-    const [, , , searchLocation] = result.current;
+    const [, , , , , searchLocation] = result.current;
 
     await act(async () => {
       await searchLocation('Nonexistent Location');
@@ -200,7 +200,7 @@ describe('useLocation - Clear Behavior', () => {
     });
 
     const { result } = renderHook(() => useLocation());
-    const [, , , searchLocation] = result.current;
+    const [, , , , , searchLocation] = result.current;
 
     await act(async () => {
       await searchLocation('Test Location');
@@ -243,7 +243,7 @@ describe('useLocation - Clear Behavior', () => {
     });
 
     const { result } = renderHook(() => useLocation());
-    const [, , , searchLocation] = result.current;
+    const [, , , , , searchLocation] = result.current;
 
     // First call to establish coordinates
     await act(async () => {
@@ -271,7 +271,7 @@ describe('useLocation - Clear Behavior', () => {
     );
 
     const { result } = renderHook(() => useLocation());
-    const [, , , searchLocation] = result.current;
+    const [, , , , , searchLocation] = result.current;
 
     await act(async () => {
       await searchLocation('');

@@ -13,7 +13,7 @@ export function SavedTabNavigator() {
     <SavedTabs.Navigator
       initialRouteName="Favorites"
       screenOptions={{
-        tabBarActiveTintColor: AppStyles.color.roulette.gold,
+        tabBarActiveTintColor: AppStyles.color.roulette.accent,
         tabBarInactiveTintColor: AppStyles.color.greylight,
         tabBarStyle: {
           backgroundColor: AppStyles.color.white,
@@ -21,7 +21,7 @@ export function SavedTabNavigator() {
           borderBottomColor: AppStyles.color.background,
         },
         tabBarIndicatorStyle: {
-          backgroundColor: AppStyles.color.roulette.gold,
+          backgroundColor: AppStyles.color.roulette.accent,
           height: 3,
         },
         tabBarLabelStyle: {

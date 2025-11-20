@@ -62,17 +62,8 @@ const SearchScreen = () => {
 	);
 
 	useEffect(() => {
-		LayoutAnimation.configureNext(LayoutAnimation.Presets.easeInEaseOut);
 		const hasSearchResults = searchResults && (searchResults.businesses ?? []).length > 0;
-		if (hasFocus || hasSearchResults) {
-			Animated.timing(borderRadius, {
-				duration: 500,
-				toValue: 20,
-				// toValue: hasFocus ? 20 : 0,
-				useNativeDriver: false,
-			}).start();
-
-			setToggleStyle(false);
+		if (hasSearchResults) {
 			// generate list of category objects - safe iteration
 			const businesses = searchResults.businesses ?? [];
 			const categories: CategoryProps[] = businesses.reduce<CategoryProps[]>((acc, curr) => {
@@ -91,12 +82,6 @@ const SearchScreen = () => {
 			dispatch(setCategories(filteredCategories));
 		}
 	}, [searchResults]);
-
-	useEffect(() => {
-		if (hasFocus || hasSearchResults) {
-			setToggleStyle(false);
-		}
-	}, [hasFocus, hasSearchResults]);
 
 	// Apply new client-side filters
 	useEffect(() => {
@@ -118,15 +103,9 @@ const SearchScreen = () => {
 				behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
 				style={{ flex: 1 }}
 			>
-				<View style={[
-					styles.container,
-					toggleStyle ? styles.containerRow : styles.containerColumn,
-					hasSearchResults && styles.containerWithResults
-				]}>
+				<View style={[styles.container, styles.containerColumn]}>
 					<View style={styles.controller}>
-					<Animated.View
-						style={[styles.animatedContainer, { borderRadius }]}
-					>
+					<View style={styles.animatedContainer}>
 						<View style={styles.searchHeader}>
 							<View style={styles.searchInputContainer}>
 								<SearchInput
@@ -140,36 +119,30 @@ const SearchScreen = () => {
 									setIsLoading={setIsSearching}
 								/>
 							</View>
-							{(hasFocus || hasSearchResults) && (
-								<Pressable
-									testID="filters-open-button-search"
-									style={({ pressed }) => [
-										styles.filtersButton,
-										{ opacity: !Config.isAndroid && pressed ? 0.6 : 1 }
-									]}
-									onPress={() => setShowFiltersSheet(true)}
-									android_ripple={{ color: 'lightgrey', radius: 20, borderless: true }}
-								>
-									<Icon name="tune" size={24} color={AppStyles.color.roulette.gold} />
-									{countActiveFilters(state.filters) > 0 && (
-										<View style={styles.filtersBadge}>
-											<Text style={styles.filtersBadgeText}>
-												{countActiveFilters(state.filters).toString()}
-											</Text>
-										</View>
-									)}
-								</Pressable>
-							)}
+							<Pressable
+								testID="filters-open-button-search"
+								style={({ pressed }) => [
+									styles.filtersButton,
+									{ opacity: !Config.isAndroid && pressed ? 0.6 : 1 }
+								]}
+								onPress={() => setShowFiltersSheet(true)}
+								android_ripple={{ color: 'lightgrey', radius: 20, borderless: true }}
+							>
+								<Icon name="tune" size={24} color={AppStyles.color.roulette.accent} />
+								{countActiveFilters(state.filters) > 0 && (
+									<View style={styles.filtersBadge}>
+										<Text style={styles.filtersBadgeText}>
+											{countActiveFilters(state.filters).toString()}
+										</Text>
+									</View>
+								)}
+							</Pressable>
 						</View>
-						{
-							hasFocus || hasSearchResults ? (
-								<LocationInput
-									onFocus={() => setFocus(true)}
-									setErrorMessage={setErrorMessage}
-								/>
-							) : null
-						}
-					</Animated.View>
+						<LocationInput
+							onFocus={() => setFocus(true)}
+							setErrorMessage={setErrorMessage}
+						/>
+					</View>
 					{isSearching && (
 						<View style={{ paddingVertical: 24, alignItems: 'center' }}>
 							<ActivityIndicator size="large" />
@@ -220,9 +193,7 @@ const styles = StyleSheet.create({
 	},
 	containerColumn: {
 		flexDirection: `column`,
-	},
-	containerRow: {
-		flexDirection: `row`,
+		justifyContent: "flex-start",
 	},
 	controller: {
 		flex: 1,
@@ -233,6 +204,7 @@ const styles = StyleSheet.create({
 		marginHorizontal: 8,
 		marginTop: 8,
 		marginBottom: 20,
+		borderRadius: 20,
 		shadowColor: AppStyles.input.shadow,
 		shadowOffset: {
 			width: 0,

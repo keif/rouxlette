@@ -8,8 +8,9 @@ import { ResultsProps } from '../../hooks/useResults';
 
 // Mock ResultsList component since we're testing FilteredOutput in isolation
 jest.mock('../../components/results/ResultsList', () => {
-  return function MockResultsList() {
-    return null; // Return minimal mock
+  return function MockResultsList({ ListHeaderComponent }: any) {
+    // Render the header if provided so we can test FilteredOutput's ListHeader
+    return ListHeaderComponent || null;
   };
 });
 

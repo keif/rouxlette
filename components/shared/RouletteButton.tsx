@@ -71,7 +71,7 @@ const styles = StyleSheet.create({
     height: 200,
     borderRadius: 100,
     borderWidth: 8,
-    borderColor: AppStyles.color.roulette.gold,
+    borderColor: AppStyles.color.roulette.accent,
     backgroundColor: AppStyles.color.roulette.red,
     shadowColor: AppStyles.color.shadow,
     shadowOffset: {
@@ -88,7 +88,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     borderRadius: 92,
     margin: 4,
-    backgroundColor: AppStyles.color.roulette.gold,
+    backgroundColor: AppStyles.color.roulette.accent,
   },
   buttonDisabled: {
     backgroundColor: AppStyles.color.greylight,

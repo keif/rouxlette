@@ -36,10 +36,12 @@ const AppStyles = {
 		yelp: `#c41200`,
 		// Roulette theme colors
 		roulette: {
-			gold: `#D4AF37`,
-			red: `#DC2626`,
-			green: `#059669`,
+			accent: `#475569`, // Deep slate - primary accent color
+			red: `#DC2626`, // Vibrant red from logo
+			green: `#059669`, // Green from logo
+			teal: `#5F9EA0`, // Teal from logo wheel
 			neutral: `#6B7280`,
+			gold: `#D4AF37`, // Deprecated - use accent instead
 		},
 	},
 	fonts: {

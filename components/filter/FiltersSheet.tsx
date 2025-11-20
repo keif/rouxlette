@@ -141,7 +141,7 @@ const FiltersSheet: React.FC<FiltersSheetProps> = ({ visible, onClose, testID })
                           size={18} 
                           color={localFilters.priceLevels.includes(level as 1|2|3|4) 
                             ? AppStyles.color.white 
-                            : AppStyles.color.roulette.gold
+                            : AppStyles.color.roulette.accent
                           } 
                         />
                       ))}
@@ -310,7 +310,7 @@ const FiltersSheet: React.FC<FiltersSheetProps> = ({ visible, onClose, testID })
                           size={16} 
                           color={localFilters.minRating === rating 
                             ? AppStyles.color.white 
-                            : AppStyles.color.roulette.gold
+                            : AppStyles.color.roulette.accent
                           } 
                         />
                       ))
@@ -397,14 +397,14 @@ const styles = StyleSheet.create({
     marginHorizontal: 4,
   },
   priceButton: {
-    borderColor: AppStyles.color.roulette.gold,
+    borderColor: AppStyles.color.roulette.accent,
     borderRadius: 24,
     borderWidth: 1,
     backgroundColor: 'transparent',
     overflow: 'hidden',
   },
   priceButtonSelected: {
-    backgroundColor: AppStyles.color.roulette.gold,
+    backgroundColor: AppStyles.color.roulette.accent,
   },
   priceButtonText: {
     flexDirection: 'row',
@@ -492,7 +492,7 @@ const styles = StyleSheet.create({
   },
   ratingOption: {
     flex: 1,
-    borderColor: AppStyles.color.roulette.gold,
+    borderColor: AppStyles.color.roulette.accent,
     borderWidth: 1,
     borderRadius: 8,
     paddingVertical: 8,
@@ -500,7 +500,7 @@ const styles = StyleSheet.create({
     backgroundColor: 'transparent',
   },
   ratingOptionSelected: {
-    backgroundColor: AppStyles.color.roulette.gold,
+    backgroundColor: AppStyles.color.roulette.accent,
   },
   ratingStars: {
     flexDirection: 'row',
@@ -511,7 +511,7 @@ const styles = StyleSheet.create({
     textAlign: 'center',
     fontSize: 14,
     fontFamily: AppStyles.fonts.regular,
-    color: AppStyles.color.roulette.gold,
+    color: AppStyles.color.roulette.accent,
   },
   ratingOptionTextSelected: {
     color: AppStyles.color.white,
@@ -519,7 +519,7 @@ const styles = StyleSheet.create({
   ratingPlusText: {
     fontSize: 12,
     fontFamily: AppStyles.fonts.regular,
-    color: AppStyles.color.roulette.gold,
+    color: AppStyles.color.roulette.accent,
     marginLeft: 2,
   },
   buttonContainer: {
@@ -535,7 +535,7 @@ const styles = StyleSheet.create({
   },
   button: {
     alignItems: 'center',
-    backgroundColor: AppStyles.color.roulette.gold,
+    backgroundColor: AppStyles.color.roulette.accent,
     height: 48,
     justifyContent: 'center',
   },

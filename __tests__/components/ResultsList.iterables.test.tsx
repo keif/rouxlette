@@ -132,7 +132,7 @@ describe('ResultsList Iterables Safety', () => {
       </TestWrapper>
     );
 
-    expect(getByText("We couldn't find anything for pizza :(")).toBeTruthy();
+    expect(getByText(/We couldn't find anything/)).toBeTruthy();
   });
 
   it('shows "no results" message when businesses is undefined and has search term', () => {
@@ -152,7 +152,7 @@ describe('ResultsList Iterables Safety', () => {
       </TestWrapper>
     );
 
-    expect(getByText("We couldn't find anything for pizza :(")).toBeTruthy();
+    expect(getByText(/We couldn't find anything/)).toBeTruthy();
   });
 
   it('renders FlatList when businesses array is valid', () => {

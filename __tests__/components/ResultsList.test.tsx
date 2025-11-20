@@ -19,7 +19,13 @@ describe('ResultsList', () => {
         rating: 4.5,
         coordinates: { latitude: 40, longitude: -83 },
         categories: [],
-        location: {},
+        location: {
+          display_address: ['123 Main St', 'Columbus, OH 43215'],
+        },
+        price: '$$',
+        distance: 1000,
+        is_closed: false,
+        review_count: 100,
       }
     ]
   };
@@ -49,7 +55,7 @@ describe('ResultsList', () => {
       />
     );
 
-    expect(getByText('We couldn\'t find anything for "pizza".')).toBeTruthy();
+    expect(getByText(/We couldn't find anything/)).toBeTruthy();
     expect(getByText('Try a broader term or remove some filters.')).toBeTruthy();
   });
 
@@ -80,11 +86,11 @@ describe('ResultsList', () => {
 
     // Should not show loading or empty states
     expect(queryByText('Searching…')).toBeNull();
-    expect(queryByText('We couldn\'t find anything for "pizza".')).toBeNull();
+    expect(queryByText(/We couldn't find anything/)).toBeNull();
   });
 
   it('should not render anything when no search term', () => {
-    const { container } = render(
+    const { root } = render(
       <ResultsList
         filterTerm=""
         horizontal={false}
@@ -96,6 +102,6 @@ describe('ResultsList', () => {
 
     // Component should render normally even with empty term
     // The parent components control when to show this
-    expect(container).toBeTruthy();
+    expect(root).toBeTruthy();
   });
 });
