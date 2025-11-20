@@ -6,7 +6,7 @@ import { View } from '../components/Themed';
 import FavoriteCard from '../components/shared/FavoriteCard';
 import AppStyles from '../AppStyles';
 import { useFavorites } from '../hooks/useFavorites';
-import { MaterialIcons } from '@expo/vector-icons';
+import { MaterialIcons, Ionicons } from '@expo/vector-icons';
 import { FavoriteItem } from '../types/favorites';
 import Config from '../Config';
 
@@ -120,7 +120,7 @@ const FavoritesScreen: React.FC = () => {
           />
         ) : favorites.length === 0 ? (
           <View style={styles.emptyState}>
-            <MaterialIcons name="heart-outline" size={64} color={AppStyles.color.gray300} />
+            <Ionicons name="heart-outline" size={64} color={AppStyles.color.gray300} />
             <Text style={styles.emptyTitle}>No favorites yet</Text>
             <Text style={styles.emptyText}>
               Search for restaurants and tap the heart icon to save your favorites!

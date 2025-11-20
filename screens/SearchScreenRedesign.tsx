@@ -28,7 +28,7 @@ function businessToRestaurant(business: BusinessProps): Restaurant {
   return {
     id: business.id,
     name: business.name,
-    imageUrl: business.image_url || '',
+    imageUrl: business.image_url || 'https://via.placeholder.com/400x300.png?text=No+Image',
     rating: business.rating || 0,
     reviewCount: business.review_count || 0,
     price: business.price || '',
