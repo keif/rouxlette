@@ -39,6 +39,8 @@ export const HomeScreenRedesign: React.FC = () => {
   const hasResults = state.results && state.results.length > 0;
   const restaurantCount = state.results.length;
   const displayLocation = state.location || city || 'Current Location';
+  const hasValidSearchQuery = searchQuery.trim().length >= 3; // Minimum 3 chars for food search
+  const canSearch = hasValidSearchQuery && !isLoading && !isAutoSpinning;
 
   // Build active filters array for display
   const activeFilters: ActiveFilter[] = [];
@@ -100,8 +102,14 @@ export const HomeScreenRedesign: React.FC = () => {
   });
 
   const handleSpin = () => {
+    // If no results yet but have valid query, trigger search first
+    if (!hasResults && hasValidSearchQuery) {
+      handleSearch();
+      return;
+    }
+
     if (!hasResults) {
-      setErrorMessage('Please search for restaurants first');
+      setErrorMessage('Please enter a search term first');
       return;
     }
 
@@ -250,7 +258,7 @@ export const HomeScreenRedesign: React.FC = () => {
         <View style={styles.wheelContainer}>
           <RouletteWheel
             onSpin={handleSpin}
-            disabled={!hasResults || isLoading || isAutoSpinning}
+            disabled={!canSearch && !hasResults}
             size={200}
             isAutoSpinning={isAutoSpinning}
             onAutoSpinComplete={handleAutoSpinComplete}
@@ -262,7 +270,9 @@ export const HomeScreenRedesign: React.FC = () => {
               ? 'Spinning...'
               : hasResults
               ? 'Tap to spin again'
-              : 'Search to get started'}
+              : canSearch
+              ? 'Tap to spin'
+              : 'Enter search term'}
           </Text>
         </View>
 
@@ -334,37 +344,37 @@ export const HomeScreenRedesign: React.FC = () => {
           <Pressable
             style={({ pressed }) => [
               styles.primaryButton,
-              (!hasResults || isLoading || isAutoSpinning) && styles.primaryButtonDisabled,
-              hasResults && !isLoading && !isAutoSpinning && styles.primaryButtonActive,
-              pressed && hasResults && !isLoading && !isAutoSpinning && styles.primaryButtonPressed,
+              (!canSearch && !hasResults) && styles.primaryButtonDisabled,
+              (canSearch || hasResults) && !isLoading && !isAutoSpinning && styles.primaryButtonActive,
+              pressed && (canSearch || hasResults) && !isLoading && !isAutoSpinning && styles.primaryButtonPressed,
             ]}
-            disabled={!hasResults || isLoading || isAutoSpinning}
+            disabled={!canSearch && !hasResults}
             onPress={handleSpin}
           >
             <Text
               style={[
                 styles.primaryButtonText,
-                (!hasResults || isLoading || isAutoSpinning) && styles.primaryButtonTextDisabled,
+                (!canSearch && !hasResults) && styles.primaryButtonTextDisabled,
               ]}
             >
-              {isLoading ? 'Searching...' : isAutoSpinning ? 'Spinning...' : 'Spin Again'}
+              {isLoading ? 'Searching...' : isAutoSpinning ? 'Spinning...' : hasResults ? 'Spin Again' : 'Spin for Me'}
             </Text>
           </Pressable>
 
           <Pressable
             style={({ pressed }) => [
               styles.secondaryButton,
-              (!hasResults || isLoading || isAutoSpinning) && styles.secondaryButtonDisabled,
+              !hasResults && styles.secondaryButtonDisabled,
               hasResults && !isLoading && !isAutoSpinning && styles.secondaryButtonActive,
               pressed && hasResults && !isLoading && !isAutoSpinning && styles.secondaryButtonPressed,
             ]}
-            disabled={!hasResults || isLoading || isAutoSpinning}
+            disabled={!hasResults}
             onPress={handleViewAllResults}
           >
             <Text
               style={[
                 styles.secondaryButtonText,
-                (!hasResults || isLoading || isAutoSpinning) && styles.secondaryButtonTextDisabled,
+                !hasResults && styles.secondaryButtonTextDisabled,
                 hasResults && !isLoading && !isAutoSpinning && styles.secondaryButtonTextActive,
               ]}
             >
