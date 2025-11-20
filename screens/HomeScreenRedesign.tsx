@@ -260,7 +260,7 @@ export const HomeScreenRedesign: React.FC = () => {
         <View style={styles.wheelContainer}>
           <RouletteWheel
             onSpin={handleSpin}
-            disabled={!canSearch && !hasResults}
+            disabled={!isAutoSpinning && !canSearch && !hasResults}
             size={200}
             isAutoSpinning={isAutoSpinning}
             onAutoSpinComplete={handleAutoSpinComplete}
