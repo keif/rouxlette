@@ -46,7 +46,7 @@ const FavoritesScreen: React.FC = () => {
         <View style={styles.header}>
           <View style={styles.titleRow}>
             <View style={styles.titleContainer}>
-              <Text style={styles.title}>❤️ Favorites</Text>
+              <Text style={styles.title}>Favorites</Text>
               {favorites.length > 0 && (
                 <Text style={styles.subtitle}>
                   {favorites.length} saved restaurant{favorites.length !== 1 ? 's' : ''}
@@ -120,7 +120,7 @@ const FavoritesScreen: React.FC = () => {
           />
         ) : favorites.length === 0 ? (
           <View style={styles.emptyState}>
-            <Text style={styles.emptyEmoji}>💔</Text>
+            <MaterialIcons name="heart-outline" size={64} color={AppStyles.color.gray300} />
             <Text style={styles.emptyTitle}>No favorites yet</Text>
             <Text style={styles.emptyText}>
               Search for restaurants and tap the heart icon to save your favorites!
@@ -128,7 +128,7 @@ const FavoritesScreen: React.FC = () => {
           </View>
         ) : (
           <View style={styles.emptyState}>
-            <Text style={styles.emptyEmoji}>🔍</Text>
+            <MaterialIcons name="search-off" size={64} color={AppStyles.color.gray300} />
             <Text style={styles.emptyTitle}>No matches found</Text>
             <Text style={styles.emptyText}>
               Try adjusting your search or browse all {favorites.length} favorites.

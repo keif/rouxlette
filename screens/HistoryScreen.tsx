@@ -213,7 +213,7 @@ const HistoryScreen: React.FC = () => {
         <View style={styles.header}>
           <View style={styles.titleRow}>
             <View style={styles.titleContainer}>
-              <Text style={styles.title}>🎰 History</Text>
+              <Text style={styles.title}>History</Text>
               {sortedHistory.length > 0 && (
                 <Text style={styles.subtitle}>
                   {sortedHistory.length} restaurant{sortedHistory.length !== 1 ? 's' : ''} visited
@@ -255,7 +255,7 @@ const HistoryScreen: React.FC = () => {
           />
         ) : (
           <View style={styles.emptyState}>
-            <Text style={styles.emptyEmoji}>🎲</Text>
+            <MaterialIcons name="history" size={64} color={AppStyles.color.gray300} />
             <Text style={styles.emptyTitle}>No spins yet</Text>
             <Text style={styles.emptyText}>
               Try the roulette feature to discover new restaurants. Your selections will appear here with options to revisit or spin again with the same criteria!
