@@ -137,6 +137,7 @@ export const HomeScreenRedesign: React.FC = () => {
     if (!term) return;
 
     setIsSearching(true);
+    setErrorMessage('');
     try {
       let businesses: BusinessProps[] = [];
       const resolvedLocation = await resolveSearchArea(state.location || canonicalLocation);
@@ -148,6 +149,40 @@ export const HomeScreenRedesign: React.FC = () => {
       }
 
       dispatch(setResults(businesses));
+
+      // Auto-spin after successful search
+      if (businesses.length > 0) {
+        // Small delay to let results render, then auto-spin
+        setTimeout(() => {
+          const randomIndex = Math.floor(Math.random() * businesses.length);
+          const selectedRestaurant = businesses[randomIndex];
+
+          addHistoryEntry({
+            business: selectedRestaurant,
+            source: 'spin',
+            context: {
+              searchTerm: term,
+              locationText: displayLocation,
+              coords: coords,
+              filters: {
+                openNow: state.filters.openNow,
+                categories: state.filters.categoryIds,
+                priceLevels: state.filters.priceLevels,
+                radiusMeters: state.filters.radiusMeters,
+                minRating: state.filters.minRating,
+              },
+            },
+          });
+
+          const spinEntry = {
+            restaurant: selectedRestaurant,
+            timestamp: Date.now(),
+          };
+          dispatch(addSpinHistory(spinEntry));
+          dispatch(setSelectedBusiness(selectedRestaurant));
+          dispatch(showBusinessModal());
+        }, 300);
+      }
     } catch (error) {
       setErrorMessage('Failed to search restaurants. Please try again.');
       dispatch(setResults([]));
