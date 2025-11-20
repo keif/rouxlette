@@ -282,6 +282,7 @@ export const HomeScreenRedesign: React.FC = () => {
             style={({ pressed }) => [
               styles.primaryButton,
               (!hasResults || isLoading) && styles.primaryButtonDisabled,
+              hasResults && !isLoading && styles.primaryButtonActive,
               pressed && hasResults && !isLoading && styles.primaryButtonPressed,
             ]}
             disabled={!hasResults || isLoading}
@@ -297,17 +298,26 @@ export const HomeScreenRedesign: React.FC = () => {
             </Text>
           </Pressable>
 
-          {hasResults && (
-            <Pressable
-              style={({ pressed }) => [
-                styles.secondaryButton,
-                pressed && styles.secondaryButtonPressed,
+          <Pressable
+            style={({ pressed }) => [
+              styles.secondaryButton,
+              (!hasResults || isLoading) && styles.secondaryButtonDisabled,
+              hasResults && !isLoading && styles.secondaryButtonActive,
+              pressed && hasResults && !isLoading && styles.secondaryButtonPressed,
+            ]}
+            disabled={!hasResults || isLoading}
+            onPress={handleViewAllResults}
+          >
+            <Text
+              style={[
+                styles.secondaryButtonText,
+                (!hasResults || isLoading) && styles.secondaryButtonTextDisabled,
+                hasResults && !isLoading && styles.secondaryButtonTextActive,
               ]}
-              onPress={handleViewAllResults}
             >
-              <Text style={styles.secondaryButtonText}>View All Results</Text>
-            </Pressable>
-          )}
+              View All Results
+            </Text>
+          </Pressable>
         </View>
       </ScrollView>
 
@@ -493,6 +503,26 @@ const styles = StyleSheet.create({
   },
   primaryButtonDisabled: {
     backgroundColor: colors.gray300,
+    ...Platform.select({
+      ios: {
+        shadowOpacity: 0.05,
+      },
+      android: {
+        elevation: 1,
+      },
+    }),
+  },
+  primaryButtonActive: {
+    backgroundColor: colors.success,
+    ...Platform.select({
+      ios: {
+        shadowOpacity: 0.3,
+        shadowRadius: 12,
+      },
+      android: {
+        elevation: 6,
+      },
+    }),
   },
   primaryButtonPressed: {
     opacity: 0.9,
@@ -512,11 +542,25 @@ const styles = StyleSheet.create({
     paddingVertical: spacing.md,
     alignItems: 'center',
   },
+  secondaryButtonDisabled: {
+    borderColor: colors.gray300,
+    backgroundColor: colors.gray100,
+  },
+  secondaryButtonActive: {
+    borderColor: colors.success,
+    backgroundColor: colors.white,
+  },
   secondaryButtonPressed: {
     opacity: 0.7,
   },
   secondaryButtonText: {
     ...typography.headline,
     color: colors.primary,
+  },
+  secondaryButtonTextDisabled: {
+    color: colors.gray500,
+  },
+  secondaryButtonTextActive: {
+    color: colors.success,
   },
 });
