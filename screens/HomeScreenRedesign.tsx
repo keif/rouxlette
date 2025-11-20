@@ -147,6 +147,7 @@ export const HomeScreenRedesign: React.FC = () => {
     if (!term) return;
 
     setIsSearching(true);
+    setIsAutoSpinning(true); // Start spinning during search
     setErrorMessage('');
     try {
       let businesses: BusinessProps[] = [];
@@ -160,19 +161,20 @@ export const HomeScreenRedesign: React.FC = () => {
 
       dispatch(setResults(businesses));
 
-      // Auto-spin after successful search
+      // Pick random result after successful search
       if (businesses.length > 0) {
-        // Pick random result
         const randomIndex = Math.floor(Math.random() * businesses.length);
         const selectedRestaurant = businesses[randomIndex];
         setSelectedResult(selectedRestaurant);
-
-        // Start wheel spinning animation
-        setIsAutoSpinning(true);
+        // Keep spinning - will stop in handleAutoSpinComplete
+      } else {
+        // No results, stop spinning
+        setIsAutoSpinning(false);
       }
     } catch (error) {
       setErrorMessage('Failed to search restaurants. Please try again.');
       dispatch(setResults([]));
+      setIsAutoSpinning(false); // Stop spinning on error
     } finally {
       setIsSearching(false);
     }
