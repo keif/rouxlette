@@ -25,6 +25,7 @@ export enum ActionType {
 	SetSelectedBusiness,
 	ShowBusinessModal,
 	HideBusinessModal,
+	ToggleCategoryFilter,
 }
 
 // String constants as requested
@@ -128,4 +129,9 @@ export interface HydrateFilters {
 	payload: { filters: Filters };
 }
 
-export type AppActions = SetCategories | SetDetail | SetFilter | SetFilters | ResetFilters | HydrateFilters | SetLocation | SetCoords | SetResults | SetShowFilter | AddFavorite | RemoveFavorite | HydrateFavorites | AddHistory | ClearHistory | HydrateHistory | AddSpinHistory | SetSelectedBusiness | ShowBusinessModal | HideBusinessModal;
+export interface ToggleCategoryFilter {
+	type: ActionType.ToggleCategoryFilter;
+	payload: { categoryAlias: string };
+}
+
+export type AppActions = SetCategories | SetDetail | SetFilter | SetFilters | ResetFilters | HydrateFilters | SetLocation | SetCoords | SetResults | SetShowFilter | AddFavorite | RemoveFavorite | HydrateFavorites | AddHistory | ClearHistory | HydrateHistory | AddSpinHistory | SetSelectedBusiness | ShowBusinessModal | HideBusinessModal | ToggleCategoryFilter;

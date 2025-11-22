@@ -1,6 +1,7 @@
 import { AppState, Filter, Filters, SpinHistory, initialFilters } from "./state";
 import { logSafe } from "../utils/log";
 import { deepEqual } from "../utils/deepEqual";
+import { applyFilters } from "../utils/filterBusinesses";
 import {
 	ActionType,
 	AppActions,
@@ -24,6 +25,7 @@ import {
 	SetSelectedBusiness,
 	ShowBusinessModal,
 	HideBusinessModal,
+	ToggleCategoryFilter,
 } from "./actions";
 import { CategoryProps, BusinessProps } from "../hooks/useResults";
 import { YelpBusiness } from "../types/yelp";
@@ -116,9 +118,13 @@ export function appReducer(state: AppState, action: AppActions): AppState {
 				currentCoords: action.payload.coords,
 			};
 		case ActionType.SetResults:
+			// Store raw results and apply filters
+			const rawResults = action.payload.results;
+			const filteredResults = applyFilters(rawResults, state.filters);
 			return {
 				...state,
-				results: action.payload.results,
+				rawResults,
+				results: filteredResults,
 			};
 		case ActionType.SetShowFilter:
 			return {
@@ -186,24 +192,69 @@ export function appReducer(state: AppState, action: AppActions): AppState {
 				...state,
 				isBusinessModalOpen: false,
 			};
-		case ActionType.SetFilters:
+		case ActionType.SetFilters: {
+			const newFilters = {
+				...state.filters,
+				...action.payload.filters,
+			};
+			// Re-apply filters to raw results
+			const refiltered = applyFilters(state.rawResults, newFilters);
 			return {
 				...state,
-				filters: {
-					...state.filters,
-					...action.payload.filters,
-				},
+				filters: newFilters,
+				results: refiltered,
 			};
-		case ActionType.ResetFilters:
+		}
+		case ActionType.ResetFilters: {
+			// Re-apply filters to raw results
+			const refiltered = applyFilters(state.rawResults, initialFilters);
 			return {
 				...state,
 				filters: initialFilters,
+				results: refiltered,
 			};
+		}
 		case ActionType.HydrateFilters:
 			return {
 				...state,
 				filters: action.payload.filters,
 			};
+		case ActionType.ToggleCategoryFilter: {
+			const alias = action.payload.categoryAlias;
+			const isIncluded = state.filters.categoryIds.includes(alias);
+			const isExcluded = state.filters.excludedCategoryIds.includes(alias);
+
+			// Three-state cycle: neutral → exclude → include → neutral
+			let newCategoryIds = [...state.filters.categoryIds];
+			let newExcludedIds = [...state.filters.excludedCategoryIds];
+
+			if (!isIncluded && !isExcluded) {
+				// Neutral → Exclude
+				newExcludedIds.push(alias);
+			} else if (isExcluded) {
+				// Exclude → Include
+				newExcludedIds = newExcludedIds.filter(id => id !== alias);
+				newCategoryIds.push(alias);
+			} else {
+				// Include → Neutral
+				newCategoryIds = newCategoryIds.filter(id => id !== alias);
+			}
+
+			const newFilters = {
+				...state.filters,
+				categoryIds: newCategoryIds,
+				excludedCategoryIds: newExcludedIds,
+			};
+
+			// Re-apply filters to raw results immediately
+			const refiltered = applyFilters(state.rawResults, newFilters);
+
+			return {
+				...state,
+				filters: newFilters,
+				results: refiltered,
+			};
+		}
 		default:
 			return state;
 	}
@@ -304,4 +355,9 @@ export const resetFilters = (): ResetFilters => ({
 export const hydrateFilters = (filters: Filters): HydrateFilters => ({
 	type: ActionType.HydrateFilters,
 	payload: { filters },
+});
+
+export const toggleCategoryFilter = (categoryAlias: string): ToggleCategoryFilter => ({
+	type: ActionType.ToggleCategoryFilter,
+	payload: { categoryAlias },
 });

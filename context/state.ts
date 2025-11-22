@@ -15,7 +15,8 @@ export interface AppState {
 	filters: Filters;
 	location: string;
 	currentCoords: LocationObjectCoords | null;
-	results: BusinessProps[];
+	rawResults: BusinessProps[]; // Unfiltered results from API
+	results: BusinessProps[]; // Filtered results
 	showFilter: boolean;
 	favorites: FavoriteItem[];
 	history: HistoryItem[];
@@ -55,6 +56,7 @@ export const initialAppState: AppState = {
 	filters: initialFilters,
 	location: ``,
 	currentCoords: null,
+	rawResults: [],
 	results: [],
 	showFilter: false,
 	favorites: [],

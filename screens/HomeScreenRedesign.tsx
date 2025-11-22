@@ -1,4 +1,4 @@
-import React, { useState, useContext } from 'react';
+import React, { useState, useContext, useEffect } from 'react';
 import {
   View,
   Text,
@@ -15,10 +15,11 @@ import { RouletteWheel } from '../components/RouletteWheel';
 import { ActiveFilterBar, ActiveFilter } from '../components/ActiveFilterBar';
 import { colors, spacing, radius, typography } from '../theme';
 import { RootContext } from '../context/RootContext';
-import { setResults, setShowFilter, addSpinHistory, setSelectedBusiness, showBusinessModal, setFilters } from '../context/reducer';
+import { setResults, setShowFilter, addSpinHistory, setSelectedBusiness, showBusinessModal, setFilters, setCategories } from '../context/reducer';
 import useResults, { BusinessProps } from '../hooks/useResults';
 import useLocation from '../hooks/useLocation';
 import { useHistory } from '../hooks/useHistory';
+import useCategories from '../hooks/useCategories';
 import FiltersSheet from '../components/filter/FiltersSheet';
 import { countActiveFilters } from '../utils/filterBusinesses';
 import { RootTabScreenProps } from '../types';
@@ -34,6 +35,7 @@ export const HomeScreenRedesign: React.FC = () => {
   const [resultsErrorMessage, searchResults, searchApi, searchApiWithResolver, resultsLoading] = useResults();
   const [, city, canonicalLocation, coords, , searchLocation, resolveSearchArea, isLocationLoading] = useLocation();
   const { addHistoryEntry } = useHistory();
+  const { loadCategories } = useCategories();
 
   const isLoading = resultsLoading || isSearching;
   const hasResults = state.results && state.results.length > 0;
@@ -41,6 +43,14 @@ export const HomeScreenRedesign: React.FC = () => {
   const displayLocation = state.location || city || 'Current Location';
   const hasValidSearchQuery = searchQuery.trim().length >= 3; // Minimum 3 chars for food search
   const canSearch = hasValidSearchQuery && !isLoading && !isAutoSpinning;
+
+  // Load categories on mount (static list)
+  useEffect(() => {
+    const categories = loadCategories();
+    if (categories.length > 0) {
+      dispatch(setCategories(categories));
+    }
+  }, []);
 
   // Build active filters array for display
   const activeFilters: ActiveFilter[] = [];
@@ -147,7 +157,6 @@ export const HomeScreenRedesign: React.FC = () => {
     if (!term) return;
 
     setIsSearching(true);
-    setIsAutoSpinning(true); // Start spinning during search
     setErrorMessage('');
     try {
       let businesses: BusinessProps[] = [];
@@ -166,15 +175,12 @@ export const HomeScreenRedesign: React.FC = () => {
         const randomIndex = Math.floor(Math.random() * businesses.length);
         const selectedRestaurant = businesses[randomIndex];
         setSelectedResult(selectedRestaurant);
-        // Keep spinning - will stop in handleAutoSpinComplete
-      } else {
-        // No results, stop spinning
-        setIsAutoSpinning(false);
+        // Start spinning NOW that we have a result
+        setIsAutoSpinning(true);
       }
     } catch (error) {
       setErrorMessage('Failed to search restaurants. Please try again.');
       dispatch(setResults([]));
-      setIsAutoSpinning(false); // Stop spinning on error
     } finally {
       setIsSearching(false);
     }

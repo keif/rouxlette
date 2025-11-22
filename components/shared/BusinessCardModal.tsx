@@ -25,6 +25,7 @@ import {useFavorites} from '../../hooks/useFavorites';
 import {BusinessProps} from '../../hooks/useResults';
 import ImageViewerModal from './ImageViewerModal';
 import {radius} from "../../theme";
+import { InteractiveCategoryTag } from './InteractiveCategoryTag';
 
 // Helper function to format distance
 const formatDistance = (meters: number): string => {
@@ -264,10 +265,23 @@ export function BusinessCardModal() {
                     </Text>
                 )}
 
-                <Text style={styles.backDetailText}>
-                    <MaterialIcons name="category" size={16} color={AppStyles.color.primary}/>
-                    {' '}{business.categories?.map(cat => cat.title).join(', ')}
-                </Text>
+                {business.categories && business.categories.length > 0 && (
+                    <View style={styles.categoriesContainer}>
+                        <View style={styles.categoriesHeader}>
+                            <MaterialIcons name="category" size={16} color={AppStyles.color.primary}/>
+                            <Text style={styles.categoriesHeaderText}>Categories</Text>
+                        </View>
+                        <View style={styles.categoriesTags}>
+                            {business.categories.map((cat) => (
+                                <InteractiveCategoryTag
+                                    key={cat.alias}
+                                    alias={cat.alias}
+                                    title={cat.title}
+                                />
+                            ))}
+                        </View>
+                    </View>
+                )}
             </View>
 
             <View style={{flex: 1}}/>
@@ -577,6 +591,25 @@ const styles = StyleSheet.create({
         fontSize: 15,
         marginBottom: 6,
         lineHeight: 20,
+    },
+    categoriesContainer: {
+        marginTop: 8,
+    },
+    categoriesHeader: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        marginBottom: 8,
+    },
+    categoriesHeaderText: {
+        ...textStyle,
+        fontSize: 15,
+        marginLeft: 4,
+        lineHeight: 20,
+    },
+    categoriesTags: {
+        flexDirection: 'row',
+        flexWrap: 'wrap',
+        marginTop: 4,
     },
     backActions: {
         flexDirection: 'row',
