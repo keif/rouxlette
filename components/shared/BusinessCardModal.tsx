@@ -1,4 +1,4 @@
-import React, {useContext, useState} from 'react';
+import React, {useContext, useState, useEffect} from 'react';
 import {
     ActivityIndicator,
     Image,
@@ -26,6 +26,7 @@ import {BusinessProps} from '../../hooks/useResults';
 import ImageViewerModal from './ImageViewerModal';
 import {radius} from "../../theme";
 import { InteractiveCategoryTag } from './InteractiveCategoryTag';
+import { logSafe } from '../../utils/log';
 
 // Helper function to format distance
 const formatDistance = (meters: number): string => {
@@ -65,22 +66,38 @@ export function BusinessCardModal() {
         hours: selectedBusiness.hours || [],
     } : null;
 
-    // Hooks
+    // Hooks - auto-fetch details when modal opens so we have accurate hours data
     const {
         business: enrichedBusiness,
         loading: detailsLoading,
         fetchDetails,
         hasDetails
-    } = useBusinessDetails(businessForHook || {} as BusinessProps, false);
+    } = useBusinessDetails(businessForHook || {} as BusinessProps, true);
     const {todayLabel, isOpen} = useBusinessHours(enrichedBusiness.hours);
     const {isFavorite, toggleFavorite} = useFavorites();
+
+    // Log open/closed status details for debugging - only when business changes
+    useEffect(() => {
+        if (selectedBusiness && isBusinessModalOpen) {
+            const is_open_now = selectedBusiness.hours?.[0]?.is_open_now ?? isOpen ?? true;
+            console.log('='.repeat(60));
+            console.log('[BusinessCardModal] Restaurant:', selectedBusiness.name);
+            console.log('  is_closed:', selectedBusiness.is_closed);
+            console.log('  hours[0].is_open_now:', selectedBusiness.hours?.[0]?.is_open_now);
+            console.log('  enriched isOpen:', isOpen);
+            console.log('  FINAL is_open_now:', is_open_now);
+            console.log('  has hours array:', !!selectedBusiness.hours);
+            console.log('='.repeat(60));
+        }
+    }, [selectedBusiness?.id, isBusinessModalOpen, isOpen]);
 
     if (!selectedBusiness || !businessForHook) {
         return null;
     }
 
     const business = selectedBusiness;
-    const is_open_now = business.hours && business.hours[0]?.is_open_now || isOpen;
+    // If we have hours data, use it; if enriched data has isOpen, use that; otherwise default to true (optimistic)
+    const is_open_now = business.hours?.[0]?.is_open_now ?? isOpen ?? true;
 
     const handleBackdropPress = () => {
         setIsFlipped(false);
