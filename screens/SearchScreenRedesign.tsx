@@ -176,7 +176,6 @@ export const SearchScreenRedesign: React.FC = () => {
 
   const handleFavoriteToggle = (restaurantId: string) => {
     // TODO: Implement favorites toggle with context
-    console.log('Toggle favorite:', restaurantId);
   };
 
   return (

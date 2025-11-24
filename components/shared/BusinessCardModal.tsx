@@ -76,20 +76,8 @@ export function BusinessCardModal() {
     const {todayLabel, isOpen} = useBusinessHours(enrichedBusiness.hours);
     const {isFavorite, toggleFavorite} = useFavorites();
 
-    // Log open/closed status details for debugging - only when business changes
-    useEffect(() => {
-        if (selectedBusiness && isBusinessModalOpen) {
-            const is_open_now = selectedBusiness.hours?.[0]?.is_open_now ?? isOpen ?? null;
-            console.log('='.repeat(60));
-            console.log('[BusinessCardModal] Restaurant:', selectedBusiness.name);
-            console.log('  is_closed:', selectedBusiness.is_closed);
-            console.log('  hours[0].is_open_now:', selectedBusiness.hours?.[0]?.is_open_now);
-            console.log('  enriched isOpen:', isOpen);
-            console.log('  FINAL is_open_now:', is_open_now, '(null = Hours Unknown)');
-            console.log('  has hours array:', !!selectedBusiness.hours);
-            console.log('='.repeat(60));
-        }
-    }, [selectedBusiness?.id, isBusinessModalOpen, isOpen]);
+    // Hours status is determined by: selectedBusiness.hours?.[0]?.is_open_now ?? isOpen ?? null
+    // This gives us three states: true (open), false (closed), null (unknown)
 
     if (!selectedBusiness || !businessForHook) {
         return null;

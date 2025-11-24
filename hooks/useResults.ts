@@ -143,22 +143,10 @@ export default function useResults() {
 				// Ensure businesses is an array and filter out closed businesses
 				const businessesArray = Array.isArray(response.data.businesses) ? response.data.businesses : [];
 
-				// Log detailed open/closed status for each business
-				console.log('='.repeat(60));
-				console.log('[useResults] API returned', businessesArray.length, 'businesses');
-				businessesArray.forEach((b: BusinessProps, i: number) => {
-					console.log(`  ${i + 1}. ${b.name}`);
-					console.log(`     is_closed: ${b.is_closed}`);
-					console.log(`     hours.is_open_now: ${b.hours?.[0]?.is_open_now ?? 'no data'}`);
-				});
-
+				// Filter out closed businesses (is_closed flag from Yelp API)
 				const onlyOpenBusinesses = businessesArray.filter((business: BusinessProps) => {
 					return !business.is_closed;
 				});
-
-				console.log('[useResults] Filtered to', onlyOpenBusinesses.length, 'open businesses');
-				console.log('[useResults] Removed', businessesArray.length - onlyOpenBusinesses.length, 'closed businesses');
-				console.log('='.repeat(60));
 
 				logArray('useResults filtered businesses', onlyOpenBusinesses, 3);
 

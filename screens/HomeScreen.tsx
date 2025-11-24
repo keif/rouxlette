@@ -255,24 +255,19 @@ export const HomeScreen: React.FC = () => {
     // Stop GPS and geocode the city
     stopLocationWatcher();
 
-    console.log('[HomeScreen] Resolving location:', trimmed);
     try {
       const resolved = await resolveSearchArea(trimmed);
-      console.log('[HomeScreen] Resolved location:', JSON.stringify(resolved));
 
       if (resolved?.coords) {
-        console.log('[HomeScreen] Setting location to:', resolved.label, resolved.coords);
         dispatch(setLocation(resolved.label));
         dispatch(setCoords(resolved.coords as any));
       } else if (resolved?.source === 'fallback') {
         // Geocoding failed, but we can still use text search
-        console.warn('[HomeScreen] Using fallback text search for:', trimmed);
         dispatch(setLocation(trimmed));
         dispatch(setCoords(null));
         setErrorMessage(`Using text search for "${trimmed}" (coordinates unavailable)`);
         setTimeout(() => setErrorMessage(''), 3000);
       } else {
-        console.error('[HomeScreen] Failed to resolve location:', trimmed);
         setErrorMessage(`Could not find "${trimmed}". Please try another city.`);
         setTimeout(() => setErrorMessage(''), 5000);
       }
