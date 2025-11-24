@@ -26,16 +26,25 @@ google.interceptors.request.use(function (config) {
 			...config.params,
 			key: GOOGLE_API_KEY
 		};
+		console.log('[Google API] API key loaded:', GOOGLE_API_KEY ? `${GOOGLE_API_KEY.substring(0, 10)}...` : 'MISSING');
 	} else {
+		console.error('[Google API] GOOGLE_API_KEY not found in environment variables!');
 		logSafe('GOOGLE_API_KEY not found in environment variables');
 	}
-	
+
+	console.log('[Google API] Request:', {
+		url: config.url,
+		baseURL: config.baseURL,
+		hasKey: !!config.params?.key,
+		params: config.params
+	});
+
 	logSafe('Google API request', {
 		url: config.url,
 		params: config.params ? Object.keys(config.params) : [],
 		baseURL: config.baseURL
 	});
-	
+
 	return config;
 }, function (error) {
 	logSafe('Google API request error', { message: error?.message, code: error?.code });

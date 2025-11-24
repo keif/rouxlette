@@ -44,7 +44,7 @@ interface UseLocationReturn {
 	isLoading: boolean;
 }
 
-export default (): [string, string, string, LocationObjectCoords | null, any[], (query: string | null | undefined) => Promise<LocationResult | null>, (query: string | null | undefined) => Promise<ResolvedLocation | null>, boolean, ResolvedLocation | null] => {
+export default (): [string, string, string, LocationObjectCoords | null, any[], (query: string | null | undefined) => Promise<LocationResult | null>, (query: string | null | undefined) => Promise<ResolvedLocation | null>, boolean, ResolvedLocation | null, () => void] => {
 	const [city, setCity] = useState<string>(``);
 	const [canonicalLocation, setCanonicalLocation] = useState<string>(``); // For display like "Powell, OH"
 	const [locationErrorMessage, setLocationErrorMessage] = useState<string>(``);
@@ -524,28 +524,36 @@ export default (): [string, string, string, LocationObjectCoords | null, any[], 
 				country: 'US', // Always restrict to US
 			};
 
-			if (currentState) {
+			// Only add state bias if it's a short query (to avoid "Chicago" matching "Chicago, NY")
+			// For well-known cities, skip the state bias
+			const isLikelyMajorCity = q.length > 3 && !q.includes(',') && !q.match(/\d/);
+
+			if (currentState && !isLikelyMajorCity) {
 				geocodeOpts.state = currentState;
 				devLog('Adding state bias:', currentState);
+			} else if (isLikelyMajorCity) {
+				devLog('Skipping state bias for likely major city:', q);
 			}
 
 			if (currentCoords) {
 				geocodeOpts.biasCenter = { latitude: currentCoords.latitude, longitude: currentCoords.longitude };
-				geocodeOpts.kmBias = 25; // Reduced from 50km to 25km for stronger bias toward nearby locations
+				geocodeOpts.kmBias = isLikelyMajorCity ? 500 : 25; // Wider bias for major cities
 				devLog('Adding location bias:', geocodeOpts.biasCenter, `radius: ${geocodeOpts.kmBias}km`);
 			}
 			
 			// Geocode the query with bias
 			devLog('Geocoding query with bias:', { query: q, opts: geocodeOpts });
 			const response = await geocodeAddress(q, geocodeOpts);
-			
+
+			devLog('Geocode response:', { ok: response.ok, status: response.status, resultsCount: response.results?.length, errorMessage: response.errorMessage });
+
 			if (!response.ok || !response.results?.length) {
-				devLog('Geocoding failed or no results');
+				devLog('Geocoding failed or no results', { status: response.status, errorMessage: response.errorMessage });
 				// Show user-friendly message about using text search
 				if (response.status === 'ZERO_RESULTS') {
 					handleError("Couldn't pinpoint that location—using text search (results may be broader).");
 				} else {
-					handleError("Location service error—using text search instead.");
+					handleError(`Location service error (${response.status})—using text search instead.`);
 				}
 				
 				// Fallback: return the query as a string location
@@ -639,5 +647,5 @@ export default (): [string, string, string, LocationObjectCoords | null, any[], 
 	//   });
 	// }, []);
 
-	return [locationErrorMessage, city, canonicalLocation, currentCoords, locationResults, searchLocation, resolveSearchArea, isLoading, lastResolvedLocation] as const;
+	return [locationErrorMessage, city, canonicalLocation, currentCoords, locationResults, searchLocation, resolveSearchArea, isLoading, lastResolvedLocation, stopLocationWatcher] as const;
 }

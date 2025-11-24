@@ -1,60 +1,128 @@
-import React, { useContext, useState } from 'react';
-import { StyleSheet, ScrollView, Text, Pressable, TouchableOpacity } from 'react-native';
+import React, { useState, useContext, useEffect } from 'react';
+import {
+  View,
+  Text,
+  StyleSheet,
+  ScrollView,
+  TextInput,
+  Pressable,
+  Platform,
+} from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
-import { SafeAreaProvider, SafeAreaView } from 'react-native-safe-area-context';
-import { StatusBar } from 'expo-status-bar';
-import { View } from '../components/Themed';
-import RouletteButton from '../components/shared/RouletteButton';
-import QuickActionsPanel from '../components/search/QuickActionsPanel';
-import PopularCategories from '../components/search/PopularCategories';
-import ErrorMessageView from '../components/shared/ErrorMessageView';
-import FiltersSheet from '../components/filter/FiltersSheet';
-import FilterChip from '../components/shared/FilterChip';
-import { countActiveFilters } from '../utils/filterBusinesses';
-import AppStyles from '../AppStyles';
-import Config from '../Config';
+import { useNavigation } from '@react-navigation/native';
+import { RouletteWheel } from '../components/RouletteWheel';
+import { ActiveFilterBar, ActiveFilter } from '../components/ActiveFilterBar';
+import { colors, spacing, radius, typography } from '../theme';
 import { RootContext } from '../context/RootContext';
-import { addSpinHistory, setSelectedBusiness, showBusinessModal, setShowFilter } from '../context/reducer';
-import { BusinessProps } from '../hooks/useResults';
-import useResults from '../hooks/useResults';
+import { setResults, setShowFilter, addSpinHistory, setSelectedBusiness, showBusinessModal, setFilters, setCategories, setLocation, setCoords } from '../context/reducer';
+import useResults, { BusinessProps } from '../hooks/useResults';
 import useLocation from '../hooks/useLocation';
-import { setResults } from '../context/reducer';
 import { useHistory } from '../hooks/useHistory';
+import useCategories from '../hooks/useCategories';
+import FiltersSheet from '../components/filter/FiltersSheet';
+import { countActiveFilters } from '../utils/filterBusinesses';
+import { RootTabScreenProps } from '../types';
 
-const FEATURED_CATEGORIES = [
-  { title: 'Pizza', emoji: '', term: 'pizza' },
-  { title: 'Sushi', emoji: '', term: 'sushi' },
-  { title: 'Coffee', emoji: '', term: 'coffee' },
-  { title: 'Burgers', emoji: '', term: 'burgers' },
-  { title: 'Mexican', emoji: '', term: 'mexican' },
-  { title: 'Thai', emoji: '', term: 'thai' },
-];
-
-const HomeScreen: React.FC = () => {
+export const HomeScreen: React.FC = () => {
   const { state, dispatch } = useContext(RootContext);
+  const navigation = useNavigation<RootTabScreenProps<'Home'>['navigation']>();
   const [errorMessage, setErrorMessage] = useState('');
-  const [searchTerm, setSearchTerm] = useState('');
+  const [searchQuery, setSearchQuery] = useState('');
   const [isSearching, setIsSearching] = useState(false);
+  const [isAutoSpinning, setIsAutoSpinning] = useState(false);
+  const [selectedResult, setSelectedResult] = useState<BusinessProps | null>(null);
+  const [isEditingLocation, setIsEditingLocation] = useState(false);
+  const [locationInput, setLocationInput] = useState('');
   const [resultsErrorMessage, searchResults, searchApi, searchApiWithResolver, resultsLoading] = useResults();
-  const [, city, canonicalLocation, coords, , searchLocation, resolveSearchArea, isLocationLoading] = useLocation();
+  const [, city, canonicalLocation, coords, , searchLocation, resolveSearchArea, isLocationLoading, , stopLocationWatcher] = useLocation();
   const { addHistoryEntry } = useHistory();
+  const { loadCategories } = useCategories();
 
   const isLoading = resultsLoading || isSearching;
   const hasResults = state.results && state.results.length > 0;
+  const restaurantCount = state.results.length;
+  const displayLocation = state.location || city || 'Current Location';
+  const hasValidSearchQuery = searchQuery.trim().length >= 3; // Minimum 3 chars for food search
+  const canSearch = hasValidSearchQuery && !isLoading && !isAutoSpinning;
 
-  const handleRouletteSpIn = () => {
-    if (!hasResults) {
-      setErrorMessage('Please search for restaurants first');
+  // Load categories on mount (static list)
+  useEffect(() => {
+    const categories = loadCategories();
+    if (categories.length > 0) {
+      dispatch(setCategories(categories));
+    }
+  }, []);
+
+  // Build active filters array for display
+  const activeFilters: ActiveFilter[] = [];
+
+  // Price filters
+  if (state.filters.priceLevels && state.filters.priceLevels.length > 0) {
+    const priceLabel = '$'.repeat(Math.max(...state.filters.priceLevels));
+    activeFilters.push({
+      id: 'price',
+      label: priceLabel,
+      variant: 'included',
+      onRemove: () => {
+        dispatch(setFilters({ priceLevels: [] }));
+      },
+    });
+  }
+
+  // Open Now filter
+  if (state.filters.openNow) {
+    activeFilters.push({
+      id: 'open-now',
+      label: 'Open Now',
+      variant: 'included',
+      onRemove: () => {
+        dispatch(setFilters({ openNow: false }));
+      },
+    });
+  }
+
+  // Category inclusions
+  state.filters.categoryIds.forEach((categoryId, index) => {
+    // Find category name from state.categories if available
+    const category = state.categories.find(c => c.alias === categoryId);
+    const label = category?.title || categoryId;
+    activeFilters.push({
+      id: `cat-${categoryId}`,
+      label,
+      variant: 'included',
+      onRemove: () => {
+        const newCategoryIds = state.filters.categoryIds.filter(id => id !== categoryId);
+        dispatch(setFilters({ categoryIds: newCategoryIds }));
+      },
+    });
+  });
+
+  // Category exclusions
+  state.filters.excludedCategoryIds.forEach((categoryId, index) => {
+    const category = state.categories.find(c => c.alias === categoryId);
+    const label = category?.title || categoryId;
+    activeFilters.push({
+      id: `exc-${categoryId}`,
+      label: label,
+      variant: 'excluded',
+      onRemove: () => {
+        const newExcludedIds = state.filters.excludedCategoryIds.filter(id => id !== categoryId);
+        dispatch(setFilters({ excludedCategoryIds: newExcludedIds }));
+      },
+    });
+  });
+
+  const handleSpin = () => {
+    // If no results yet but have valid query, trigger search first
+    if (!hasResults && hasValidSearchQuery) {
+      handleSearch();
       return;
     }
 
-    if (__DEV__) {
-      console.log('[[spin] context]', {
-        searchTerm: searchTerm,
-        currentLocation: state.location || city,
-        coords: coords ? `${coords.latitude.toFixed(3)},${coords.longitude.toFixed(3)}` : 'none',
-        resultCount: state.results.length,
-      });
+    if (!hasResults) {
+      setErrorMessage('Please enter a search term first');
+      return;
     }
 
     const randomIndex = Math.floor(Math.random() * state.results.length);
@@ -64,8 +132,8 @@ const HomeScreen: React.FC = () => {
       business: selectedRestaurant,
       source: 'spin',
       context: {
-        searchTerm: searchTerm,
-        locationText: state.location || city,
+        searchTerm: searchQuery,
+        locationText: displayLocation,
         coords: coords,
         filters: {
           openNow: state.filters.openNow,
@@ -86,45 +154,32 @@ const HomeScreen: React.FC = () => {
     dispatch(showBusinessModal());
   };
 
-  const handleSearch = async (term: string) => {
-    setSearchTerm(term);
-    if (term.trim()) {
-      setIsSearching(true);
-      try {
-        let businesses: BusinessProps[] = [];
-        const resolvedLocation = await resolveSearchArea(state.location || canonicalLocation);
+  const handleSearch = async () => {
+    const term = searchQuery.trim();
+    if (!term) return;
 
-        if (resolvedLocation) {
-          businesses = await searchApiWithResolver(term, resolvedLocation);
-        } else {
-          businesses = await searchApi(term, state.location || 'Current Location', coords);
-        }
-
-        dispatch(setResults(businesses));
-      } catch (error) {
-        setErrorMessage('Failed to search restaurants. Please try again.');
-        dispatch(setResults([]));
-      } finally {
-        setIsSearching(false);
-      }
-    }
-  };
-
-  const handleCategoryPress = async (categoryTerm: string) => {
-    setSearchTerm(categoryTerm);
     setIsSearching(true);
-
+    setErrorMessage('');
     try {
       let businesses: BusinessProps[] = [];
       const resolvedLocation = await resolveSearchArea(state.location || canonicalLocation);
 
       if (resolvedLocation) {
-        businesses = await searchApiWithResolver(categoryTerm, resolvedLocation);
+        businesses = await searchApiWithResolver(term, resolvedLocation);
       } else {
-        businesses = await searchApi(categoryTerm, state.location || 'Current Location', coords);
+        businesses = await searchApi(term, state.location || 'Current Location', coords);
       }
 
       dispatch(setResults(businesses));
+
+      // Pick random result after successful search
+      if (businesses.length > 0) {
+        const randomIndex = Math.floor(Math.random() * businesses.length);
+        const selectedRestaurant = businesses[randomIndex];
+        setSelectedResult(selectedRestaurant);
+        // Start spinning NOW that we have a result
+        setIsAutoSpinning(true);
+      }
     } catch (error) {
       setErrorMessage('Failed to search restaurants. Please try again.');
       dispatch(setResults([]));
@@ -133,347 +188,531 @@ const HomeScreen: React.FC = () => {
     }
   };
 
+  // Called when wheel finishes spinning animation
+  const handleAutoSpinComplete = () => {
+    setIsAutoSpinning(false);
+
+    if (selectedResult) {
+      addHistoryEntry({
+        business: selectedResult,
+        source: 'spin',
+        context: {
+          searchTerm: searchQuery,
+          locationText: displayLocation,
+          coords: coords,
+          filters: {
+            openNow: state.filters.openNow,
+            categories: state.filters.categoryIds,
+            priceLevels: state.filters.priceLevels,
+            radiusMeters: state.filters.radiusMeters,
+            minRating: state.filters.minRating,
+          },
+        },
+      });
+
+      const spinEntry = {
+        restaurant: selectedResult,
+        timestamp: Date.now(),
+      };
+      dispatch(addSpinHistory(spinEntry));
+      dispatch(setSelectedBusiness(selectedResult));
+      dispatch(showBusinessModal());
+
+      // Clear selected result
+      setSelectedResult(null);
+    }
+  };
+
+  const handleFiltersPress = () => {
+    dispatch(setShowFilter(true));
+  };
+
+  const handleViewAllResults = () => {
+    // Navigate to Search tab
+    navigation.navigate('Search');
+  };
+
+  const handleLocationPress = () => {
+    setLocationInput(displayLocation);
+    setIsEditingLocation(true);
+  };
+
+  const handleLocationSubmit = async () => {
+    const trimmed = locationInput.trim();
+    setIsEditingLocation(false);
+
+    if (!trimmed || trimmed === displayLocation) {
+      // No change
+      return;
+    }
+
+    if (trimmed === '') {
+      // Empty = revert to GPS
+      await searchLocation('');
+      return;
+    }
+
+    // Stop GPS and geocode the city
+    stopLocationWatcher();
+
+    console.log('[HomeScreen] Resolving location:', trimmed);
+    try {
+      const resolved = await resolveSearchArea(trimmed);
+      console.log('[HomeScreen] Resolved location:', JSON.stringify(resolved));
+
+      if (resolved?.coords) {
+        console.log('[HomeScreen] Setting location to:', resolved.label, resolved.coords);
+        dispatch(setLocation(resolved.label));
+        dispatch(setCoords(resolved.coords as any));
+      } else if (resolved?.source === 'fallback') {
+        // Geocoding failed, but we can still use text search
+        console.warn('[HomeScreen] Using fallback text search for:', trimmed);
+        dispatch(setLocation(trimmed));
+        dispatch(setCoords(null));
+        setErrorMessage(`Using text search for "${trimmed}" (coordinates unavailable)`);
+        setTimeout(() => setErrorMessage(''), 3000);
+      } else {
+        console.error('[HomeScreen] Failed to resolve location:', trimmed);
+        setErrorMessage(`Could not find "${trimmed}". Please try another city.`);
+        setTimeout(() => setErrorMessage(''), 5000);
+      }
+    } catch (error) {
+      console.error('[HomeScreen] Error resolving location:', error);
+      setErrorMessage(`Error finding "${trimmed}". Please try again.`);
+      setTimeout(() => setErrorMessage(''), 5000);
+    }
+  };
+
   return (
-    <SafeAreaProvider>
-      <SafeAreaView style={styles.container}>
-        {/* Header with filter button */}
+    <SafeAreaView style={styles.container} edges={['top']}>
+      <ScrollView
+        contentContainerStyle={styles.scrollContent}
+        showsVerticalScrollIndicator={false}
+      >
+        {/* Header */}
         <View style={styles.header}>
-          <View style={styles.headerContent}>
-            <Text style={styles.appTitle}>Rouxlette</Text>
+          <View>
+            <Text style={styles.title}>Rouxlette</Text>
             <Text style={styles.subtitle}>Find your next meal</Text>
           </View>
-          <TouchableOpacity
-            testID="filters-open-button-home"
-            onPress={() => dispatch(setShowFilter(true))}
-            style={styles.filterButton}
+
+          {/* Filters Button */}
+          <Pressable
+            onPress={handleFiltersPress}
+            style={({ pressed }) => [
+              styles.filtersButton,
+              pressed && styles.filtersButtonPressed,
+            ]}
           >
-            <Ionicons name="options" size={24} color={AppStyles.color.primary} />
+            <Ionicons name="options-outline" size={24} color={colors.primary} />
             {countActiveFilters(state.filters) > 0 && (
-              <View style={styles.filterBadge}>
-                <Text style={styles.filterBadgeText}>
+              <View style={styles.filtersBadge}>
+                <Text style={styles.filtersBadgeText}>
                   {countActiveFilters(state.filters)}
                 </Text>
               </View>
             )}
-          </TouchableOpacity>
+          </Pressable>
         </View>
 
-        <ScrollView
-          contentContainerStyle={styles.scrollContent}
-          showsVerticalScrollIndicator={false}
-        >
-          {/* Roulette Wheel */}
-          <View style={styles.wheelSection}>
-            <RouletteButton
-              onSpin={handleRouletteSpIn}
-              disabled={!hasResults || isLoading}
+        {/* Roulette Wheel - Centered */}
+        <View style={styles.wheelContainer}>
+          <RouletteWheel
+            onSpin={handleSpin}
+            disabled={!isAutoSpinning && !canSearch && !hasResults}
+            size={200}
+            isAutoSpinning={isAutoSpinning}
+            onAutoSpinComplete={handleAutoSpinComplete}
+          />
+          <Text style={styles.wheelHint}>
+            {isLoading
+              ? 'Searching...'
+              : isAutoSpinning
+              ? 'Spinning...'
+              : hasResults
+              ? 'Tap to spin again'
+              : canSearch
+              ? 'Tap to spin'
+              : 'Enter search term'}
+          </Text>
+        </View>
+
+        {/* Active Filters */}
+        {activeFilters.length > 0 && (
+          <ActiveFilterBar filters={activeFilters} />
+        )}
+
+        {/* Search Input */}
+        <View style={styles.searchContainer}>
+          <View style={styles.searchInputWrapper}>
+            <Ionicons
+              name="search"
+              size={20}
+              color={colors.gray500}
+              style={styles.searchIcon}
             />
-          </View>
-
-          {/* Active Filters */}
-          {hasResults && countActiveFilters(state.filters) > 0 && (
-            <View style={styles.filtersSection}>
-              <ScrollView
-                horizontal
-                showsHorizontalScrollIndicator={false}
-                contentContainerStyle={styles.filtersScroll}
+            <TextInput
+              style={styles.searchInput}
+              placeholder="What are you craving?"
+              placeholderTextColor={colors.gray500}
+              value={searchQuery}
+              onChangeText={setSearchQuery}
+              returnKeyType="search"
+              onSubmitEditing={handleSearch}
+              editable={!isLoading}
+            />
+            {searchQuery.length > 0 && (
+              <Pressable
+                onPress={() => setSearchQuery('')}
+                hitSlop={8}
               >
-                {state.filters.openNow && (
-                  <FilterChip
-                    label="Open Now"
-                    variant="active"
-                    icon="time"
-                    style={styles.filterChip}
-                  />
-                )}
-                {state.filters.priceLevels && state.filters.priceLevels.length > 0 && (
-                  <FilterChip
-                    label={'$'.repeat(Math.max(...state.filters.priceLevels))}
-                    variant="active"
-                    style={styles.filterChip}
-                  />
-                )}
-              </ScrollView>
-            </View>
-          )}
+                <Ionicons
+                  name="close-circle"
+                  size={20}
+                  color={colors.gray400}
+                />
+              </Pressable>
+            )}
+          </View>
+        </View>
 
-          {/* Search Trigger */}
-          <Pressable
-            style={({ pressed }) => [
-              styles.searchTrigger,
-              pressed && !Config.isAndroid && styles.searchTriggerPressed,
-            ]}
-            onPress={() => {/* Navigate to search tab */}}
-            android_ripple={{ color: AppStyles.color.gray100 }}
-          >
-            <Ionicons name="search" size={20} color={AppStyles.color.gray500} />
-            <Text style={styles.searchTriggerText}>Search restaurants</Text>
+        {/* Location */}
+        {isEditingLocation ? (
+          <View style={styles.locationButton}>
+            <Ionicons name="location" size={16} color={colors.primary} />
+            <TextInput
+              style={styles.locationInput}
+              value={locationInput}
+              onChangeText={setLocationInput}
+              onSubmitEditing={handleLocationSubmit}
+              onBlur={handleLocationSubmit}
+              autoFocus
+              placeholder="Enter city name"
+              returnKeyType="done"
+            />
+            {locationInput.length > 0 && (
+              <Pressable onPress={() => setLocationInput('')}>
+                <Ionicons name="close-circle" size={20} color={colors.gray500} />
+              </Pressable>
+            )}
+          </View>
+        ) : (
+          <Pressable style={styles.locationButton} onPress={handleLocationPress}>
+            <Ionicons name="location" size={16} color={colors.primary} />
+            <Text style={styles.locationText}>{displayLocation}</Text>
+            <Ionicons name="chevron-down" size={16} color={colors.gray500} />
           </Pressable>
+        )}
 
-          {/* Location Display */}
-          <View style={styles.locationContainer}>
-            <Ionicons name="location" size={16} color={AppStyles.color.primary} />
-            <Text style={styles.locationText}>
-              {state.location || city || 'Current Location'}
+        {/* Error Message */}
+        {errorMessage ? (
+          <View style={styles.errorContainer}>
+            <Text style={styles.errorText}>{errorMessage}</Text>
+          </View>
+        ) : null}
+
+        {/* Results Count */}
+        {hasResults && (
+          <View style={styles.resultsInfo}>
+            <Ionicons name="checkmark-circle" size={20} color={colors.success} />
+            <Text style={styles.resultsText}>
+              {restaurantCount} restaurant{restaurantCount !== 1 ? 's' : ''} found
             </Text>
           </View>
+        )}
 
-          {/* Quick Actions */}
-          <View style={styles.actionsSection}>
-            <QuickActionsPanel
-              onSearch={handleSearch}
-              setErrorMessage={setErrorMessage}
-              externalQuery={searchTerm}
-              isLoading={isLoading}
-            />
-          </View>
+        {/* CTA Buttons */}
+        <View style={styles.ctaContainer}>
+          <Pressable
+            style={({ pressed }) => [
+              styles.primaryButton,
+              (!canSearch && !hasResults) && styles.primaryButtonDisabled,
+              (canSearch || hasResults) && !isLoading && !isAutoSpinning && styles.primaryButtonActive,
+              pressed && (canSearch || hasResults) && !isLoading && !isAutoSpinning && styles.primaryButtonPressed,
+            ]}
+            disabled={!canSearch && !hasResults}
+            onPress={handleSpin}
+          >
+            <Text
+              style={[
+                styles.primaryButtonText,
+                (!canSearch && !hasResults) && styles.primaryButtonTextDisabled,
+              ]}
+            >
+              {isLoading ? 'Searching...' : isAutoSpinning ? 'Spinning...' : hasResults ? 'Spin Again' : 'Spin for Me'}
+            </Text>
+          </Pressable>
 
-          {/* Error Message */}
-          {errorMessage ? (
-            <View style={styles.errorContainer}>
-              <ErrorMessageView text={errorMessage} />
-            </View>
-          ) : null}
+          <Pressable
+            style={({ pressed }) => [
+              styles.secondaryButton,
+              !hasResults && styles.secondaryButtonDisabled,
+              hasResults && !isLoading && !isAutoSpinning && styles.secondaryButtonActive,
+              pressed && hasResults && !isLoading && !isAutoSpinning && styles.secondaryButtonPressed,
+            ]}
+            disabled={!hasResults}
+            onPress={handleViewAllResults}
+          >
+            <Text
+              style={[
+                styles.secondaryButtonText,
+                !hasResults && styles.secondaryButtonTextDisabled,
+                hasResults && !isLoading && !isAutoSpinning && styles.secondaryButtonTextActive,
+              ]}
+            >
+              View All Results
+            </Text>
+          </Pressable>
+        </View>
+      </ScrollView>
 
-          {/* Results Summary */}
-          {hasResults && (
-            <View style={styles.resultsInfo}>
-              <Ionicons name="checkmark-circle" size={20} color={AppStyles.color.success} />
-              <Text style={styles.resultsText}>
-                {state.results.length} restaurants ready
-              </Text>
-            </View>
-          )}
-
-          {/* Featured Categories */}
-          <View style={styles.categoriesSection}>
-            <Text style={styles.sectionTitle}>Quick Search</Text>
-            <PopularCategories
-              categories={FEATURED_CATEGORIES}
-              onSelect={handleCategoryPress}
-              disabled={isLoading}
-            />
-          </View>
-
-          {/* Recent Spins */}
-          {state.spinHistory.length > 0 && (
-            <View style={styles.historySection}>
-              <View style={styles.sectionHeader}>
-                <Ionicons name="time" size={20} color={AppStyles.color.gray700} />
-                <Text style={styles.sectionTitle}>Recent Spins</Text>
-              </View>
-              {state.spinHistory.slice(0, 3).map((spin) => (
-                <Pressable
-                  key={spin.timestamp}
-                  style={({ pressed }) => [
-                    styles.historyItem,
-                    pressed && !Config.isAndroid && styles.historyItemPressed,
-                  ]}
-                  android_ripple={{ color: AppStyles.color.gray100 }}
-                >
-                  <View style={styles.historyContent}>
-                    <Text style={styles.historyName} numberOfLines={1}>
-                      {spin.restaurant.name}
-                    </Text>
-                    <Text style={styles.historyTime}>
-                      {new Date(spin.timestamp).toLocaleDateString()}
-                    </Text>
-                  </View>
-                  <Ionicons name="chevron-forward" size={20} color={AppStyles.color.gray300} />
-                </Pressable>
-              ))}
-            </View>
-          )}
-        </ScrollView>
-
-        <StatusBar style="auto" />
-
-        {/* Filters Sheet */}
-        <FiltersSheet
-          testID="filters-sheet"
-          visible={state.showFilter}
-          onClose={() => dispatch(setShowFilter(false))}
-        />
-      </SafeAreaView>
-    </SafeAreaProvider>
+      {/* Filters Modal */}
+      <FiltersSheet
+        visible={state.showFilter}
+        onClose={() => dispatch(setShowFilter(false))}
+      />
+    </SafeAreaView>
   );
 };
 
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: AppStyles.color.background,
+    backgroundColor: colors.background,
+  },
+  scrollContent: {
+    paddingBottom: spacing['2xl'],
   },
   header: {
     flexDirection: 'row',
-    alignItems: 'center',
     justifyContent: 'space-between',
-    paddingHorizontal: AppStyles.spacing.m,
-    paddingTop: AppStyles.spacing.m,
-    paddingBottom: AppStyles.spacing.s,
-    backgroundColor: AppStyles.color.white,
-    borderBottomWidth: 1,
-    borderBottomColor: AppStyles.color.border,
+    alignItems: 'flex-start',
+    paddingHorizontal: spacing.md,
+    paddingTop: spacing.lg,
+    paddingBottom: spacing.md,
   },
-  headerContent: {
-    flex: 1,
-  },
-  appTitle: {
-    ...AppStyles.typography.largeTitle,
-    color: AppStyles.color.gray900,
+  title: {
+    ...typography.title1,
+    color: colors.gray900,
   },
   subtitle: {
-    ...AppStyles.typography.callout,
-    color: AppStyles.color.gray500,
+    ...typography.callout,
+    color: colors.gray600,
     marginTop: 2,
   },
-  filterButton: {
-    ...AppStyles.button.icon,
-    backgroundColor: AppStyles.color.gray100,
+  filtersButton: {
+    width: 44,
+    height: 44,
+    borderRadius: radius.full,
+    backgroundColor: colors.gray100,
+    alignItems: 'center',
     justifyContent: 'center',
-    alignItems: 'center',
-    position: 'relative',
+    ...Platform.select({
+      ios: {
+        shadowColor: colors.shadow,
+        shadowOffset: { width: 0, height: 2 },
+        shadowOpacity: 0.1,
+        shadowRadius: 4,
+      },
+      android: {
+        elevation: 2,
+      },
+    }),
   },
-  filterBadge: {
-    position: 'absolute',
-    top: 2,
-    right: 2,
-    backgroundColor: AppStyles.color.accentRed,
-    borderRadius: AppStyles.radius.full,
-    minWidth: 18,
-    height: 18,
-    justifyContent: 'center',
-    alignItems: 'center',
-    paddingHorizontal: 4,
-  },
-  filterBadgeText: {
-    ...AppStyles.typography.caption2,
-    color: AppStyles.color.white,
-  },
-  scrollContent: {
-    flexGrow: 1,
-    paddingBottom: AppStyles.spacing.xl,
-  },
-  wheelSection: {
-    alignItems: 'center',
-    paddingVertical: AppStyles.spacing.l,
-  },
-  filtersSection: {
-    marginBottom: AppStyles.spacing.m,
-  },
-  filtersScroll: {
-    paddingHorizontal: AppStyles.spacing.m,
-    gap: AppStyles.spacing.s,
-  },
-  filterChip: {
-    marginRight: AppStyles.spacing.s,
-  },
-  searchTrigger: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    marginHorizontal: AppStyles.spacing.m,
-    marginBottom: AppStyles.spacing.s,
-    paddingHorizontal: AppStyles.spacing.m,
-    paddingVertical: 12,
-    backgroundColor: AppStyles.color.white,
-    borderRadius: AppStyles.radius.m,
-    borderWidth: 1,
-    borderColor: AppStyles.color.gray300,
-    ...AppStyles.shadow.level1,
-  },
-  searchTriggerPressed: {
+  filtersButtonPressed: {
     opacity: 0.7,
   },
-  searchTriggerText: {
-    ...AppStyles.typography.body,
-    color: AppStyles.color.gray500,
-    marginLeft: AppStyles.spacing.s,
+  filtersBadge: {
+    position: 'absolute',
+    top: 0,
+    right: 0,
+    backgroundColor: colors.error,
+    borderRadius: radius.full,
+    minWidth: 18,
+    height: 18,
+    alignItems: 'center',
+    justifyContent: 'center',
+    paddingHorizontal: 4,
   },
-  locationContainer: {
+  filtersBadgeText: {
+    ...typography.caption2,
+    color: colors.white,
+  },
+  wheelContainer: {
+    alignItems: 'center',
+    paddingVertical: spacing.xl,
+  },
+  wheelHint: {
+    ...typography.callout,
+    color: colors.gray600,
+    marginTop: spacing.md,
+  },
+  searchContainer: {
+    paddingHorizontal: spacing.md,
+    marginBottom: spacing.md,
+  },
+  searchInputWrapper: {
     flexDirection: 'row',
     alignItems: 'center',
-    marginHorizontal: AppStyles.spacing.m,
-    marginBottom: AppStyles.spacing.m,
-    paddingHorizontal: AppStyles.spacing.m,
-    paddingVertical: AppStyles.spacing.s,
+    backgroundColor: colors.white,
+    borderRadius: radius.md,
+    borderWidth: 1,
+    borderColor: colors.border,
+    paddingHorizontal: spacing.md,
+    height: 50,
+    ...Platform.select({
+      ios: {
+        shadowColor: colors.shadow,
+        shadowOffset: { width: 0, height: 1 },
+        shadowOpacity: 0.05,
+        shadowRadius: 2,
+      },
+      android: {
+        elevation: 1,
+      },
+    }),
+  },
+  searchIcon: {
+    marginRight: spacing.sm,
+  },
+  searchInput: {
+    flex: 1,
+    ...typography.body,
+    color: colors.gray900,
+    paddingVertical: 0,
+  },
+  locationButton: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    paddingHorizontal: spacing.md,
+    paddingVertical: spacing.sm,
+    marginHorizontal: spacing.md,
+    marginBottom: spacing.md,
+    gap: spacing.xs,
   },
   locationText: {
-    ...AppStyles.typography.callout,
-    color: AppStyles.color.gray700,
-    marginLeft: AppStyles.spacing.xs,
+    ...typography.callout,
+    color: colors.gray700,
   },
-  actionsSection: {
-    paddingHorizontal: AppStyles.spacing.m,
-    marginBottom: AppStyles.spacing.m,
+  locationInput: {
+    flex: 1,
+    ...typography.callout,
+    color: colors.gray900,
+    paddingVertical: 0,
+    marginLeft: spacing.xs,
   },
   errorContainer: {
-    marginHorizontal: AppStyles.spacing.m,
-    marginBottom: AppStyles.spacing.m,
+    marginHorizontal: spacing.md,
+    marginBottom: spacing.md,
+    backgroundColor: colors.error + '15',
+    paddingHorizontal: spacing.md,
+    paddingVertical: spacing.md,
+    borderRadius: radius.md,
+    borderLeftWidth: 3,
+    borderLeftColor: colors.error,
+  },
+  errorText: {
+    ...typography.callout,
+    color: colors.error,
   },
   resultsInfo: {
     flexDirection: 'row',
     alignItems: 'center',
-    marginHorizontal: AppStyles.spacing.m,
-    marginBottom: AppStyles.spacing.m,
-    paddingHorizontal: AppStyles.spacing.m,
-    paddingVertical: AppStyles.spacing.m,
-    backgroundColor: AppStyles.color.success + '15',
-    borderRadius: AppStyles.radius.m,
-    borderLeftWidth: 3,
-    borderLeftColor: AppStyles.color.success,
+    backgroundColor: colors.success + '15',
+    marginHorizontal: spacing.md,
+    paddingHorizontal: spacing.md,
+    paddingVertical: spacing.md,
+    borderRadius: radius.md,
+    marginBottom: spacing.lg,
+    gap: spacing.sm,
   },
   resultsText: {
-    ...AppStyles.typography.callout,
+    ...typography.callout,
     fontWeight: '600',
-    color: AppStyles.color.success,
-    marginLeft: AppStyles.spacing.s,
+    color: colors.success,
   },
-  categoriesSection: {
-    marginTop: AppStyles.spacing.s,
+  ctaContainer: {
+    paddingHorizontal: spacing.md,
+    gap: spacing.md,
   },
-  sectionTitle: {
-    ...AppStyles.typography.title3,
-    color: AppStyles.color.gray900,
-    marginHorizontal: AppStyles.spacing.m,
-    marginBottom: AppStyles.spacing.m,
-  },
-  historySection: {
-    marginTop: AppStyles.spacing.xl,
-    paddingHorizontal: AppStyles.spacing.m,
-  },
-  sectionHeader: {
-    flexDirection: 'row',
+  primaryButton: {
+    backgroundColor: colors.primary,
+    borderRadius: radius.md,
+    paddingVertical: spacing.md,
     alignItems: 'center',
-    marginBottom: AppStyles.spacing.m,
-    gap: AppStyles.spacing.s,
+    ...Platform.select({
+      ios: {
+        shadowColor: colors.shadow,
+        shadowOffset: { width: 0, height: 2 },
+        shadowOpacity: 0.2,
+        shadowRadius: 8,
+      },
+      android: {
+        elevation: 4,
+      },
+    }),
   },
-  historyItem: {
-    flexDirection: 'row',
+  primaryButtonDisabled: {
+    backgroundColor: colors.gray300,
+    ...Platform.select({
+      ios: {
+        shadowOpacity: 0.05,
+      },
+      android: {
+        elevation: 1,
+      },
+    }),
+  },
+  primaryButtonActive: {
+    backgroundColor: colors.success,
+    ...Platform.select({
+      ios: {
+        shadowOpacity: 0.3,
+        shadowRadius: 12,
+      },
+      android: {
+        elevation: 6,
+      },
+    }),
+  },
+  primaryButtonPressed: {
+    opacity: 0.9,
+  },
+  primaryButtonText: {
+    ...typography.headline,
+    color: colors.white,
+  },
+  primaryButtonTextDisabled: {
+    color: colors.gray500,
+  },
+  secondaryButton: {
+    backgroundColor: colors.white,
+    borderRadius: radius.md,
+    borderWidth: 2,
+    borderColor: colors.primary,
+    paddingVertical: spacing.md,
     alignItems: 'center',
-    justifyContent: 'space-between',
-    paddingVertical: AppStyles.spacing.m,
-    paddingHorizontal: AppStyles.spacing.m,
-    backgroundColor: AppStyles.color.white,
-    borderRadius: AppStyles.radius.m,
-    marginBottom: AppStyles.spacing.s,
-    ...AppStyles.shadow.level1,
   },
-  historyItemPressed: {
+  secondaryButtonDisabled: {
+    borderColor: colors.gray300,
+    backgroundColor: colors.gray100,
+  },
+  secondaryButtonActive: {
+    borderColor: colors.success,
+    backgroundColor: colors.white,
+  },
+  secondaryButtonPressed: {
     opacity: 0.7,
   },
-  historyContent: {
-    flex: 1,
-    marginRight: AppStyles.spacing.m,
+  secondaryButtonText: {
+    ...typography.headline,
+    color: colors.primary,
   },
-  historyName: {
-    ...AppStyles.typography.headline,
-    color: AppStyles.color.gray900,
-    marginBottom: 2,
+  secondaryButtonTextDisabled: {
+    color: colors.gray500,
   },
-  historyTime: {
-    ...AppStyles.typography.footnote,
-    color: AppStyles.color.gray500,
+  secondaryButtonTextActive: {
+    color: colors.success,
   },
 });
-
-export default HomeScreen;

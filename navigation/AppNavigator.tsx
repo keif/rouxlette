@@ -5,7 +5,7 @@ import { Ionicons } from '@expo/vector-icons';
 import { colors, typography } from '../theme';
 
 // Import redesigned screens
-import { HomeScreenRedesign } from '../screens/HomeScreenRedesign';
+import { HomeScreen } from '../screens/HomeScreen';
 import { SearchScreenRedesign } from '../screens/SearchScreenRedesign';
 import { DetailsScreen } from '../screens/DetailsScreen';
 import FavoritesScreen from '../screens/FavoritesScreen';
@@ -62,7 +62,7 @@ function TabNavigator() {
     >
       <Tab.Screen
         name="Home"
-        component={HomeScreenRedesign}
+        component={HomeScreen}
         options={{
           tabBarIcon: ({ color, focused }) => (
             <Ionicons
