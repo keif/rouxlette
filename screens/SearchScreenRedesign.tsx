@@ -16,7 +16,7 @@ import { RestaurantCard, Restaurant } from '../components/RestaurantCard';
 import { ActiveFilterBar, ActiveFilter } from '../components/ActiveFilterBar';
 import { colors, spacing, radius, typography } from '../theme';
 import { RootContext } from '../context/RootContext';
-import { setResults, setShowFilter, setSelectedBusiness, showBusinessModal, setFilters, setCategories } from '../context/reducer';
+import { setResults, setShowFilter, setSelectedBusiness, showBusinessModal, setFilters, setCategories, setLocation, setCoords } from '../context/reducer';
 import useResults, { BusinessProps } from '../hooks/useResults';
 import useLocation from '../hooks/useLocation';
 import FiltersSheet from '../components/filter/FiltersSheet';
@@ -44,8 +44,11 @@ export const SearchScreenRedesign: React.FC = () => {
   const [searchQuery, setSearchQuery] = useState('');
   const [isSearching, setIsSearching] = useState(false);
   const [errorMessage, setErrorMessage] = useState('');
+  const [isManualLocation, setIsManualLocation] = useState(false);
+  const [isEditingLocation, setIsEditingLocation] = useState(false);
+  const [locationInput, setLocationInput] = useState('');
   const [resultsErrorMessage, searchResults, searchApi, searchApiWithResolver, resultsLoading] = useResults();
-  const [, city, canonicalLocation, coords, , searchLocation, resolveSearchArea, isLocationLoading] = useLocation();
+  const [, city, canonicalLocation, coords, , searchLocation, resolveSearchArea, isLocationLoading, , stopLocationWatcher] = useLocation();
 
   const isLoading = resultsLoading || isSearching;
   const displayLocation = state.location || city || 'Current Location';
@@ -178,6 +181,60 @@ export const SearchScreenRedesign: React.FC = () => {
     // TODO: Implement favorites toggle with context
   };
 
+  const handleUseCurrentLocation = async () => {
+    setIsEditingLocation(false);
+    setIsManualLocation(false);
+    await searchLocation(''); // This will restart GPS watcher
+  };
+
+  const handleLocationPress = () => {
+    setLocationInput(displayLocation);
+    setIsEditingLocation(true);
+  };
+
+  const handleLocationSubmit = async () => {
+    const trimmed = locationInput.trim();
+    setIsEditingLocation(false);
+
+    if (!trimmed || trimmed === displayLocation) {
+      // No change
+      return;
+    }
+
+    if (trimmed === '') {
+      // Empty = revert to GPS
+      setIsManualLocation(false);
+      await searchLocation('');
+      return;
+    }
+
+    // Stop GPS and geocode the city
+    setIsManualLocation(true);
+    stopLocationWatcher();
+
+    try {
+      const resolved = await resolveSearchArea(trimmed);
+
+      if (resolved?.coords) {
+        dispatch(setLocation(resolved.label));
+        dispatch(setCoords(resolved.coords as any));
+      } else if (resolved?.source === 'fallback') {
+        // Geocoding failed, but we can still use text search
+        dispatch(setLocation(trimmed));
+        dispatch(setCoords(null));
+        setErrorMessage(`Using text search for "${trimmed}" (coordinates unavailable)`);
+        setTimeout(() => setErrorMessage(''), 3000);
+      } else {
+        setErrorMessage(`Could not find "${trimmed}". Please try another city.`);
+        setTimeout(() => setErrorMessage(''), 5000);
+      }
+    } catch (error) {
+      console.error('[SearchScreenRedesign] Error resolving location:', error);
+      setErrorMessage(`Error finding "${trimmed}". Please try again.`);
+      setTimeout(() => setErrorMessage(''), 5000);
+    }
+  };
+
   return (
     <SafeAreaView style={styles.container} edges={['top']}>
       {/* Header */}
@@ -227,11 +284,44 @@ export const SearchScreenRedesign: React.FC = () => {
       </View>
 
       {/* Location */}
-      <Pressable style={styles.locationButton}>
-        <Ionicons name="location" size={16} color={colors.primary} />
-        <Text style={styles.locationText}>{displayLocation}</Text>
-        <Ionicons name="chevron-down" size={16} color={colors.gray500} />
-      </Pressable>
+      {isEditingLocation ? (
+        <View style={styles.locationEditContainer}>
+          <View style={styles.locationInputWrapper}>
+            <Ionicons name="location" size={16} color={colors.primary} />
+            <TextInput
+              style={styles.locationInput}
+              value={locationInput}
+              onChangeText={setLocationInput}
+              onSubmitEditing={handleLocationSubmit}
+              onBlur={handleLocationSubmit}
+              autoFocus
+              placeholder="Enter city name"
+              returnKeyType="done"
+            />
+            {locationInput.length > 0 && (
+              <Pressable onPress={() => setLocationInput('')} hitSlop={8}>
+                <Ionicons name="close-circle" size={20} color={colors.gray400} />
+              </Pressable>
+            )}
+          </View>
+          <Pressable
+            onPress={handleUseCurrentLocation}
+            style={({ pressed }) => [
+              styles.gpsButton,
+              pressed && styles.gpsButtonPressed,
+            ]}
+          >
+            <Ionicons name="navigate" size={16} color={colors.primary} />
+            <Text style={styles.gpsButtonText}>Use GPS</Text>
+          </Pressable>
+        </View>
+      ) : (
+        <Pressable style={styles.locationButton} onPress={handleLocationPress}>
+          <Ionicons name="location" size={16} color={colors.primary} />
+          <Text style={styles.locationText}>{displayLocation}</Text>
+          <Ionicons name="chevron-down" size={16} color={colors.gray500} />
+        </Pressable>
+      )}
 
       {/* Active Filters */}
       {activeFilters.length > 0 && (
@@ -381,6 +471,22 @@ const styles = StyleSheet.create({
     ...typography.caption2,
     color: colors.white,
   },
+  locationEditContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: spacing.sm,
+    paddingHorizontal: spacing.md,
+  },
+  locationInputWrapper: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingHorizontal: spacing.md,
+    paddingVertical: spacing.sm,
+    gap: spacing.xs,
+    flex: 1,
+    minWidth: 0,
+  },
   locationButton: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -392,6 +498,34 @@ const styles = StyleSheet.create({
   locationText: {
     ...typography.callout,
     color: colors.gray700,
+  },
+  locationInput: {
+    flex: 1,
+    ...typography.callout,
+    color: colors.gray900,
+    paddingVertical: 0,
+    marginLeft: spacing.xs,
+  },
+  gpsButton: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingHorizontal: spacing.md,
+    paddingVertical: spacing.sm,
+    backgroundColor: colors.white,
+    borderRadius: radius.full,
+    borderWidth: 1,
+    borderColor: colors.primary,
+    gap: spacing.xs,
+    flexShrink: 0,
+  },
+  gpsButtonPressed: {
+    opacity: 0.7,
+  },
+  gpsButtonText: {
+    ...typography.callout,
+    color: colors.primary,
+    fontWeight: '600',
+    flexShrink: 0,
   },
   loadingContainer: {
     flex: 1,

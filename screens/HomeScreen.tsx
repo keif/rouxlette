@@ -33,6 +33,7 @@ export const HomeScreen: React.FC = () => {
   const [isAutoSpinning, setIsAutoSpinning] = useState(false);
   const [selectedResult, setSelectedResult] = useState<BusinessProps | null>(null);
   const [isEditingLocation, setIsEditingLocation] = useState(false);
+  const [isManualLocation, setIsManualLocation] = useState(false);
   const [locationInput, setLocationInput] = useState('');
   const [resultsErrorMessage, searchResults, searchApi, searchApiWithResolver, resultsLoading] = useResults();
   const [, city, canonicalLocation, coords, , searchLocation, resolveSearchArea, isLocationLoading, , stopLocationWatcher] = useLocation();
@@ -248,11 +249,13 @@ export const HomeScreen: React.FC = () => {
 
     if (trimmed === '') {
       // Empty = revert to GPS
+      setIsManualLocation(false);
       await searchLocation('');
       return;
     }
 
     // Stop GPS and geocode the city
+    setIsManualLocation(true);
     stopLocationWatcher();
 
     try {
@@ -276,6 +279,12 @@ export const HomeScreen: React.FC = () => {
       setErrorMessage(`Error finding "${trimmed}". Please try again.`);
       setTimeout(() => setErrorMessage(''), 5000);
     }
+  };
+
+  const handleUseCurrentLocation = async () => {
+    setIsEditingLocation(false);
+    setIsManualLocation(false);
+    await searchLocation(''); // This will restart GPS watcher
   };
 
   return (
@@ -373,23 +382,35 @@ export const HomeScreen: React.FC = () => {
 
         {/* Location */}
         {isEditingLocation ? (
-          <View style={styles.locationButton}>
-            <Ionicons name="location" size={16} color={colors.primary} />
-            <TextInput
-              style={styles.locationInput}
-              value={locationInput}
-              onChangeText={setLocationInput}
-              onSubmitEditing={handleLocationSubmit}
-              onBlur={handleLocationSubmit}
-              autoFocus
-              placeholder="Enter city name"
-              returnKeyType="done"
-            />
-            {locationInput.length > 0 && (
-              <Pressable onPress={() => setLocationInput('')}>
-                <Ionicons name="close-circle" size={20} color={colors.gray500} />
-              </Pressable>
-            )}
+          <View style={styles.locationEditContainer}>
+            <View style={styles.locationInputWrapper}>
+              <Ionicons name="location" size={16} color={colors.primary} />
+              <TextInput
+                style={styles.locationInput}
+                value={locationInput}
+                onChangeText={setLocationInput}
+                onSubmitEditing={handleLocationSubmit}
+                onBlur={handleLocationSubmit}
+                autoFocus
+                placeholder="Enter city name"
+                returnKeyType="done"
+              />
+              {locationInput.length > 0 && (
+                <Pressable onPress={() => setLocationInput('')}>
+                  <Ionicons name="close-circle" size={20} color={colors.gray500} />
+                </Pressable>
+              )}
+            </View>
+            <Pressable
+              onPress={handleUseCurrentLocation}
+              style={({ pressed }) => [
+                styles.gpsButton,
+                pressed && styles.gpsButtonPressed,
+              ]}
+            >
+              <Ionicons name="navigate" size={16} color={colors.primary} />
+              <Text style={styles.gpsButtonText}>Use GPS</Text>
+            </Pressable>
           </View>
         ) : (
           <Pressable style={styles.locationButton} onPress={handleLocationPress}>
@@ -576,6 +597,23 @@ const styles = StyleSheet.create({
     color: colors.gray900,
     paddingVertical: 0,
   },
+  locationEditContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginHorizontal: spacing.md,
+    marginBottom: spacing.md,
+    gap: spacing.sm,
+  },
+  locationInputWrapper: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingHorizontal: spacing.md,
+    paddingVertical: spacing.sm,
+    gap: spacing.xs,
+    flex: 1,
+    minWidth: 0,
+  },
   locationButton: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -596,6 +634,27 @@ const styles = StyleSheet.create({
     color: colors.gray900,
     paddingVertical: 0,
     marginLeft: spacing.xs,
+  },
+  gpsButton: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingHorizontal: spacing.md,
+    paddingVertical: spacing.sm,
+    backgroundColor: colors.white,
+    borderRadius: radius.full,
+    borderWidth: 1,
+    borderColor: colors.primary,
+    gap: spacing.xs,
+    flexShrink: 0,
+  },
+  gpsButtonPressed: {
+    opacity: 0.7,
+  },
+  gpsButtonText: {
+    ...typography.callout,
+    color: colors.primary,
+    fontWeight: '600',
+    flexShrink: 0,
   },
   errorContainer: {
     marginHorizontal: spacing.md,

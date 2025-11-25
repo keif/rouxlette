@@ -1,6 +1,6 @@
-import { Entypo } from "@expo/vector-icons";
+import { Entypo, MaterialIcons } from "@expo/vector-icons";
 import React, { Dispatch, SetStateAction, useContext, useEffect, useState, useRef } from "react";
-import { StyleSheet, TextInput, View } from "react-native";
+import { StyleSheet, TextInput, View, TouchableOpacity, Text } from "react-native";
 import { LocationObjectCoords } from "expo-location";
 import useLocation from "../../hooks/useLocation";
 import { RootContext } from "../../context/RootContext";
@@ -67,6 +67,13 @@ const LocationInput = ({ onFocus, setErrorMessage }: LocationInputProps) => {
 		dispatch(setCoords(coords as LocationObjectCoords));
 	};
 
+	const handleUseCurrentLocation = async () => {
+		logSafe('LocationInput: Use Current Location button pressed', {});
+		setIsManualLocation(false);
+		setLocale(''); // Clear the input field
+		await fetchLocation(''); // This will start GPS watcher again
+	};
+
 	useEffect(() => {
 		fetchLocation(``).catch((error: any) => logSafe('LocationInput fetchLocation error', { message: error?.message }));
 	}, []);
@@ -92,6 +99,7 @@ const LocationInput = ({ onFocus, setErrorMessage }: LocationInputProps) => {
 	useEffect(() => {
 		setErrorMessage(locationErrorMessage);
 	}, [locationErrorMessage]);
+
 	return (
 		<View>
 			<View
@@ -138,6 +146,15 @@ const LocationInput = ({ onFocus, setErrorMessage }: LocationInputProps) => {
 						/>
 					) : null}
 				</View>
+				{isManualLocation && !searchClicked && (
+					<TouchableOpacity
+						style={styles.gpsButton}
+						onPress={handleUseCurrentLocation}
+					>
+						<MaterialIcons name="my-location" size={18} color={AppStyles.color.primary} />
+						<Text style={styles.gpsButtonText}>Use GPS</Text>
+					</TouchableOpacity>
+				)}
 				<LocationDisambiguation
 					resolvedLocation={lastResolvedLocation}
 					onSelectAlternative={handleSelectAlternative}
@@ -153,6 +170,7 @@ const styles = StyleSheet.create({
 		borderBottomStartRadius: 20,
 		borderBottomEndRadius: 20,
 		flexDirection: `row`,
+		alignItems: `center`,
 	},
 	inputWrapper: {
 		backgroundColor: AppStyles.color.white,
@@ -160,6 +178,25 @@ const styles = StyleSheet.create({
 		...AppStyles.TextInputWrapper,
 		borderBottomStartRadius: 20,
 		borderBottomEndRadius: 20,
+		flex: 1,
+	},
+	gpsButton: {
+		flexDirection: `row`,
+		alignItems: `center`,
+		paddingHorizontal: 12,
+		paddingVertical: 8,
+		marginLeft: 8,
+		marginRight: 8,
+		backgroundColor: AppStyles.color.white,
+		borderRadius: 20,
+		borderWidth: 1,
+		borderColor: AppStyles.color.primary,
+	},
+	gpsButtonText: {
+		color: AppStyles.color.primary,
+		fontSize: 14,
+		fontWeight: `600`,
+		marginLeft: 6,
 	},
 	button: {
 		backgroundColor: AppStyles.color.primary,
