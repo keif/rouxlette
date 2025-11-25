@@ -6,7 +6,7 @@ import { colors, typography } from '../theme';
 
 // Import redesigned screens
 import { HomeScreen } from '../screens/HomeScreen';
-import { SearchScreenRedesign } from '../screens/SearchScreenRedesign';
+import { SearchScreen } from '../screens/SearchScreen';
 import { DetailsScreen } from '../screens/DetailsScreen';
 import FavoritesScreen from '../screens/FavoritesScreen';
 import HistoryScreen from '../screens/HistoryScreen';
@@ -75,7 +75,7 @@ function TabNavigator() {
       />
       <Tab.Screen
         name="Search"
-        component={SearchScreenRedesign}
+        component={SearchScreen}
         options={{
           tabBarIcon: ({ color, focused }) => (
             <Ionicons

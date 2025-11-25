@@ -19,6 +19,9 @@ import Divider from '../shared/Divider';
 import { Filters } from '../../context/state';
 import { DISTANCE_OPTIONS, getDistanceLabel } from '../../utils/filterBusinesses';
 
+// Number of categories to show initially
+const INITIAL_CATEGORY_COUNT = 12;
+
 interface FiltersSheetProps {
   visible: boolean;
   onClose: () => void;
@@ -26,9 +29,10 @@ interface FiltersSheetProps {
 }
 
 const FiltersSheet: React.FC<FiltersSheetProps> = ({ visible, onClose, testID }) => {
-  
+
   const { state, dispatch } = useContext(RootContext);
   const [localFilters, setLocalFilters] = useState<Filters>(state.filters);
+  const [showAllCategories, setShowAllCategories] = useState(false);
 
   const handleApply = () => {
     dispatch(setFilters(localFilters));
@@ -38,6 +42,7 @@ const FiltersSheet: React.FC<FiltersSheetProps> = ({ visible, onClose, testID })
   const handleReset = () => {
     dispatch(resetFilters());
     setLocalFilters(state.filters);
+    setShowAllCategories(false);
     onClose();
   };
 
@@ -58,21 +63,64 @@ const FiltersSheet: React.FC<FiltersSheetProps> = ({ visible, onClose, testID })
     updateLocalFilters({ priceLevels: newPriceLevels });
   };
 
-  // Category handlers
-  const toggleCategory = (categoryId: string) => {
-    const newCategoryIds = localFilters.categoryIds.includes(categoryId)
-      ? localFilters.categoryIds.filter(c => c !== categoryId)
-      : [...localFilters.categoryIds, categoryId];
-    updateLocalFilters({ categoryIds: newCategoryIds });
+  // Three-state category toggle: Neutral → Exclude → Include → Neutral
+  const toggleCategoryState = (categoryId: string) => {
+    const isIncluded = localFilters.categoryIds.includes(categoryId);
+    const isExcluded = localFilters.excludedCategoryIds.includes(categoryId);
+
+    let newCategoryIds = [...localFilters.categoryIds];
+    let newExcludedIds = [...localFilters.excludedCategoryIds];
+
+    if (!isIncluded && !isExcluded) {
+      // Neutral → Exclude
+      newExcludedIds.push(categoryId);
+    } else if (isExcluded) {
+      // Exclude → Include
+      newExcludedIds = newExcludedIds.filter(c => c !== categoryId);
+      newCategoryIds.push(categoryId);
+    } else {
+      // Include → Neutral
+      newCategoryIds = newCategoryIds.filter(c => c !== categoryId);
+    }
+
+    updateLocalFilters({
+      categoryIds: newCategoryIds,
+      excludedCategoryIds: newExcludedIds
+    });
   };
 
-  // Excluded category handlers
-  const toggleExcludedCategory = (categoryId: string) => {
-    const newExcludedCategoryIds = localFilters.excludedCategoryIds.includes(categoryId)
-      ? localFilters.excludedCategoryIds.filter(c => c !== categoryId)
-      : [...localFilters.excludedCategoryIds, categoryId];
-    updateLocalFilters({ excludedCategoryIds: newExcludedCategoryIds });
+  // Get category state for styling
+  const getCategoryState = (categoryId: string): 'neutral' | 'include' | 'exclude' => {
+    if (localFilters.categoryIds.includes(categoryId)) return 'include';
+    if (localFilters.excludedCategoryIds.includes(categoryId)) return 'exclude';
+    return 'neutral';
   };
+
+  // Separate categories into selected (excluded + included) and neutral
+  const selectedCategories = state.categories
+    .filter(cat => {
+      const catState = getCategoryState(cat.alias);
+      return catState === 'include' || catState === 'exclude';
+    })
+    .sort((a, b) => {
+      // Sort: excluded first, then included, alphabetical within each
+      const stateA = getCategoryState(a.alias);
+      const stateB = getCategoryState(b.alias);
+      if (stateA !== stateB) {
+        return stateA === 'exclude' ? -1 : 1;
+      }
+      return a.title.localeCompare(b.title);
+    });
+
+  const neutralCategories = state.categories
+    .filter(cat => getCategoryState(cat.alias) === 'neutral')
+    .sort((a, b) => a.title.localeCompare(b.title));
+
+  // Determine how many neutral categories to display
+  const neutralCategoriesToShow = showAllCategories
+    ? neutralCategories
+    : neutralCategories.slice(0, INITIAL_CATEGORY_COUNT);
+  const hasMoreCategories = neutralCategories.length > INITIAL_CATEGORY_COUNT;
 
   return (
     <Modal
@@ -112,10 +160,122 @@ const FiltersSheet: React.FC<FiltersSheetProps> = ({ visible, onClose, testID })
         </View>
         <View style={styles.headerShadow} />
 
+        {/* Fixed Selected Categories - Always visible below header */}
+        {selectedCategories.length > 0 && (
+          <View style={styles.fixedSelectedSection}>
+            <Text style={styles.fixedSelectedLabel}>
+              {selectedCategories.length} selected
+            </Text>
+            <ScrollView
+              horizontal
+              showsHorizontalScrollIndicator={false}
+              contentContainerStyle={styles.fixedSelectedChips}
+            >
+              {selectedCategories.map(category => {
+                const categoryState = getCategoryState(category.alias);
+                return (
+                  <Pressable
+                    key={category.alias}
+                    onPress={() => toggleCategoryState(category.alias)}
+                    style={({ pressed }) => [
+                      styles.categoryChip,
+                      categoryState === 'include' && styles.categoryChipIncluded,
+                      categoryState === 'exclude' && styles.categoryChipExcluded,
+                      { opacity: !Config.isAndroid && pressed ? 0.6 : 1 }
+                    ]}
+                    android_ripple={{ color: 'lightgrey' }}
+                  >
+                    {categoryState === 'include' && (
+                      <Icon name="add" size={14} color={AppStyles.color.white} style={styles.categoryIcon} />
+                    )}
+                    {categoryState === 'exclude' && (
+                      <Icon name="close" size={14} color={AppStyles.color.white} style={styles.categoryIcon} />
+                    )}
+                    <Text style={[styles.categoryChipText, styles.categoryChipTextSelected]}>
+                      {category.title}
+                    </Text>
+                  </Pressable>
+                );
+              })}
+            </ScrollView>
+          </View>
+        )}
+
         <ScrollView
           style={{ flex: 1 }}
           contentContainerStyle={{ paddingVertical: 16 }}
         >
+          {/* Categories Filter - Unified 3-state */}
+          {state.categories.length > 0 && (
+            <>
+              <View>
+                <View style={styles.sectionTitleWrapper}>
+                  <Text style={styles.sectionTitle}>Categories</Text>
+                  <Text style={styles.sectionSubtitle}>
+                    Tap to exclude · Tap again to include · Tap again to clear
+                  </Text>
+                </View>
+
+                <View style={styles.categoryContainer}>
+                  {neutralCategoriesToShow.map(category => (
+                    <Pressable
+                      key={category.alias}
+                      onPress={() => toggleCategoryState(category.alias)}
+                      style={({ pressed }) => [
+                        styles.categoryChip,
+                        { opacity: !Config.isAndroid && pressed ? 0.6 : 1 }
+                      ]}
+                      android_ripple={{ color: 'lightgrey' }}
+                    >
+                      <Text style={styles.categoryChipText}>
+                        {category.title}
+                      </Text>
+                    </Pressable>
+                  ))}
+                </View>
+                {hasMoreCategories && (
+                  <Pressable
+                    onPress={() => setShowAllCategories(!showAllCategories)}
+                    style={({ pressed }) => [
+                      styles.showMoreButton,
+                      { opacity: !Config.isAndroid && pressed ? 0.6 : 1 }
+                    ]}
+                    android_ripple={{ color: 'lightgrey' }}
+                  >
+                    <Text style={styles.showMoreText}>
+                      {showAllCategories ? 'Show less' : `Show ${neutralCategories.length - INITIAL_CATEGORY_COUNT} more`}
+                    </Text>
+                    <Icon
+                      name={showAllCategories ? 'keyboard-arrow-up' : 'keyboard-arrow-down'}
+                      size={20}
+                      color={AppStyles.color.primary}
+                    />
+                  </Pressable>
+                )}
+              </View>
+
+              <Divider />
+            </>
+          )}
+
+          {/* Open Now Filter */}
+          <View>
+            <View style={styles.sectionTitleWrapper}>
+              <Text style={styles.sectionTitle}>Open Now</Text>
+            </View>
+            <View style={styles.switchContainer}>
+              <Text style={styles.switchLabel}>Only show restaurants that are currently open</Text>
+              <Switch
+                value={localFilters.openNow}
+                onValueChange={(value) => updateLocalFilters({ openNow: value })}
+                trackColor={{ false: AppStyles.color.greylight, true: AppStyles.color.roulette.green }}
+                thumbColor={AppStyles.color.white}
+              />
+            </View>
+          </View>
+
+          <Divider />
+
           {/* Price Filter */}
           <View>
             <View style={styles.sectionTitleWrapper}>
@@ -149,93 +309,6 @@ const FiltersSheet: React.FC<FiltersSheetProps> = ({ visible, onClose, testID })
                   </Pressable>
                 </View>
               ))}
-            </View>
-          </View>
-
-          <Divider />
-
-          {/* Categories Filter */}
-          {state.categories.length > 0 && (
-            <>
-              <View>
-                <View style={styles.sectionTitleWrapper}>
-                  <Text style={styles.sectionTitle}>Categories</Text>
-                </View>
-                <View style={styles.categoryContainer}>
-                  {state.categories.slice(0, 12).map(category => ( // Limit to prevent UI overflow
-                    <Pressable
-                      key={category.alias}
-                      onPress={() => toggleCategory(category.alias)}
-                      style={({ pressed }) => [
-                        styles.categoryChip,
-                        localFilters.categoryIds.includes(category.alias) && styles.categoryChipSelected,
-                        { opacity: !Config.isAndroid && pressed ? 0.6 : 1 }
-                      ]}
-                      android_ripple={{ color: 'lightgrey' }}
-                    >
-                      <Text style={[
-                        styles.categoryChipText,
-                        localFilters.categoryIds.includes(category.alias) && styles.categoryChipTextSelected
-                      ]}>
-                        {category.title}
-                      </Text>
-                    </Pressable>
-                  ))}
-                </View>
-              </View>
-
-              <Divider />
-            </>
-          )}
-
-          {/* Excluded Categories Filter */}
-          {state.categories.length > 0 && (
-            <>
-              <View>
-                <View style={styles.sectionTitleWrapper}>
-                  <Text style={styles.sectionTitle}>Exclude Categories</Text>
-                  <Text style={styles.sectionSubtitle}>Hide these types from results</Text>
-                </View>
-                <View style={styles.categoryContainer}>
-                  {state.categories.slice(0, 12).map(category => (
-                    <Pressable
-                      key={category.alias}
-                      onPress={() => toggleExcludedCategory(category.alias)}
-                      style={({ pressed }) => [
-                        styles.categoryChip,
-                        localFilters.excludedCategoryIds.includes(category.alias) && styles.categoryChipExcluded,
-                        { opacity: !Config.isAndroid && pressed ? 0.6 : 1 }
-                      ]}
-                      android_ripple={{ color: 'lightgrey' }}
-                    >
-                      <Text style={[
-                        styles.categoryChipText,
-                        localFilters.excludedCategoryIds.includes(category.alias) && styles.categoryChipTextExcluded
-                      ]}>
-                        {category.title}
-                      </Text>
-                    </Pressable>
-                  ))}
-                </View>
-              </View>
-
-              <Divider />
-            </>
-          )}
-
-          {/* Open Now Filter */}
-          <View>
-            <View style={styles.sectionTitleWrapper}>
-              <Text style={styles.sectionTitle}>Open Now</Text>
-            </View>
-            <View style={styles.switchContainer}>
-              <Text style={styles.switchLabel}>Only show restaurants that are currently open</Text>
-              <Switch
-                value={localFilters.openNow}
-                onValueChange={(value) => updateLocalFilters({ openNow: value })}
-                trackColor={{ false: AppStyles.color.greylight, true: AppStyles.color.roulette.green }}
-                thumbColor={AppStyles.color.white}
-              />
             </View>
           </View>
 
@@ -372,6 +445,25 @@ const styles = StyleSheet.create({
     elevation: 4,
     height: Config.isAndroid ? 0.2 : 1,
   },
+  fixedSelectedSection: {
+    backgroundColor: AppStyles.color.gray50,
+    paddingVertical: 12,
+    paddingHorizontal: 16,
+    borderBottomWidth: 1,
+    borderBottomColor: AppStyles.color.gray300,
+  },
+  fixedSelectedLabel: {
+    fontSize: 12,
+    fontFamily: AppStyles.fonts.medium,
+    color: AppStyles.color.gray500,
+    marginBottom: 8,
+    textTransform: 'uppercase',
+    letterSpacing: 0.5,
+  },
+  fixedSelectedChips: {
+    flexDirection: 'row',
+    gap: 8,
+  },
   sectionTitleWrapper: {
     paddingHorizontal: 16,
     paddingBottom: 8,
@@ -416,10 +508,12 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     flexWrap: 'wrap',
     paddingHorizontal: 16,
-    paddingBottom: 16,
+    paddingBottom: 8,
   },
   categoryChip: {
-    borderColor: AppStyles.color.roulette.neutral,
+    flexDirection: 'row',
+    alignItems: 'center',
+    borderColor: AppStyles.color.gray300,
     borderWidth: 1,
     borderRadius: 16,
     paddingHorizontal: 12,
@@ -427,23 +521,38 @@ const styles = StyleSheet.create({
     margin: 4,
     backgroundColor: 'transparent',
   },
-  categoryChipSelected: {
-    backgroundColor: AppStyles.color.roulette.neutral,
+  categoryChipIncluded: {
+    backgroundColor: AppStyles.color.success,
+    borderColor: AppStyles.color.success,
+  },
+  categoryChipExcluded: {
+    backgroundColor: AppStyles.color.accentRed,
+    borderColor: AppStyles.color.accentRed,
   },
   categoryChipText: {
     fontSize: 14,
     fontFamily: AppStyles.fonts.regular,
-    color: AppStyles.color.roulette.neutral,
+    color: AppStyles.color.gray500,
   },
   categoryChipTextSelected: {
     color: AppStyles.color.white,
   },
-  categoryChipExcluded: {
-    backgroundColor: AppStyles.color.roulette.red,
-    borderColor: AppStyles.color.roulette.red,
+  categoryIcon: {
+    marginRight: 4,
   },
-  categoryChipTextExcluded: {
-    color: AppStyles.color.white,
+  showMoreButton: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    paddingVertical: 8,
+    paddingHorizontal: 16,
+    marginBottom: 8,
+  },
+  showMoreText: {
+    fontSize: 14,
+    fontFamily: AppStyles.fonts.medium,
+    color: AppStyles.color.primary,
+    marginRight: 4,
   },
   switchContainer: {
     flexDirection: 'row',

@@ -437,7 +437,10 @@ export const HomeScreen: React.FC = () => {
           </View>
         )}
 
-        {/* CTA Buttons */}
+      </ScrollView>
+
+      {/* Fixed Bottom CTA Buttons */}
+      <SafeAreaView edges={['bottom']} style={styles.bottomButtonContainer}>
         <View style={styles.ctaContainer}>
           <Pressable
             style={({ pressed }) => [
@@ -476,11 +479,11 @@ export const HomeScreen: React.FC = () => {
                 hasResults && !isLoading && !isAutoSpinning && styles.secondaryButtonTextActive,
               ]}
             >
-              View All Results
+              View All
             </Text>
           </Pressable>
         </View>
-      </ScrollView>
+      </SafeAreaView>
 
       {/* Filters Modal */}
       <FiltersSheet
@@ -497,7 +500,13 @@ const styles = StyleSheet.create({
     backgroundColor: colors.background,
   },
   scrollContent: {
-    paddingBottom: spacing['2xl'],
+    paddingBottom: 100, // Space for fixed bottom buttons
+  },
+  bottomButtonContainer: {
+    backgroundColor: colors.background,
+    borderTopWidth: 1,
+    borderTopColor: colors.gray200,
+    paddingTop: spacing.sm,
   },
   header: {
     flexDirection: 'row',
@@ -687,10 +696,12 @@ const styles = StyleSheet.create({
     color: colors.success,
   },
   ctaContainer: {
+    flexDirection: 'row',
     paddingHorizontal: spacing.md,
-    gap: spacing.md,
+    gap: spacing.sm,
   },
   primaryButton: {
+    flex: 1,
     backgroundColor: colors.primary,
     borderRadius: radius.md,
     paddingVertical: spacing.md,
@@ -741,6 +752,7 @@ const styles = StyleSheet.create({
     color: colors.gray500,
   },
   secondaryButton: {
+    flex: 1,
     backgroundColor: colors.white,
     borderRadius: radius.md,
     borderWidth: 2,
