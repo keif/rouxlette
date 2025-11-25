@@ -5,6 +5,7 @@ import { createMaterialTopTabNavigator } from '@react-navigation/material-top-ta
 import { SavedTabParamList } from '../types';
 import AppStyles from '../AppStyles';
 import FavoritesScreen from '../screens/FavoritesScreen';
+import BlockedScreen from '../screens/BlockedScreen';
 import HistoryScreen from '../screens/HistoryScreen';
 import { MaterialIcons } from '@expo/vector-icons';
 
@@ -44,10 +45,24 @@ export function SavedTabNavigator() {
         options={{
           title: 'Favorites',
           tabBarIcon: ({ color, focused }) => (
-            <MaterialIcons 
-              name={focused ? 'favorite' : 'favorite-border'} 
-              size={20} 
-              color={color} 
+            <MaterialIcons
+              name={focused ? 'favorite' : 'favorite-border'}
+              size={20}
+              color={color}
+            />
+          ),
+        }}
+      />
+      <SavedTabs.Screen
+        name="Blocked"
+        component={BlockedScreen}
+        options={{
+          title: 'Blocked',
+          tabBarIcon: ({ color, focused }) => (
+            <MaterialIcons
+              name="block"
+              size={20}
+              color={color}
             />
           ),
         }}
@@ -58,10 +73,10 @@ export function SavedTabNavigator() {
         options={{
           title: 'History',
           tabBarIcon: ({ color, focused }) => (
-            <MaterialIcons 
-              name={focused ? 'history' : 'history'} 
-              size={20} 
-              color={color} 
+            <MaterialIcons
+              name={focused ? 'history' : 'history'}
+              size={20}
+              color={color}
             />
           ),
         }}

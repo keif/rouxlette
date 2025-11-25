@@ -19,6 +19,7 @@ export interface AppState {
 	results: BusinessProps[]; // Filtered results
 	showFilter: boolean;
 	favorites: FavoriteItem[];
+	blocked: FavoriteItem[];
 	history: HistoryItem[];
 	spinHistory: SpinHistory[];
 	selectedBusiness: YelpBusiness | null;
@@ -60,6 +61,7 @@ export const initialAppState: AppState = {
 	results: [],
 	showFilter: false,
 	favorites: [],
+	blocked: [],
 	history: [],
 	spinHistory: [],
 	selectedBusiness: null,

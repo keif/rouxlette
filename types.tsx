@@ -31,6 +31,7 @@ export type RootTabParamList = {
 
 export type SavedTabParamList = {
 	Favorites: undefined;
+	Blocked: undefined;
 	History: undefined;
 };
 

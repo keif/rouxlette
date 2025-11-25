@@ -18,6 +18,9 @@ export enum ActionType {
 	AddFavorite,
 	RemoveFavorite,
 	HydrateFavorites,
+	AddBlocked,
+	RemoveBlocked,
+	HydrateBlocked,
 	AddHistory,
 	ClearHistory,
 	HydrateHistory,
@@ -83,6 +86,21 @@ export interface HydrateFavorites {
 	payload: { favorites: FavoriteItem[] };
 }
 
+export interface AddBlocked {
+	type: ActionType.AddBlocked;
+	payload: { blocked: FavoriteItem };
+}
+
+export interface RemoveBlocked {
+	type: ActionType.RemoveBlocked;
+	payload: { businessId: string };
+}
+
+export interface HydrateBlocked {
+	type: ActionType.HydrateBlocked;
+	payload: { blocked: FavoriteItem[] };
+}
+
 export interface AddHistory {
 	type: ActionType.AddHistory;
 	payload: { history: HistoryItem };
@@ -134,4 +152,4 @@ export interface ToggleCategoryFilter {
 	payload: { categoryAlias: string };
 }
 
-export type AppActions = SetCategories | SetDetail | SetFilter | SetFilters | ResetFilters | HydrateFilters | SetLocation | SetCoords | SetResults | SetShowFilter | AddFavorite | RemoveFavorite | HydrateFavorites | AddHistory | ClearHistory | HydrateHistory | AddSpinHistory | SetSelectedBusiness | ShowBusinessModal | HideBusinessModal | ToggleCategoryFilter;
+export type AppActions = SetCategories | SetDetail | SetFilter | SetFilters | ResetFilters | HydrateFilters | SetLocation | SetCoords | SetResults | SetShowFilter | AddFavorite | RemoveFavorite | HydrateFavorites | AddBlocked | RemoveBlocked | HydrateBlocked | AddHistory | ClearHistory | HydrateHistory | AddSpinHistory | SetSelectedBusiness | ShowBusinessModal | HideBusinessModal | ToggleCategoryFilter;

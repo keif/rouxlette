@@ -7,6 +7,7 @@ import StarRating from './StarRating';
 import Config from '../../Config';
 import { logSafe } from '../../utils/log';
 import { useFavorites } from '../../hooks/useFavorites';
+import { useBlocked } from '../../hooks/useBlocked';
 import { setSelectedBusiness, showBusinessModal } from '../../context/reducer';
 import { useContext } from 'react';
 import { RootContext } from '../../context/RootContext';
@@ -14,25 +15,30 @@ import { RootContext } from '../../context/RootContext';
 interface FavoriteCardProps {
   favorite: FavoriteItem;
   onPress?: (favorite: FavoriteItem) => void;
+  isBlocked?: boolean;
 }
 
-export const FavoriteCard: React.FC<FavoriteCardProps> = ({ favorite, onPress }) => {
+export const FavoriteCard: React.FC<FavoriteCardProps> = ({ favorite, onPress, isBlocked = false }) => {
   const { removeFavorite } = useFavorites();
+  const { removeBlocked } = useBlocked();
   const { dispatch } = useContext(RootContext);
 
-  const handleRemoveFavorite = () => {
+  const handleRemoveItem = () => {
+    const itemType = isBlocked ? 'Blocked Restaurant' : 'Favorite';
+    const actionText = isBlocked ? 'Unblock' : 'Remove';
+
     Alert.alert(
-      'Remove Favorite',
-      `Remove "${favorite.name}" from your favorites?`,
+      `${actionText} ${itemType}`,
+      `${actionText} "${favorite.name}"?`,
       [
         {
           text: 'Cancel',
           style: 'cancel',
         },
         {
-          text: 'Remove',
+          text: actionText,
           style: 'destructive',
-          onPress: () => removeFavorite(favorite.id),
+          onPress: () => isBlocked ? removeBlocked(favorite.id) : removeFavorite(favorite.id),
         },
       ]
     );
@@ -135,22 +141,30 @@ export const FavoriteCard: React.FC<FavoriteCardProps> = ({ favorite, onPress })
             </View>
           )}
           
-          {/* Favorite heart - always filled since this is a favorite */}
+          {/* Favorite heart or block icon */}
           <Pressable
             style={styles.heartContainer}
-            onPress={handleRemoveFavorite}
+            onPress={handleRemoveItem}
             android_ripple={{
               color: 'rgba(255,255,255,0.3)',
               radius: 20,
               borderless: true,
             }}
-            testID="favorite-heart"
+            testID={isBlocked ? "unblock-button" : "favorite-heart"}
           >
-            <Ionicons
-              name="heart"
-              size={20}
-              color={AppStyles.color.yelp}
-            />
+            {isBlocked ? (
+              <MaterialIcons
+                name="block"
+                size={20}
+                color={AppStyles.color.error}
+              />
+            ) : (
+              <Ionicons
+                name="heart"
+                size={20}
+                color={AppStyles.color.yelp}
+              />
+            )}
           </Pressable>
 
           {/* Closed indicator */}

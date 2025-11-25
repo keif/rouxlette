@@ -18,6 +18,9 @@ import {
 	AddFavorite,
 	RemoveFavorite,
 	HydrateFavorites,
+	AddBlocked,
+	RemoveBlocked,
+	HydrateBlocked,
 	AddHistory,
 	ClearHistory,
 	HydrateHistory,
@@ -147,6 +150,23 @@ export function appReducer(state: AppState, action: AppActions): AppState {
 			return {
 				...state,
 				favorites: action.payload.favorites,
+			};
+		case ActionType.AddBlocked:
+			// De-dupe by businessId, upsert and refresh addedAt
+			const existingBlocked = state.blocked.filter(b => b.id !== action.payload.blocked.id);
+			return {
+				...state,
+				blocked: [...existingBlocked, action.payload.blocked],
+			};
+		case ActionType.RemoveBlocked:
+			return {
+				...state,
+				blocked: state.blocked.filter(b => b.id !== action.payload.businessId),
+			};
+		case ActionType.HydrateBlocked:
+			return {
+				...state,
+				blocked: action.payload.blocked,
 			};
 		case ActionType.AddHistory:
 			// Dedupe by id, then normalize with stable sorting and cap
@@ -309,6 +329,21 @@ export const removeFavorite = (businessId: string): RemoveFavorite => ({
 export const hydrateFavorites = (favorites: FavoriteItem[]): HydrateFavorites => ({
 	type: ActionType.HydrateFavorites,
 	payload: { favorites },
+});
+
+export const addBlocked = (blocked: FavoriteItem): AddBlocked => ({
+	type: ActionType.AddBlocked,
+	payload: { blocked },
+});
+
+export const removeBlocked = (businessId: string): RemoveBlocked => ({
+	type: ActionType.RemoveBlocked,
+	payload: { businessId },
+});
+
+export const hydrateBlocked = (blocked: FavoriteItem[]): HydrateBlocked => ({
+	type: ActionType.HydrateBlocked,
+	payload: { blocked },
 });
 
 export const addHistory = (history: HistoryItem): AddHistory => ({
