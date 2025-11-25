@@ -1,0 +1,593 @@
+{
+  "businesses": [
+    {
+      "id": "mock-1-thai-bistro",
+      "alias": "thai-bistro-columbus",
+      "name": "Thai Bistro",
+      "image_url": "https://s3-media1.fl.yelpcdn.com/bphoto/sample1.jpg",
+      "is_closed": false,
+      "url": "https://www.yelp.com/biz/thai-bistro-columbus",
+      "review_count": 342,
+      "categories": [
+        { "alias": "thai", "title": "Thai" },
+        { "alias": "asianfusion", "title": "Asian Fusion" }
+      ],
+      "rating": 4.5,
+      "coordinates": { "latitude": 39.9612, "longitude": -82.9988 },
+      "transactions": ["delivery", "pickup"],
+      "price": "$$",
+      "location": {
+        "address1": "123 High Street",
+        "address2": null,
+        "address3": "",
+        "city": "Columbus",
+        "zip_code": "43215",
+        "country": "US",
+        "state": "OH",
+        "display_address": ["123 High Street", "Columbus, OH 43215"]
+      },
+      "phone": "+16145551234",
+      "display_phone": "(614) 555-1234",
+      "distance": 450.5,
+      "hours": [
+        {
+          "hours_type": "REGULAR",
+          "is_open_now": true,
+          "open": [
+            { "day": 0, "start": "1100", "end": "2100", "is_overnight": false },
+            { "day": 1, "start": "1100", "end": "2100", "is_overnight": false },
+            { "day": 2, "start": "1100", "end": "2100", "is_overnight": false },
+            { "day": 3, "start": "1100", "end": "2100", "is_overnight": false },
+            { "day": 4, "start": "1100", "end": "2200", "is_overnight": false },
+            { "day": 5, "start": "1100", "end": "2200", "is_overnight": false },
+            { "day": 6, "start": "1200", "end": "2000", "is_overnight": false }
+          ]
+        }
+      ],
+      "photos": [
+        "https://s3-media1.fl.yelpcdn.com/bphoto/sample1a.jpg",
+        "https://s3-media1.fl.yelpcdn.com/bphoto/sample1b.jpg"
+      ]
+    },
+    {
+      "id": "mock-2-pizza-palace",
+      "alias": "pizza-palace-columbus",
+      "name": "Pizza Palace",
+      "image_url": "https://s3-media2.fl.yelpcdn.com/bphoto/sample2.jpg",
+      "is_closed": false,
+      "url": "https://www.yelp.com/biz/pizza-palace-columbus",
+      "review_count": 567,
+      "categories": [
+        { "alias": "pizza", "title": "Pizza" },
+        { "alias": "italian", "title": "Italian" }
+      ],
+      "rating": 4.0,
+      "coordinates": { "latitude": 39.9650, "longitude": -83.0010 },
+      "transactions": ["delivery", "pickup"],
+      "price": "$",
+      "location": {
+        "address1": "456 Main Street",
+        "address2": null,
+        "address3": "",
+        "city": "Columbus",
+        "zip_code": "43215",
+        "country": "US",
+        "state": "OH",
+        "display_address": ["456 Main Street", "Columbus, OH 43215"]
+      },
+      "phone": "+16145552345",
+      "display_phone": "(614) 555-2345",
+      "distance": 890.2,
+      "hours": [
+        {
+          "hours_type": "REGULAR",
+          "is_open_now": true,
+          "open": [
+            { "day": 0, "start": "1000", "end": "2300", "is_overnight": false },
+            { "day": 1, "start": "1000", "end": "2300", "is_overnight": false },
+            { "day": 2, "start": "1000", "end": "2300", "is_overnight": false },
+            { "day": 3, "start": "1000", "end": "2300", "is_overnight": false },
+            { "day": 4, "start": "1000", "end": "0000", "is_overnight": false },
+            { "day": 5, "start": "1000", "end": "0000", "is_overnight": false },
+            { "day": 6, "start": "1100", "end": "2200", "is_overnight": false }
+          ]
+        }
+      ],
+      "photos": [
+        "https://s3-media2.fl.yelpcdn.com/bphoto/sample2a.jpg"
+      ]
+    },
+    {
+      "id": "mock-3-sushi-zen",
+      "alias": "sushi-zen-columbus",
+      "name": "Sushi Zen",
+      "image_url": "https://s3-media3.fl.yelpcdn.com/bphoto/sample3.jpg",
+      "is_closed": false,
+      "url": "https://www.yelp.com/biz/sushi-zen-columbus",
+      "review_count": 234,
+      "categories": [
+        { "alias": "japanese", "title": "Japanese" },
+        { "alias": "sushi", "title": "Sushi Bars" }
+      ],
+      "rating": 4.5,
+      "coordinates": { "latitude": 39.9580, "longitude": -82.9950 },
+      "transactions": ["delivery", "pickup"],
+      "price": "$$$",
+      "location": {
+        "address1": "789 Oak Avenue",
+        "address2": "Suite 100",
+        "address3": "",
+        "city": "Columbus",
+        "zip_code": "43215",
+        "country": "US",
+        "state": "OH",
+        "display_address": ["789 Oak Avenue", "Suite 100", "Columbus, OH 43215"]
+      },
+      "phone": "+16145553456",
+      "display_phone": "(614) 555-3456",
+      "distance": 320.8,
+      "hours": [
+        {
+          "hours_type": "REGULAR",
+          "is_open_now": true,
+          "open": [
+            { "day": 0, "start": "1130", "end": "2130", "is_overnight": false },
+            { "day": 1, "start": "1130", "end": "2130", "is_overnight": false },
+            { "day": 2, "start": "1130", "end": "2130", "is_overnight": false },
+            { "day": 3, "start": "1130", "end": "2130", "is_overnight": false },
+            { "day": 4, "start": "1130", "end": "2230", "is_overnight": false },
+            { "day": 5, "start": "1130", "end": "2230", "is_overnight": false },
+            { "day": 6, "start": "1200", "end": "2100", "is_overnight": false }
+          ]
+        }
+      ],
+      "photos": [
+        "https://s3-media3.fl.yelpcdn.com/bphoto/sample3a.jpg",
+        "https://s3-media3.fl.yelpcdn.com/bphoto/sample3b.jpg",
+        "https://s3-media3.fl.yelpcdn.com/bphoto/sample3c.jpg"
+      ]
+    },
+    {
+      "id": "mock-4-taco-loco",
+      "alias": "taco-loco-columbus",
+      "name": "Taco Loco",
+      "image_url": "https://s3-media4.fl.yelpcdn.com/bphoto/sample4.jpg",
+      "is_closed": false,
+      "url": "https://www.yelp.com/biz/taco-loco-columbus",
+      "review_count": 890,
+      "categories": [
+        { "alias": "mexican", "title": "Mexican" },
+        { "alias": "tacos", "title": "Tacos" }
+      ],
+      "rating": 4.0,
+      "coordinates": { "latitude": 39.9700, "longitude": -83.0050 },
+      "transactions": ["delivery", "pickup"],
+      "price": "$",
+      "location": {
+        "address1": "321 Broad Street",
+        "address2": null,
+        "address3": "",
+        "city": "Columbus",
+        "zip_code": "43215",
+        "country": "US",
+        "state": "OH",
+        "display_address": ["321 Broad Street", "Columbus, OH 43215"]
+      },
+      "phone": "+16145554567",
+      "display_phone": "(614) 555-4567",
+      "distance": 1200.3,
+      "hours": [
+        {
+          "hours_type": "REGULAR",
+          "is_open_now": true,
+          "open": [
+            { "day": 0, "start": "0900", "end": "2200", "is_overnight": false },
+            { "day": 1, "start": "0900", "end": "2200", "is_overnight": false },
+            { "day": 2, "start": "0900", "end": "2200", "is_overnight": false },
+            { "day": 3, "start": "0900", "end": "2200", "is_overnight": false },
+            { "day": 4, "start": "0900", "end": "2300", "is_overnight": false },
+            { "day": 5, "start": "0900", "end": "2300", "is_overnight": false },
+            { "day": 6, "start": "1000", "end": "2100", "is_overnight": false }
+          ]
+        }
+      ],
+      "photos": [
+        "https://s3-media4.fl.yelpcdn.com/bphoto/sample4a.jpg"
+      ]
+    },
+    {
+      "id": "mock-5-burger-barn",
+      "alias": "burger-barn-columbus",
+      "name": "Burger Barn",
+      "image_url": "https://s3-media5.fl.yelpcdn.com/bphoto/sample5.jpg",
+      "is_closed": false,
+      "url": "https://www.yelp.com/biz/burger-barn-columbus",
+      "review_count": 456,
+      "categories": [
+        { "alias": "burgers", "title": "Burgers" },
+        { "alias": "tradamerican", "title": "American (Traditional)" }
+      ],
+      "rating": 3.5,
+      "coordinates": { "latitude": 39.9550, "longitude": -82.9920 },
+      "transactions": ["delivery", "pickup"],
+      "price": "$$",
+      "location": {
+        "address1": "555 State Street",
+        "address2": null,
+        "address3": "",
+        "city": "Columbus",
+        "zip_code": "43215",
+        "country": "US",
+        "state": "OH",
+        "display_address": ["555 State Street", "Columbus, OH 43215"]
+      },
+      "phone": "+16145555678",
+      "display_phone": "(614) 555-5678",
+      "distance": 680.1,
+      "hours": [
+        {
+          "hours_type": "REGULAR",
+          "is_open_now": true,
+          "open": [
+            { "day": 0, "start": "1100", "end": "2100", "is_overnight": false },
+            { "day": 1, "start": "1100", "end": "2100", "is_overnight": false },
+            { "day": 2, "start": "1100", "end": "2100", "is_overnight": false },
+            { "day": 3, "start": "1100", "end": "2100", "is_overnight": false },
+            { "day": 4, "start": "1100", "end": "2200", "is_overnight": false },
+            { "day": 5, "start": "1100", "end": "2200", "is_overnight": false },
+            { "day": 6, "start": "1200", "end": "2000", "is_overnight": false }
+          ]
+        }
+      ],
+      "photos": [
+        "https://s3-media5.fl.yelpcdn.com/bphoto/sample5a.jpg",
+        "https://s3-media5.fl.yelpcdn.com/bphoto/sample5b.jpg"
+      ]
+    },
+    {
+      "id": "mock-6-cafe-paris",
+      "alias": "cafe-paris-columbus",
+      "name": "Café Paris",
+      "image_url": "https://s3-media6.fl.yelpcdn.com/bphoto/sample6.jpg",
+      "is_closed": false,
+      "url": "https://www.yelp.com/biz/cafe-paris-columbus",
+      "review_count": 178,
+      "categories": [
+        { "alias": "french", "title": "French" },
+        { "alias": "cafes", "title": "Cafes" }
+      ],
+      "rating": 4.5,
+      "coordinates": { "latitude": 39.9630, "longitude": -82.9970 },
+      "transactions": ["pickup"],
+      "price": "$$$$",
+      "location": {
+        "address1": "888 Pearl Street",
+        "address2": null,
+        "address3": "",
+        "city": "Columbus",
+        "zip_code": "43215",
+        "country": "US",
+        "state": "OH",
+        "display_address": ["888 Pearl Street", "Columbus, OH 43215"]
+      },
+      "phone": "+16145556789",
+      "display_phone": "(614) 555-6789",
+      "distance": 510.7,
+      "hours": [
+        {
+          "hours_type": "REGULAR",
+          "is_open_now": false,
+          "open": [
+            { "day": 1, "start": "1700", "end": "2200", "is_overnight": false },
+            { "day": 2, "start": "1700", "end": "2200", "is_overnight": false },
+            { "day": 3, "start": "1700", "end": "2200", "is_overnight": false },
+            { "day": 4, "start": "1700", "end": "2300", "is_overnight": false },
+            { "day": 5, "start": "1700", "end": "2300", "is_overnight": false },
+            { "day": 6, "start": "1700", "end": "2200", "is_overnight": false }
+          ]
+        }
+      ],
+      "photos": [
+        "https://s3-media6.fl.yelpcdn.com/bphoto/sample6a.jpg"
+      ]
+    },
+    {
+      "id": "mock-7-pho-saigon",
+      "alias": "pho-saigon-columbus",
+      "name": "Pho Saigon",
+      "image_url": "https://s3-media7.fl.yelpcdn.com/bphoto/sample7.jpg",
+      "is_closed": false,
+      "url": "https://www.yelp.com/biz/pho-saigon-columbus",
+      "review_count": 623,
+      "categories": [
+        { "alias": "vietnamese", "title": "Vietnamese" },
+        { "alias": "soup", "title": "Soup" }
+      ],
+      "rating": 4.0,
+      "coordinates": { "latitude": 39.9590, "longitude": -83.0030 },
+      "transactions": ["delivery", "pickup"],
+      "price": "$",
+      "location": {
+        "address1": "222 Summit Street",
+        "address2": null,
+        "address3": "",
+        "city": "Columbus",
+        "zip_code": "43215",
+        "country": "US",
+        "state": "OH",
+        "display_address": ["222 Summit Street", "Columbus, OH 43215"]
+      },
+      "phone": "+16145557890",
+      "display_phone": "(614) 555-7890",
+      "distance": 750.4,
+      "hours": [
+        {
+          "hours_type": "REGULAR",
+          "is_open_now": true,
+          "open": [
+            { "day": 0, "start": "1000", "end": "2100", "is_overnight": false },
+            { "day": 1, "start": "1000", "end": "2100", "is_overnight": false },
+            { "day": 2, "start": "1000", "end": "2100", "is_overnight": false },
+            { "day": 3, "start": "1000", "end": "2100", "is_overnight": false },
+            { "day": 4, "start": "1000", "end": "2200", "is_overnight": false },
+            { "day": 5, "start": "1000", "end": "2200", "is_overnight": false },
+            { "day": 6, "start": "1100", "end": "2000", "is_overnight": false }
+          ]
+        }
+      ],
+      "photos": [
+        "https://s3-media7.fl.yelpcdn.com/bphoto/sample7a.jpg",
+        "https://s3-media7.fl.yelpcdn.com/bphoto/sample7b.jpg"
+      ]
+    },
+    {
+      "id": "mock-8-steakhouse-prime",
+      "alias": "steakhouse-prime-columbus",
+      "name": "Steakhouse Prime",
+      "image_url": "https://s3-media8.fl.yelpcdn.com/bphoto/sample8.jpg",
+      "is_closed": false,
+      "url": "https://www.yelp.com/biz/steakhouse-prime-columbus",
+      "review_count": 289,
+      "categories": [
+        { "alias": "steak", "title": "Steakhouses" },
+        { "alias": "seafood", "title": "Seafood" }
+      ],
+      "rating": 4.5,
+      "coordinates": { "latitude": 39.9680, "longitude": -82.9900 },
+      "transactions": [],
+      "price": "$$$$",
+      "location": {
+        "address1": "999 Capital Square",
+        "address2": null,
+        "address3": "",
+        "city": "Columbus",
+        "zip_code": "43215",
+        "country": "US",
+        "state": "OH",
+        "display_address": ["999 Capital Square", "Columbus, OH 43215"]
+      },
+      "phone": "+16145558901",
+      "display_phone": "(614) 555-8901",
+      "distance": 1450.2,
+      "hours": [
+        {
+          "hours_type": "REGULAR",
+          "is_open_now": true,
+          "open": [
+            { "day": 0, "start": "1700", "end": "2200", "is_overnight": false },
+            { "day": 1, "start": "1700", "end": "2200", "is_overnight": false },
+            { "day": 2, "start": "1700", "end": "2200", "is_overnight": false },
+            { "day": 3, "start": "1700", "end": "2200", "is_overnight": false },
+            { "day": 4, "start": "1700", "end": "2300", "is_overnight": false },
+            { "day": 5, "start": "1700", "end": "2300", "is_overnight": false },
+            { "day": 6, "start": "1700", "end": "2200", "is_overnight": false }
+          ]
+        }
+      ],
+      "photos": [
+        "https://s3-media8.fl.yelpcdn.com/bphoto/sample8a.jpg"
+      ]
+    },
+    {
+      "id": "mock-9-curry-house",
+      "alias": "curry-house-columbus",
+      "name": "Curry House",
+      "image_url": "https://s3-media9.fl.yelpcdn.com/bphoto/sample9.jpg",
+      "is_closed": false,
+      "url": "https://www.yelp.com/biz/curry-house-columbus",
+      "review_count": 412,
+      "categories": [
+        { "alias": "indpak", "title": "Indian" },
+        { "alias": "pakistani", "title": "Pakistani" }
+      ],
+      "rating": 4.0,
+      "coordinates": { "latitude": 39.9540, "longitude": -83.0080 },
+      "transactions": ["delivery", "pickup"],
+      "price": "$$",
+      "location": {
+        "address1": "444 Lane Avenue",
+        "address2": null,
+        "address3": "",
+        "city": "Columbus",
+        "zip_code": "43215",
+        "country": "US",
+        "state": "OH",
+        "display_address": ["444 Lane Avenue", "Columbus, OH 43215"]
+      },
+      "phone": "+16145559012",
+      "display_phone": "(614) 555-9012",
+      "distance": 980.6,
+      "hours": [
+        {
+          "hours_type": "REGULAR",
+          "is_open_now": true,
+          "open": [
+            { "day": 0, "start": "1130", "end": "2130", "is_overnight": false },
+            { "day": 1, "start": "1130", "end": "2130", "is_overnight": false },
+            { "day": 2, "start": "1130", "end": "2130", "is_overnight": false },
+            { "day": 3, "start": "1130", "end": "2130", "is_overnight": false },
+            { "day": 4, "start": "1130", "end": "2230", "is_overnight": false },
+            { "day": 5, "start": "1130", "end": "2230", "is_overnight": false },
+            { "day": 6, "start": "1200", "end": "2100", "is_overnight": false }
+          ]
+        }
+      ],
+      "photos": [
+        "https://s3-media9.fl.yelpcdn.com/bphoto/sample9a.jpg",
+        "https://s3-media9.fl.yelpcdn.com/bphoto/sample9b.jpg"
+      ]
+    },
+    {
+      "id": "mock-10-noodle-bar",
+      "alias": "noodle-bar-columbus",
+      "name": "Noodle Bar",
+      "image_url": "https://s3-media10.fl.yelpcdn.com/bphoto/sample10.jpg",
+      "is_closed": false,
+      "url": "https://www.yelp.com/biz/noodle-bar-columbus",
+      "review_count": 534,
+      "categories": [
+        { "alias": "chinese", "title": "Chinese" },
+        { "alias": "noodles", "title": "Noodles" }
+      ],
+      "rating": 3.5,
+      "coordinates": { "latitude": 39.9620, "longitude": -82.9960 },
+      "transactions": ["delivery", "pickup"],
+      "price": "$",
+      "location": {
+        "address1": "777 Third Avenue",
+        "address2": null,
+        "address3": "",
+        "city": "Columbus",
+        "zip_code": "43215",
+        "country": "US",
+        "state": "OH",
+        "display_address": ["777 Third Avenue", "Columbus, OH 43215"]
+      },
+      "phone": "+16145550123",
+      "display_phone": "(614) 555-0123",
+      "distance": 290.5,
+      "hours": [
+        {
+          "hours_type": "REGULAR",
+          "is_open_now": true,
+          "open": [
+            { "day": 0, "start": "1100", "end": "2200", "is_overnight": false },
+            { "day": 1, "start": "1100", "end": "2200", "is_overnight": false },
+            { "day": 2, "start": "1100", "end": "2200", "is_overnight": false },
+            { "day": 3, "start": "1100", "end": "2200", "is_overnight": false },
+            { "day": 4, "start": "1100", "end": "2300", "is_overnight": false },
+            { "day": 5, "start": "1100", "end": "2300", "is_overnight": false },
+            { "day": 6, "start": "1200", "end": "2100", "is_overnight": false }
+          ]
+        }
+      ],
+      "photos": [
+        "https://s3-media10.fl.yelpcdn.com/bphoto/sample10a.jpg"
+      ]
+    },
+    {
+      "id": "mock-11-mediterranean-grill",
+      "alias": "mediterranean-grill-columbus",
+      "name": "Mediterranean Grill",
+      "image_url": "https://s3-media11.fl.yelpcdn.com/bphoto/sample11.jpg",
+      "is_closed": false,
+      "url": "https://www.yelp.com/biz/mediterranean-grill-columbus",
+      "review_count": 367,
+      "categories": [
+        { "alias": "mediterranean", "title": "Mediterranean" },
+        { "alias": "greek", "title": "Greek" }
+      ],
+      "rating": 4.5,
+      "coordinates": { "latitude": 39.9575, "longitude": -83.0015 },
+      "transactions": ["delivery", "pickup"],
+      "price": "$$",
+      "location": {
+        "address1": "111 Front Street",
+        "address2": null,
+        "address3": "",
+        "city": "Columbus",
+        "zip_code": "43215",
+        "country": "US",
+        "state": "OH",
+        "display_address": ["111 Front Street", "Columbus, OH 43215"]
+      },
+      "phone": "+16145551357",
+      "display_phone": "(614) 555-1357",
+      "distance": 620.9,
+      "hours": [
+        {
+          "hours_type": "REGULAR",
+          "is_open_now": true,
+          "open": [
+            { "day": 0, "start": "1100", "end": "2100", "is_overnight": false },
+            { "day": 1, "start": "1100", "end": "2100", "is_overnight": false },
+            { "day": 2, "start": "1100", "end": "2100", "is_overnight": false },
+            { "day": 3, "start": "1100", "end": "2100", "is_overnight": false },
+            { "day": 4, "start": "1100", "end": "2200", "is_overnight": false },
+            { "day": 5, "start": "1100", "end": "2200", "is_overnight": false },
+            { "day": 6, "start": "1200", "end": "2000", "is_overnight": false }
+          ]
+        }
+      ],
+      "photos": [
+        "https://s3-media11.fl.yelpcdn.com/bphoto/sample11a.jpg"
+      ]
+    },
+    {
+      "id": "mock-12-bbq-pit",
+      "alias": "bbq-pit-columbus",
+      "name": "BBQ Pit",
+      "image_url": "https://s3-media12.fl.yelpcdn.com/bphoto/sample12.jpg",
+      "is_closed": false,
+      "url": "https://www.yelp.com/biz/bbq-pit-columbus",
+      "review_count": 789,
+      "categories": [
+        { "alias": "bbq", "title": "Barbeque" },
+        { "alias": "southern", "title": "Southern" }
+      ],
+      "rating": 4.0,
+      "coordinates": { "latitude": 39.9710, "longitude": -82.9940 },
+      "transactions": ["delivery", "pickup"],
+      "price": "$$",
+      "location": {
+        "address1": "666 Smoky Lane",
+        "address2": null,
+        "address3": "",
+        "city": "Columbus",
+        "zip_code": "43215",
+        "country": "US",
+        "state": "OH",
+        "display_address": ["666 Smoky Lane", "Columbus, OH 43215"]
+      },
+      "phone": "+16145552468",
+      "display_phone": "(614) 555-2468",
+      "distance": 1350.8,
+      "hours": [
+        {
+          "hours_type": "REGULAR",
+          "is_open_now": true,
+          "open": [
+            { "day": 0, "start": "1100", "end": "2000", "is_overnight": false },
+            { "day": 1, "start": "1100", "end": "2000", "is_overnight": false },
+            { "day": 2, "start": "1100", "end": "2000", "is_overnight": false },
+            { "day": 3, "start": "1100", "end": "2000", "is_overnight": false },
+            { "day": 4, "start": "1100", "end": "2100", "is_overnight": false },
+            { "day": 5, "start": "1100", "end": "2100", "is_overnight": false },
+            { "day": 6, "start": "1200", "end": "1900", "is_overnight": false }
+          ]
+        }
+      ],
+      "photos": [
+        "https://s3-media12.fl.yelpcdn.com/bphoto/sample12a.jpg",
+        "https://s3-media12.fl.yelpcdn.com/bphoto/sample12b.jpg"
+      ]
+    }
+  ],
+  "total": 12,
+  "region": {
+    "center": {
+      "longitude": -82.9988,
+      "latitude": 39.9612
+    }
+  }
+}

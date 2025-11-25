@@ -4,6 +4,7 @@
     "jsx": "react-jsx",
     "strict": true,
     "types": ["react", "react-native"],
+    "resolveJsonModule": true
   },
   "exclude": [
     "node_modules",
