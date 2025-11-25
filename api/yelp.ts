@@ -2,8 +2,14 @@ import axios from "axios";
 import { YELP_API_KEY, DEV_USE_MOCK } from "@env";
 import { logSafe } from "../utils/log";
 
-// Mock data for development - avoids 429 rate limit errors
-import mockSearchResponse from "../fixtures/yelpSearchResponse.json";
+// Mock data loaded lazily to avoid bundler issues
+let mockSearchResponse: any = null;
+function getMockSearchResponse() {
+	if (!mockSearchResponse) {
+		mockSearchResponse = require("../fixtures/yelpSearchResponse.json");
+	}
+	return mockSearchResponse;
+}
 
 const YELP_URL = `https://api.yelp.com/v3`;
 
@@ -92,18 +98,20 @@ if (useMockData) {
  * Returns mock data based on the request URL
  */
 function getMockDataForRequest(url: string): any {
+	const mockData = getMockSearchResponse();
+
 	if (url.includes('/businesses/search')) {
-		return mockSearchResponse;
+		return mockData;
 	}
 
 	// For business details, return the first mock business
 	if (url.includes('/businesses/')) {
 		const businessId = url.split('/businesses/')[1]?.split('?')[0];
-		const business = mockSearchResponse.businesses.find(b => b.id === businessId);
-		return business || mockSearchResponse.businesses[0];
+		const business = mockData.businesses.find((b: any) => b.id === businessId);
+		return business || mockData.businesses[0];
 	}
 
-	return mockSearchResponse;
+	return mockData;
 }
 
 /**
