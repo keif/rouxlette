@@ -11,6 +11,7 @@ import { initialAppState } from "./context/state";
 import { RootContext } from "./context/RootContext";
 import { StatusBar } from "expo-status-bar";
 import { BusinessCardModal } from "./components/shared/BusinessCardModal";
+import DevStorageDebug from "./components/shared/DevStorageDebug";
 
 export default function App() {
 	const isLoadingComplete = useCachedResources();
@@ -33,6 +34,7 @@ export default function App() {
 							translucent
 						/>
 						<BusinessCardModal />
+						<DevStorageDebug />
 					</RootContext.Provider>
 				</SafeAreaProvider>
 			</GestureHandlerRootView>

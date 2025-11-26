@@ -126,33 +126,11 @@ export const HomeScreen: React.FC = () => {
       return;
     }
 
+    // Pick random result and trigger spin animation
     const randomIndex = Math.floor(Math.random() * state.results.length);
     const selectedRestaurant = state.results[randomIndex];
-
-    addHistoryEntry({
-      business: selectedRestaurant,
-      source: 'spin',
-      context: {
-        searchTerm: searchQuery,
-        locationText: displayLocation,
-        coords: coords,
-        filters: {
-          openNow: state.filters.openNow,
-          categories: state.filters.categoryIds,
-          priceLevels: state.filters.priceLevels,
-          radiusMeters: state.filters.radiusMeters,
-          minRating: state.filters.minRating,
-        },
-      },
-    });
-
-    const spinEntry = {
-      restaurant: selectedRestaurant,
-      timestamp: Date.now(),
-    };
-    dispatch(addSpinHistory(spinEntry));
-    dispatch(setSelectedBusiness(selectedRestaurant));
-    dispatch(showBusinessModal());
+    setSelectedResult(selectedRestaurant);
+    setIsAutoSpinning(true);
   };
 
   const handleSearch = async () => {
