@@ -21,14 +21,12 @@ import OpenSign from '../results/OpenSign';
 import {FontAwesome, Ionicons, MaterialIcons} from '@expo/vector-icons';
 import {useBusinessDetails} from '../../hooks/useBusinessDetails';
 import useBusinessHours from '../../hooks/useBusinessHours';
-import {useFavorites} from '../../hooks/useFavorites';
-import {useBlocked} from '../../hooks/useBlocked';
+import {useBlockFavorite} from '../../hooks/useBlockFavorite';
 import {BusinessProps} from '../../hooks/useResults';
 import ImageViewerModal from './ImageViewerModal';
 import {radius} from "../../theme";
 import { InteractiveCategoryTag } from './InteractiveCategoryTag';
 import { logSafe } from '../../utils/log';
-import { useToast } from '../../context/ToastContext';
 
 // Helper function to format distance
 const formatDistance = (meters: number): string => {
@@ -76,14 +74,19 @@ export function BusinessCardModal() {
         hasDetails
     } = useBusinessDetails(businessForHook || {} as BusinessProps, true);
     const {todayLabel, isOpen} = useBusinessHours(enrichedBusiness.hours);
-    const {isFavorite, toggleFavorite} = useFavorites();
-    const {isBlocked, toggleBlocked} = useBlocked();
-    const {showToast} = useToast();
+    const {isFavorite, isBlocked, handleFavorite, handleBlock} = useBlockFavorite();
 
     const handleBlockPress = () => {
         if (businessForHook) {
             logSafe('[BusinessCardModal] Block pressed', { id: businessForHook.id, name: businessForHook.name });
-            toggleBlocked(businessForHook);
+            handleBlock(businessForHook);
+        }
+    };
+
+    const handleFavoritePress = () => {
+        if (businessForHook) {
+            logSafe('[BusinessCardModal] Favorite pressed', { id: businessForHook.id, name: businessForHook.name });
+            handleFavorite(businessForHook);
         }
     };
 
@@ -188,7 +191,7 @@ export function BusinessCardModal() {
                     </Pressable>
                     <Pressable
                         style={styles.actionButton}
-                        onPress={() => toggleFavorite(businessForHook)}
+                        onPress={handleFavoritePress}
                         android_ripple={{
                             color: "rgba(255,255,255,0.3)",
                             radius: 20,

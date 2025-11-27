@@ -8,14 +8,12 @@ import OpenSign from "../results/OpenSign";
 import FlipCard from "../shared/FlipCard";
 import Config from "../../Config";
 import {logSafe} from "../../utils/log";
-import {useFavorites} from "../../hooks/useFavorites";
-import {useBlocked} from "../../hooks/useBlocked";
+import {useBlockFavorite} from "../../hooks/useBlockFavorite";
 import {useHistory} from "../../hooks/useHistory";
 import {RootContext} from '../../context/RootContext';
 import {useBusinessDetails} from "../../hooks/useBusinessDetails";
 import useBusinessHours from "../../hooks/useBusinessHours";
 import ImageViewerModal from "../shared/ImageViewerModal";
-import {useToast} from "../../context/ToastContext";
 
 interface RestaurantCardProps {
     index: number;
@@ -49,17 +47,17 @@ const RestaurantCard = ({index, result}: RestaurantCardProps) => {
     const translateY = useRef<Animated.Value>(new Animated.Value(50)).current;
     const opacity = useRef<Animated.Value>(new Animated.Value(0)).current;
     const is_open_now = hours && hours[0]?.is_open_now || false;
-    const {isFavorite, toggleFavorite} = useFavorites();
-    const {isBlocked, toggleBlocked} = useBlocked();
+    const {isFavorite, isBlocked, handleFavorite, handleBlock} = useBlockFavorite();
     const {addHistoryEntry} = useHistory();
-    const {showToast} = useToast();
 
     const handleBlockPress = () => {
-        const wasBlocked = isBlocked(result.id);
-        toggleBlocked(result);
-        if (!wasBlocked) {
-            showToast('Added to block list (Saved tab)');
-        }
+        logSafe('[RestaurantCard] Block pressed', { id: result.id, name: result.name });
+        handleBlock(result);
+    };
+
+    const handleFavoritePress = () => {
+        logSafe('[RestaurantCard] Favorite pressed', { id: result.id, name: result.name });
+        handleFavorite(result);
     };
     const {state} = useContext(RootContext);
     const [isFlipped, setIsFlipped] = useState(false);
@@ -196,7 +194,7 @@ const RestaurantCard = ({index, result}: RestaurantCardProps) => {
                     </Pressable>
                     <Pressable
                         style={styles.actionButton}
-                        onPress={() => toggleFavorite(result)}
+                        onPress={handleFavoritePress}
                         android_ripple={{
                             color: "rgba(255,255,255,0.3)",
                             radius: 20,

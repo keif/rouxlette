@@ -1,6 +1,7 @@
 import "react-native-gesture-handler";
 import { GestureHandlerRootView } from "react-native-gesture-handler";
 import { SafeAreaProvider } from "react-native-safe-area-context";
+import { View } from "react-native";
 
 import useCachedResources from "./hooks/useCachedResources";
 import useColorScheme from "./hooks/useColorScheme";
@@ -14,6 +15,9 @@ import { StatusBar } from "expo-status-bar";
 import { BusinessCardModal } from "./components/shared/BusinessCardModal";
 import DevStorageDebug from "./components/shared/DevStorageDebug";
 
+// Match splash screen background color to prevent white flash
+const SPLASH_BACKGROUND = "#1B5E20";
+
 export default function App() {
 	const isLoadingComplete = useCachedResources();
 	const colorScheme = useColorScheme();
@@ -23,7 +27,8 @@ export default function App() {
 	const contextValue = useMemo(() => ({ state, dispatch }), [state, dispatch]);
 
 	if (!isLoadingComplete) {
-		return null;
+		// Show green background while loading to match splash screen
+		return <View style={{ flex: 1, backgroundColor: SPLASH_BACKGROUND }} />;
 	} else {
 		return (
 			<GestureHandlerRootView style={{ flex: 1 }}>
