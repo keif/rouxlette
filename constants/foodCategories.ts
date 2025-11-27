@@ -1,6 +1,100 @@
 import { CategoryProps } from '../hooks/useResults';
 
 /**
+ * Non-food category aliases that should be filtered out of results.
+ * These can slip through when searching generic terms like "food" near auto shops.
+ * Used as a safety net in addition to API-level category filtering.
+ */
+export const BLOCKED_CATEGORY_ALIASES: string[] = [
+  // Automotive
+  'auto',
+  'autorepair',
+  'autoglass',
+  'bodyshops',
+  'carwash',
+  'servicestations',
+  'tires',
+  'oilchange',
+  'smog_check_stations',
+  'transmissionrepair',
+  'autodealers',
+  'usedcardealers',
+  'carrental',
+  'parking',
+  'truckrepair',
+  'motorcyclerepair',
+  'boatrepair',
+  'rvrepair',
+
+  // Home services
+  'plumbing',
+  'electricians',
+  'hvac',
+  'contractors',
+  'handyman',
+  'locksmiths',
+  'roofing',
+  'movers',
+  'homecleaning',
+  'landscaping',
+  'pestcontrol',
+  'painters',
+  'flooring',
+
+  // Professional services
+  'lawyers',
+  'accountants',
+  'financialservices',
+  'insurance',
+  'realestate',
+  'realestateagents',
+
+  // Health (non-food)
+  'dentists',
+  'physicians',
+  'chiropractors',
+  'optometrists',
+  'veterinarians',
+  'urgent_care',
+  'hospitals',
+  'pharmacies',
+
+  // Retail (non-food)
+  'electronics',
+  'furniture',
+  'clothing',
+  'jewelry',
+  'sportgoods',
+  'hardware',
+  'homeandgarden',
+
+  // Other non-food
+  'gyms',
+  'hair',
+  'spas',
+  'nailsalons',
+  'drycleaninglaundry',
+  'shipping_centers',
+  'printingservices',
+  'notaries',
+  'petservices',
+  'petboarding',
+  'funeral_services',
+  'selfstorage',
+];
+
+/**
+ * Check if a business has any blocked categories
+ * @param categoryAliases Array of category aliases from a business
+ * @returns true if any category is in the blocklist
+ */
+export function hasBlockedCategory(categoryAliases: string[]): boolean {
+  return categoryAliases.some(alias =>
+    BLOCKED_CATEGORY_ALIASES.includes(alias.toLowerCase())
+  );
+}
+
+/**
  * Curated list of popular food and restaurant categories for filtering.
  * These align with Yelp's category aliases.
  *

@@ -7,6 +7,7 @@ import { v4 as uuid } from "uuid";
 import { logSafe, logArray, logNetwork } from "../utils/log";
 import { LocationObjectCoords } from "expo-location";
 import { ResolvedLocation } from "./useLocation";
+import { hasBlockedCategory } from "../constants/foodCategories";
 
 export const PRICE_OPTIONS = [`$`, `$$`, `$$$`, `$$$$`];
 
@@ -111,8 +112,13 @@ export default function useResults() {
 			devLog('No cache found, making API request...');
 
 			// Determine search parameters
-			let searchParams: any = { term: searchTerm, limit: 50 };
-			
+			// Include categories to ensure we only get food/restaurant results
+			let searchParams: any = {
+				term: searchTerm,
+				limit: 50,
+				categories: 'restaurants,food,bars,cafes,bakeries,desserts,coffee',
+			};
+
 			if (coords?.latitude && coords?.longitude) {
 				// Use coordinates for more accurate search
 				searchParams.latitude = coords.latitude;
@@ -143,24 +149,34 @@ export default function useResults() {
 				// Ensure businesses is an array and filter out closed businesses
 				const businessesArray = Array.isArray(response.data.businesses) ? response.data.businesses : [];
 
-				// Filter out closed businesses (is_closed flag from Yelp API)
-				const onlyOpenBusinesses = businessesArray.filter((business: BusinessProps) => {
-					return !business.is_closed;
+				// Filter out closed businesses and non-food categories
+				const filteredBusinesses = businessesArray.filter((business: BusinessProps) => {
+					// Exclude permanently closed businesses
+					if (business.is_closed) return false;
+
+					// Exclude non-food businesses (body shops, etc.)
+					const categoryAliases = business.categories?.map(c => c.alias) || [];
+					if (hasBlockedCategory(categoryAliases)) {
+						devLog('Filtered out non-food business:', { name: business.name, categories: categoryAliases });
+						return false;
+					}
+
+					return true;
 				});
 
-				logArray('useResults filtered businesses', onlyOpenBusinesses, 3);
+				logArray('useResults filtered businesses', filteredBusinesses, 3);
 
 				// Create final results object
 				const finalResults: ResultsProps = {
 					id: uuid(),
-					businesses: onlyOpenBusinesses,
+					businesses: filteredBusinesses,
 				};
 
 				// Cache the results (this is debounced and change-detected automatically)
-				await resultsPersistence.cacheResults(location, searchTerm, onlyOpenBusinesses, coords);
+				await resultsPersistence.cacheResults(location, searchTerm, filteredBusinesses, coords);
 
 				setResults(finalResults);
-				return onlyOpenBusinesses;
+				return filteredBusinesses;
 			} else {
 				devLog('No businesses in API response');
 				setResults(INIT_RESULTS);
@@ -237,8 +253,13 @@ export default function useResults() {
 			devLog('No cache found, making API request with resolved location...');
 
 			// Build Yelp search parameters - prefer coordinates over location string
-			const searchParams: any = { term: searchTerm, limit: 50 };
-			
+			// Include categories to ensure we only get food/restaurant results
+			const searchParams: any = {
+				term: searchTerm,
+				limit: 50,
+				categories: 'restaurants,food,bars,cafes,bakeries,desserts,coffee',
+			};
+
 			if (resolvedLocation.coords?.latitude && resolvedLocation.coords?.longitude) {
 				// PREFERRED: Use coordinates for most accurate search
 				searchParams.latitude = resolvedLocation.coords.latitude;
@@ -266,25 +287,35 @@ export default function useResults() {
 			});
 
 			if (response.data && response.data.businesses) {
-				// Ensure businesses is an array and filter out closed businesses
+				// Ensure businesses is an array and filter out closed/non-food businesses
 				const businessesArray = Array.isArray(response.data.businesses) ? response.data.businesses : [];
-				const onlyOpenBusinesses = businessesArray.filter((business: BusinessProps) => {
-					return !business.is_closed;
+				const filteredBusinesses = businessesArray.filter((business: BusinessProps) => {
+					// Exclude permanently closed businesses
+					if (business.is_closed) return false;
+
+					// Exclude non-food businesses (body shops, etc.)
+					const categoryAliases = business.categories?.map(c => c.alias) || [];
+					if (hasBlockedCategory(categoryAliases)) {
+						devLog('Filtered out non-food business:', { name: business.name, categories: categoryAliases });
+						return false;
+					}
+
+					return true;
 				});
 
-				logArray('Enhanced search filtered businesses', onlyOpenBusinesses, 3);
+				logArray('Enhanced search filtered businesses', filteredBusinesses, 3);
 
 				// Create final results object
 				const finalResults: ResultsProps = {
 					id: uuid(),
-					businesses: onlyOpenBusinesses,
+					businesses: filteredBusinesses,
 				};
 
 				// Cache the results with the specific cache key
-				await resultsPersistence.cacheResultsByKey(cacheKey, onlyOpenBusinesses);
+				await resultsPersistence.cacheResultsByKey(cacheKey, filteredBusinesses);
 
 				setResults(finalResults);
-				return onlyOpenBusinesses;
+				return filteredBusinesses;
 			} else {
 				devLog('No businesses in API response');
 				setResults(INIT_RESULTS);
