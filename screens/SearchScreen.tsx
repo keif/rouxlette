@@ -19,6 +19,7 @@ import {
 } from '../context/reducer';
 import useResults, {BusinessProps} from '../hooks/useResults';
 import useLocation from '../hooks/useLocation';
+import {useBlocked} from '../hooks/useBlocked';
 import FiltersSheet from '../components/filter/FiltersSheet';
 import {applyFilters, countActiveFilters} from '../utils/filterBusinesses';
 import {RootTabScreenProps} from '../types';
@@ -49,6 +50,7 @@ export const SearchScreen: React.FC = () => {
     const [locationInput, setLocationInput] = useState('');
     const [resultsErrorMessage, searchResults, searchApi, searchApiWithResolver, resultsLoading] = useResults();
     const [, city, canonicalLocation, coords, , searchLocation, resolveSearchArea, isLocationLoading, , stopLocationWatcher] = useLocation();
+    const {blocked} = useBlocked();
 
     const isLoading = resultsLoading || isSearching;
     const displayLocation = state.location || city || 'Current Location';
@@ -155,7 +157,11 @@ export const SearchScreen: React.FC = () => {
                 businesses = await searchApi(term, state.location || 'Current Location', coords);
             }
 
-            dispatch(setResults(businesses));
+            // Filter out blocked restaurants
+            const blockedIds = new Set(blocked.map(b => b.id));
+            const filteredBusinesses = businesses.filter(b => !blockedIds.has(b.id));
+
+            dispatch(setResults(filteredBusinesses));
         } catch (error) {
             setErrorMessage('Failed to search restaurants. Please try again.');
             dispatch(setResults([]));

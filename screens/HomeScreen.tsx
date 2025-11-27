@@ -19,6 +19,7 @@ import { setResults, setShowFilter, addSpinHistory, setSelectedBusiness, showBus
 import useResults, { BusinessProps } from '../hooks/useResults';
 import useLocation from '../hooks/useLocation';
 import { useHistory } from '../hooks/useHistory';
+import { useBlocked } from '../hooks/useBlocked';
 import useCategories from '../hooks/useCategories';
 import FiltersSheet from '../components/filter/FiltersSheet';
 import { countActiveFilters } from '../utils/filterBusinesses';
@@ -38,6 +39,7 @@ export const HomeScreen: React.FC = () => {
   const [resultsErrorMessage, searchResults, searchApi, searchApiWithResolver, resultsLoading] = useResults();
   const [, city, canonicalLocation, coords, , searchLocation, resolveSearchArea, isLocationLoading, , stopLocationWatcher] = useLocation();
   const { addHistoryEntry } = useHistory();
+  const { blocked } = useBlocked();
   const { loadCategories } = useCategories();
 
   const isLoading = resultsLoading || isSearching;
@@ -149,12 +151,16 @@ export const HomeScreen: React.FC = () => {
         businesses = await searchApi(term, state.location || 'Current Location', coords);
       }
 
-      dispatch(setResults(businesses));
+      // Filter out blocked restaurants
+      const blockedIds = new Set(blocked.map(b => b.id));
+      const filteredBusinesses = businesses.filter(b => !blockedIds.has(b.id));
+
+      dispatch(setResults(filteredBusinesses));
 
       // Pick random result after successful search
-      if (businesses.length > 0) {
-        const randomIndex = Math.floor(Math.random() * businesses.length);
-        const selectedRestaurant = businesses[randomIndex];
+      if (filteredBusinesses.length > 0) {
+        const randomIndex = Math.floor(Math.random() * filteredBusinesses.length);
+        const selectedRestaurant = filteredBusinesses[randomIndex];
         setSelectedResult(selectedRestaurant);
         // Start spinning NOW that we have a result
         setIsAutoSpinning(true);

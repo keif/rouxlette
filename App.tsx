@@ -9,6 +9,7 @@ import React, { useReducer, useMemo } from "react";
 import { appReducer } from "./context/reducer";
 import { initialAppState } from "./context/state";
 import { RootContext } from "./context/RootContext";
+import { ToastProvider } from "./context/ToastContext";
 import { StatusBar } from "expo-status-bar";
 import { BusinessCardModal } from "./components/shared/BusinessCardModal";
 import DevStorageDebug from "./components/shared/DevStorageDebug";
@@ -28,13 +29,15 @@ export default function App() {
 			<GestureHandlerRootView style={{ flex: 1 }}>
 				<SafeAreaProvider>
 					<RootContext.Provider value={contextValue}>
-						<Navigation colorScheme={colorScheme} />
-						<StatusBar
-							backgroundColor="transparent"
-							translucent
-						/>
-						<BusinessCardModal />
-						<DevStorageDebug />
+						<ToastProvider>
+							<Navigation colorScheme={colorScheme} />
+							<StatusBar
+								backgroundColor="transparent"
+								translucent
+							/>
+							<BusinessCardModal />
+							<DevStorageDebug />
+						</ToastProvider>
 					</RootContext.Provider>
 				</SafeAreaProvider>
 			</GestureHandlerRootView>

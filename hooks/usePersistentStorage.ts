@@ -1,4 +1,4 @@
-import { useRef, useCallback } from 'react';
+import { useRef, useCallback, useMemo } from 'react';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { logSafe, safeStringify } from '../utils/log';
 
@@ -241,7 +241,7 @@ export default function usePersistentStorage(options: PersistentStorageOptions =
     }
   }, [keyPrefix, log, handleError]);
 
-  return {
+  return useMemo(() => ({
     getItem,
     setItem,
     deleteItem,
@@ -249,5 +249,5 @@ export default function usePersistentStorage(options: PersistentStorageOptions =
     forceSetItem,
     isHydrated,
     markAsHydrated,
-  } as const;
+  }), [getItem, setItem, deleteItem, getAllItems, forceSetItem, isHydrated, markAsHydrated]);
 }

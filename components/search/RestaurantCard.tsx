@@ -9,11 +9,13 @@ import FlipCard from "../shared/FlipCard";
 import Config from "../../Config";
 import {logSafe} from "../../utils/log";
 import {useFavorites} from "../../hooks/useFavorites";
+import {useBlocked} from "../../hooks/useBlocked";
 import {useHistory} from "../../hooks/useHistory";
 import {RootContext} from '../../context/RootContext';
 import {useBusinessDetails} from "../../hooks/useBusinessDetails";
 import useBusinessHours from "../../hooks/useBusinessHours";
 import ImageViewerModal from "../shared/ImageViewerModal";
+import {useToast} from "../../context/ToastContext";
 
 interface RestaurantCardProps {
     index: number;
@@ -48,7 +50,17 @@ const RestaurantCard = ({index, result}: RestaurantCardProps) => {
     const opacity = useRef<Animated.Value>(new Animated.Value(0)).current;
     const is_open_now = hours && hours[0]?.is_open_now || false;
     const {isFavorite, toggleFavorite} = useFavorites();
+    const {isBlocked, toggleBlocked} = useBlocked();
     const {addHistoryEntry} = useHistory();
+    const {showToast} = useToast();
+
+    const handleBlockPress = () => {
+        const wasBlocked = isBlocked(result.id);
+        toggleBlocked(result);
+        if (!wasBlocked) {
+            showToast('Added to block list (Saved tab)');
+        }
+    };
     const {state} = useContext(RootContext);
     const [isFlipped, setIsFlipped] = useState(false);
     const [imageViewerVisible, setImageViewerVisible] = useState(false);
@@ -164,23 +176,42 @@ const RestaurantCard = ({index, result}: RestaurantCardProps) => {
                     resizeMode="cover"
                 />
                 <Text style={styles.index}>{index + 1}.</Text>
-                <Pressable
-                    style={styles.favoriteButton}
-                    onPress={() => toggleFavorite(result)}
-                    android_ripple={{
-                        color: "rgba(255,255,255,0.3)",
-                        radius: 20,
-                        borderless: true,
-                    }}
-                    accessibilityLabel={isFavorite(result.id) ? "Remove from favorites" : "Add to favorites"}
-                >
-                    <Ionicons
-                        name={isFavorite(result.id) ? "heart" : "heart-outline"}
-                        size={24}
-                        color={isFavorite(result.id) ? AppStyles.color.yelp : AppStyles.color.white}
-                        style={styles.iconFavorite}
-                    />
-                </Pressable>
+                <View style={styles.actionButtonsContainer}>
+                    <Pressable
+                        style={styles.actionButton}
+                        onPress={handleBlockPress}
+                        android_ripple={{
+                            color: "rgba(255,255,255,0.3)",
+                            radius: 20,
+                            borderless: true,
+                        }}
+                        accessibilityLabel={isBlocked(result.id) ? "Remove from block list" : "Block this restaurant"}
+                    >
+                        <MaterialIcons
+                            name="block"
+                            size={24}
+                            color={isBlocked(result.id) ? "#ff4444" : AppStyles.color.white}
+                            style={styles.iconAction}
+                        />
+                    </Pressable>
+                    <Pressable
+                        style={styles.actionButton}
+                        onPress={() => toggleFavorite(result)}
+                        android_ripple={{
+                            color: "rgba(255,255,255,0.3)",
+                            radius: 20,
+                            borderless: true,
+                        }}
+                        accessibilityLabel={isFavorite(result.id) ? "Remove from favorites" : "Add to favorites"}
+                    >
+                        <Ionicons
+                            name={isFavorite(result.id) ? "heart" : "heart-outline"}
+                            size={24}
+                            color={isFavorite(result.id) ? AppStyles.color.yelp : AppStyles.color.white}
+                            style={styles.iconAction}
+                        />
+                    </Pressable>
+                </View>
             </View>
             <View style={styles.detail}>
                 <View style={styles.detailHeader}>
@@ -430,11 +461,15 @@ const styles = StyleSheet.create({
         alignItems: "center",
         justifyContent: "space-between",
     },
-    favoriteButton: {
-        padding: 8,
+    actionButtonsContainer: {
         position: "absolute",
         right: 8,
         top: 8,
+        flexDirection: "row",
+        gap: 8,
+    },
+    actionButton: {
+        padding: 8,
         backgroundColor: "rgba(0,0,0,0.2)",
         borderRadius: 20,
         width: 40,
@@ -442,7 +477,7 @@ const styles = StyleSheet.create({
         justifyContent: "center",
         alignItems: "center",
     },
-    iconFavorite: {
+    iconAction: {
         textShadowColor: AppStyles.color.black,
         textShadowOffset: {
             width: 0,

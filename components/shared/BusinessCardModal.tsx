@@ -22,11 +22,13 @@ import {FontAwesome, Ionicons, MaterialIcons} from '@expo/vector-icons';
 import {useBusinessDetails} from '../../hooks/useBusinessDetails';
 import useBusinessHours from '../../hooks/useBusinessHours';
 import {useFavorites} from '../../hooks/useFavorites';
+import {useBlocked} from '../../hooks/useBlocked';
 import {BusinessProps} from '../../hooks/useResults';
 import ImageViewerModal from './ImageViewerModal';
 import {radius} from "../../theme";
 import { InteractiveCategoryTag } from './InteractiveCategoryTag';
 import { logSafe } from '../../utils/log';
+import { useToast } from '../../context/ToastContext';
 
 // Helper function to format distance
 const formatDistance = (meters: number): string => {
@@ -75,6 +77,15 @@ export function BusinessCardModal() {
     } = useBusinessDetails(businessForHook || {} as BusinessProps, true);
     const {todayLabel, isOpen} = useBusinessHours(enrichedBusiness.hours);
     const {isFavorite, toggleFavorite} = useFavorites();
+    const {isBlocked, toggleBlocked} = useBlocked();
+    const {showToast} = useToast();
+
+    const handleBlockPress = () => {
+        if (businessForHook) {
+            logSafe('[BusinessCardModal] Block pressed', { id: businessForHook.id, name: businessForHook.name });
+            toggleBlocked(businessForHook);
+        }
+    };
 
     // Hours status is determined by: selectedBusiness.hours?.[0]?.is_open_now ?? isOpen ?? null
     // This gives us three states: true (open), false (closed), null (unknown)
@@ -157,23 +168,42 @@ export function BusinessCardModal() {
                         <Text style={styles.noImageText}>No Image</Text>
                     </View>
                 )}
-                <Pressable
-                    style={styles.favoriteButton}
-                    onPress={() => toggleFavorite(businessForHook)}
-                    android_ripple={{
-                        color: "rgba(255,255,255,0.3)",
-                        radius: 20,
-                        borderless: true,
-                    }}
-                    accessibilityLabel={isFavorite(business.id) ? "Remove from favorites" : "Add to favorites"}
-                >
-                    <Ionicons
-                        name={isFavorite(business.id) ? "heart" : "heart-outline"}
-                        size={24}
-                        color={isFavorite(business.id) ? AppStyles.color.yelp : AppStyles.color.white}
-                        style={styles.iconFavorite}
-                    />
-                </Pressable>
+                <View style={styles.actionButtonsContainer}>
+                    <Pressable
+                        style={styles.actionButton}
+                        onPress={handleBlockPress}
+                        android_ripple={{
+                            color: "rgba(255,255,255,0.3)",
+                            radius: 20,
+                            borderless: true,
+                        }}
+                        accessibilityLabel={isBlocked(business.id) ? "Remove from block list" : "Block this restaurant"}
+                    >
+                        <MaterialIcons
+                            name={isBlocked(business.id) ? "block" : "block"}
+                            size={24}
+                            color={isBlocked(business.id) ? "#ff4444" : AppStyles.color.white}
+                            style={styles.iconAction}
+                        />
+                    </Pressable>
+                    <Pressable
+                        style={styles.actionButton}
+                        onPress={() => toggleFavorite(businessForHook)}
+                        android_ripple={{
+                            color: "rgba(255,255,255,0.3)",
+                            radius: 20,
+                            borderless: true,
+                        }}
+                        accessibilityLabel={isFavorite(business.id) ? "Remove from favorites" : "Add to favorites"}
+                    >
+                        <Ionicons
+                            name={isFavorite(business.id) ? "heart" : "heart-outline"}
+                            size={24}
+                            color={isFavorite(business.id) ? AppStyles.color.yelp : AppStyles.color.white}
+                            style={styles.iconAction}
+                        />
+                    </Pressable>
+                </View>
             </View>
             <View style={styles.detail}>
                 <View style={styles.detailHeader}>
@@ -457,11 +487,15 @@ const styles = StyleSheet.create({
         alignItems: "center",
         justifyContent: "space-between",
     },
-    favoriteButton: {
-        padding: 8,
+    actionButtonsContainer: {
         position: "absolute",
         right: 8,
         top: 8,
+        flexDirection: "row",
+        gap: 8,
+    },
+    actionButton: {
+        padding: 8,
         backgroundColor: "rgba(0,0,0,0.2)",
         borderRadius: 20,
         width: 40,
@@ -469,7 +503,7 @@ const styles = StyleSheet.create({
         justifyContent: "center",
         alignItems: "center",
     },
-    iconFavorite: {
+    iconAction: {
         textShadowColor: AppStyles.color.black,
         textShadowOffset: {
             width: 0,

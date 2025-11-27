@@ -92,12 +92,14 @@ export function useBlocked() {
 
   // Toggle blocked status
   const toggleBlocked = useCallback((business: BusinessProps) => {
-    if (isBlocked(business.id)) {
+    // Check directly against state.blocked to avoid stale closure
+    const currentlyBlocked = state.blocked.some(item => item.id === business.id);
+    if (currentlyBlocked) {
       removeBlockedItem(business.id);
     } else {
       addBlockedItem(business);
     }
-  }, [isBlocked, addBlockedItem, removeBlockedItem]);
+  }, [state.blocked, addBlockedItem, removeBlockedItem]);
 
   return {
     blocked: state.blocked,
