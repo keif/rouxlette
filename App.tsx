@@ -2,6 +2,7 @@ import "react-native-gesture-handler";
 import { GestureHandlerRootView } from "react-native-gesture-handler";
 import { SafeAreaProvider } from "react-native-safe-area-context";
 import { View } from "react-native";
+import Toast from "react-native-toast-message";
 
 import useCachedResources from "./hooks/useCachedResources";
 import useColorScheme from "./hooks/useColorScheme";
@@ -45,6 +46,8 @@ export default function App() {
 						</ToastProvider>
 					</RootContext.Provider>
 				</SafeAreaProvider>
+				{/* Toast must be LAST and OUTSIDE all other components to appear above modals */}
+				<Toast />
 			</GestureHandlerRootView>
 		);
 	}

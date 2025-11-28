@@ -1,4 +1,4 @@
-import { useContext, useCallback, useEffect } from 'react';
+import { useContext, useCallback, useEffect, useRef } from 'react';
 import { RootContext } from '../context/RootContext';
 import { addBlocked, removeBlocked, hydrateBlocked } from '../context/reducer';
 import { FavoriteItem, DEBOUNCE_PERSISTENCE_MS } from '../types/favorites';
@@ -8,6 +8,9 @@ import { logSafe } from '../utils/log';
 
 const STORAGE_KEY_BLOCKED = 'blocked';
 
+// Track hydration globally to prevent multiple hydrations across hook instances
+let blockedHydrated = false;
+
 export function useBlocked() {
   const { state, dispatch } = useContext(RootContext);
   const storage = usePersistentStorage({
@@ -15,20 +18,27 @@ export function useBlocked() {
     debug: __DEV__,
     debounceMs: DEBOUNCE_PERSISTENCE_MS,
   });
+  const hasHydratedRef = useRef(false);
+  const lastPersistedRef = useRef<string>('');
 
-  // Hydrate blocked from storage on mount
+  // Hydrate blocked from storage ONCE on first mount
   useEffect(() => {
+    if (blockedHydrated || hasHydratedRef.current) {
+      return;
+    }
+    hasHydratedRef.current = true;
+    blockedHydrated = true;
+
     const loadBlocked = async () => {
       try {
         const storedBlocked = await storage.getItem(STORAGE_KEY_BLOCKED);
         if (storedBlocked && Array.isArray(storedBlocked)) {
           logSafe('[useBlocked] Hydrating blocked', { count: storedBlocked.length });
           dispatch(hydrateBlocked(storedBlocked));
+          lastPersistedRef.current = JSON.stringify(storedBlocked);
         }
       } catch (error) {
         logSafe('[useBlocked] Error loading blocked', { error: error?.message });
-        // Fallback to empty array on error
-        dispatch(hydrateBlocked([]));
       }
     };
 
@@ -37,19 +47,24 @@ export function useBlocked() {
 
   // Persist blocked when state changes
   useEffect(() => {
+    // Don't persist until we've hydrated
+    if (!blockedHydrated) return;
+
+    const currentJson = JSON.stringify(state.blocked);
+    // Skip if nothing changed
+    if (currentJson === lastPersistedRef.current) return;
+
     const persistBlocked = async () => {
       try {
         await storage.setItem(STORAGE_KEY_BLOCKED, state.blocked);
+        lastPersistedRef.current = currentJson;
         logSafe('[useBlocked] Persisted blocked', { count: state.blocked.length });
       } catch (error) {
         logSafe('[useBlocked] Error persisting blocked', { error: error?.message });
       }
     };
 
-    // Only persist if we have blocked items (avoid persisting initial empty state)
-    if (state.blocked.length > 0) {
-      persistBlocked();
-    }
+    persistBlocked();
   }, [state.blocked, storage]);
 
   // Helper to convert BusinessProps to FavoriteItem (reused for blocked)

@@ -20,24 +20,10 @@ import {
 import useResults, {BusinessProps} from '../hooks/useResults';
 import useLocation from '../hooks/useLocation';
 import {useBlocked} from '../hooks/useBlocked';
+import {useBlockFavorite} from '../hooks/useBlockFavorite';
 import FiltersSheet from '../components/filter/FiltersSheet';
 import {applyFilters, countActiveFilters} from '../utils/filterBusinesses';
 import {RootTabScreenProps} from '../types';
-
-// Convert BusinessProps to Restaurant interface for RestaurantCard
-function businessToRestaurant(business: BusinessProps): Restaurant {
-    return {
-        id: business.id,
-        name: business.name,
-        imageUrl: business.image_url || 'https://via.placeholder.com/400x300.png?text=No+Image',
-        rating: business.rating || 0,
-        reviewCount: business.review_count || 0,
-        price: business.price || '',
-        distance: business.distance ? business.distance / 1609.34 : 0, // Convert meters to miles
-        categories: business.categories?.map(c => c.title) || [],
-        isFavorite: false, // We'll update this later with favorites logic
-    };
-}
 
 export const SearchScreen: React.FC = () => {
     const {state, dispatch} = useContext(RootContext);
@@ -51,6 +37,7 @@ export const SearchScreen: React.FC = () => {
     const [resultsErrorMessage, searchResults, searchApi, searchApiWithResolver, resultsLoading] = useResults();
     const [, city, canonicalLocation, coords, , searchLocation, resolveSearchArea, isLocationLoading, , stopLocationWatcher] = useLocation();
     const {blocked} = useBlocked();
+    const {isFavorite, isBlocked, handleFavorite, handleBlock} = useBlockFavorite();
 
     const isLoading = resultsLoading || isSearching;
     const displayLocation = state.location || city || 'Current Location';
@@ -59,6 +46,20 @@ export const SearchScreen: React.FC = () => {
     const filteredBusinesses = state.results.length > 0
         ? applyFilters(state.results, state.filters)
         : [];
+
+    // Convert BusinessProps to Restaurant interface for RestaurantCard
+    const businessToRestaurant = (business: BusinessProps): Restaurant => ({
+        id: business.id,
+        name: business.name,
+        imageUrl: business.image_url || 'https://via.placeholder.com/400x300.png?text=No+Image',
+        rating: business.rating || 0,
+        reviewCount: business.review_count || 0,
+        price: business.price || '',
+        distance: business.distance ? business.distance / 1609.34 : 0,
+        categories: business.categories?.map(c => c.title) || [],
+        isFavorite: isFavorite(business.id),
+        isBlocked: isBlocked(business.id),
+    });
 
     const restaurants = filteredBusinesses.map(businessToRestaurant);
 
@@ -184,7 +185,17 @@ export const SearchScreen: React.FC = () => {
     };
 
     const handleFavoriteToggle = (restaurantId: string) => {
-        // TODO: Implement favorites toggle with context
+        const business = filteredBusinesses.find(b => b.id === restaurantId);
+        if (business) {
+            handleFavorite(business);
+        }
+    };
+
+    const handleBlockToggle = (restaurantId: string) => {
+        const business = filteredBusinesses.find(b => b.id === restaurantId);
+        if (business) {
+            handleBlock(business);
+        }
     };
 
     const handleUseCurrentLocation = async () => {
@@ -368,6 +379,7 @@ export const SearchScreen: React.FC = () => {
                                 restaurant={item}
                                 onPress={() => handleRestaurantPress(item)}
                                 onFavoriteToggle={() => handleFavoriteToggle(item.id)}
+                                onBlockToggle={() => handleBlockToggle(item.id)}
                             />
                         )}
                         contentContainerStyle={styles.listContent}

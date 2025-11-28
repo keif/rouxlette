@@ -1,6 +1,6 @@
 import React from 'react';
 import { View, Text, StyleSheet, Pressable, Image, Platform } from 'react-native';
-import { Ionicons } from '@expo/vector-icons';
+import { Ionicons, MaterialIcons } from '@expo/vector-icons';
 import { colors, spacing, radius, typography } from '../theme';
 
 export interface Restaurant {
@@ -13,18 +13,21 @@ export interface Restaurant {
   distance: number;
   categories: string[];
   isFavorite?: boolean;
+  isBlocked?: boolean;
 }
 
 interface RestaurantCardProps {
   restaurant: Restaurant;
   onPress: () => void;
   onFavoriteToggle: () => void;
+  onBlockToggle: () => void;
 }
 
 export const RestaurantCard: React.FC<RestaurantCardProps> = ({
   restaurant,
   onPress,
   onFavoriteToggle,
+  onBlockToggle,
 }) => {
   return (
     <Pressable
@@ -41,18 +44,34 @@ export const RestaurantCard: React.FC<RestaurantCardProps> = ({
         resizeMode="cover"
       />
 
-      {/* Favorite Button */}
-      <Pressable
-        onPress={onFavoriteToggle}
-        style={styles.favoriteButton}
-        hitSlop={8}
-      >
-        <Ionicons
-          name={restaurant.isFavorite ? 'heart' : 'heart-outline'}
-          size={24}
-          color={restaurant.isFavorite ? colors.error : colors.white}
-        />
-      </Pressable>
+      {/* Action Buttons */}
+      <View style={styles.actionButtons}>
+        {/* Block Button */}
+        <Pressable
+          onPress={onBlockToggle}
+          style={styles.actionButton}
+          hitSlop={8}
+        >
+          <MaterialIcons
+            name="block"
+            size={24}
+            color={restaurant.isBlocked ? '#ff4444' : colors.white}
+          />
+        </Pressable>
+
+        {/* Favorite Button */}
+        <Pressable
+          onPress={onFavoriteToggle}
+          style={styles.actionButton}
+          hitSlop={8}
+        >
+          <Ionicons
+            name={restaurant.isFavorite ? 'heart' : 'heart-outline'}
+            size={24}
+            color={restaurant.isFavorite ? colors.error : colors.white}
+          />
+        </Pressable>
+      </View>
 
       {/* Content */}
       <View style={styles.content}>
@@ -125,10 +144,14 @@ const styles = StyleSheet.create({
     height: 200,
     backgroundColor: colors.gray200,
   },
-  favoriteButton: {
+  actionButtons: {
     position: 'absolute',
     top: spacing.md,
     right: spacing.md,
+    flexDirection: 'row',
+    gap: spacing.sm,
+  },
+  actionButton: {
     backgroundColor: 'rgba(0, 0, 0, 0.5)',
     borderRadius: radius.full,
     padding: spacing.sm,

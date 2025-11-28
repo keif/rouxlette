@@ -1,10 +1,13 @@
-import { useContext, useCallback, useEffect } from 'react';
+import { useContext, useCallback, useEffect, useRef } from 'react';
 import { RootContext } from '../context/RootContext';
 import { addFavorite, removeFavorite, hydrateFavorites } from '../context/reducer';
 import { FavoriteItem, STORAGE_KEYS, DEBOUNCE_PERSISTENCE_MS } from '../types/favorites';
 import { BusinessProps } from './useResults';
 import usePersistentStorage from './usePersistentStorage';
 import { logSafe, logNetwork } from '../utils/log';
+
+// Track hydration globally to prevent multiple hydrations across hook instances
+let favoritesHydrated = false;
 
 export function useFavorites() {
   const { state, dispatch } = useContext(RootContext);
@@ -13,20 +16,27 @@ export function useFavorites() {
     debug: __DEV__,
     debounceMs: DEBOUNCE_PERSISTENCE_MS,
   });
+  const hasHydratedRef = useRef(false);
+  const lastPersistedRef = useRef<string>('');
 
-  // Hydrate favorites from storage on mount
+  // Hydrate favorites from storage ONCE on first mount
   useEffect(() => {
+    if (favoritesHydrated || hasHydratedRef.current) {
+      return;
+    }
+    hasHydratedRef.current = true;
+    favoritesHydrated = true;
+
     const loadFavorites = async () => {
       try {
         const storedFavorites = await storage.getItem(STORAGE_KEYS.FAVORITES);
         if (storedFavorites && Array.isArray(storedFavorites)) {
           logSafe('[useFavorites] Hydrating favorites', { count: storedFavorites.length });
           dispatch(hydrateFavorites(storedFavorites));
+          lastPersistedRef.current = JSON.stringify(storedFavorites);
         }
       } catch (error) {
         logSafe('[useFavorites] Error loading favorites', { error: error?.message });
-        // Fallback to empty array on error
-        dispatch(hydrateFavorites([]));
       }
     };
 
@@ -35,19 +45,24 @@ export function useFavorites() {
 
   // Persist favorites when state changes
   useEffect(() => {
+    // Don't persist until we've hydrated
+    if (!favoritesHydrated) return;
+
+    const currentJson = JSON.stringify(state.favorites);
+    // Skip if nothing changed
+    if (currentJson === lastPersistedRef.current) return;
+
     const persistFavorites = async () => {
       try {
         await storage.setItem(STORAGE_KEYS.FAVORITES, state.favorites);
+        lastPersistedRef.current = currentJson;
         logSafe('[useFavorites] Persisted favorites', { count: state.favorites.length });
       } catch (error) {
         logSafe('[useFavorites] Error persisting favorites', { error: error?.message });
       }
     };
 
-    // Only persist if we have favorites (avoid persisting initial empty state)
-    if (state.favorites.length > 0) {
-      persistFavorites();
-    }
+    persistFavorites();
   }, [state.favorites, storage]);
 
   // Helper to convert BusinessProps to FavoriteItem
