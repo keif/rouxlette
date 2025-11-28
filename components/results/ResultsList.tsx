@@ -1,6 +1,6 @@
 import { ScrollView, Platform, StyleSheet, ActivityIndicator } from "react-native";
 
-import RestaurantCard from "../search/RestaurantCard";
+import RestaurantCardDetailed from "../search/RestaurantCardDetailed";
 import { Text, View } from "../Themed";
 import { BusinessProps, ResultsProps } from "../../hooks/useResults";
 import React from "react";
@@ -50,7 +50,7 @@ const ResultsList = ({ filterTerm, horizontal = false, results, term, isLoading 
 			>
 				{ListHeaderComponent}
 				{businesses.map((business, index) => (
-					<RestaurantCard key={business.id} index={index} result={business} />
+					<RestaurantCardDetailed key={business.id} index={index} result={business} />
 				))}
 			</ScrollView>
 			<StatusBar style={Platform.OS === "ios" ? "light" : "auto"} />

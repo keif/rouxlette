@@ -23,7 +23,7 @@ interface RestaurantCardProps {
   onBlockToggle: () => void;
 }
 
-export const RestaurantCard: React.FC<RestaurantCardProps> = ({
+export const RestaurantCardSimple: React.FC<RestaurantCardProps> = ({
   restaurant,
   onPress,
   onFavoriteToggle,

@@ -1,7 +1,7 @@
 import * as React from 'react';
 import renderer from 'react-test-renderer';
 
-import RestaurantCard from '../search/RestaurantCard';
+import RestaurantCardDetailed from '../search/RestaurantCardDetailed';
 import { BusinessProps } from '../../hooks/useResults';
 
 // Mock react-native-reanimated
@@ -101,9 +101,9 @@ const mockBusiness: BusinessProps = {
   photos: ['https://example.com/photo1.jpg', 'https://example.com/photo2.jpg']
 };
 
-it('renders RestaurantCard correctly', () => {
+it('renders RestaurantCardDetailed correctly', () => {
   const tree = renderer.create(
-    React.createElement(RestaurantCard, { index: 0, result: mockBusiness })
+    React.createElement(RestaurantCardDetailed, { index: 0, result: mockBusiness })
   ).toJSON();
 
   expect(tree).toMatchSnapshot();

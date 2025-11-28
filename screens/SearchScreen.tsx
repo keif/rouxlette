@@ -3,7 +3,7 @@ import {ActivityIndicator, FlatList, Platform, Pressable, StyleSheet, Text, Text
 import {SafeAreaView} from 'react-native-safe-area-context';
 import {Ionicons} from '@expo/vector-icons';
 import {useNavigation} from '@react-navigation/native';
-import {Restaurant, RestaurantCard} from '../components/RestaurantCard';
+import {Restaurant, RestaurantCardSimple} from '../components/RestaurantCardSimple';
 import {ActiveFilter, ActiveFilterBar} from '../components/ActiveFilterBar';
 import {colors, radius, spacing, typography} from '../theme';
 import {RootContext} from '../context/RootContext';
@@ -375,7 +375,7 @@ export const SearchScreen: React.FC = () => {
                         data={restaurants}
                         keyExtractor={(item) => item.id}
                         renderItem={({item}) => (
-                            <RestaurantCard
+                            <RestaurantCardSimple
                                 restaurant={item}
                                 onPress={() => handleRestaurantPress(item)}
                                 onFavoriteToggle={() => handleFavoriteToggle(item.id)}
