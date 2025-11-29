@@ -135,7 +135,7 @@ describe('YelpClient', () => {
     });
 
     test('should handle API errors safely', async () => {
-      const axiosError = {
+      const axiosError = Object.assign(new Error('Bad Request'), {
         isAxiosError: true,
         response: {
           status: 400,
@@ -154,13 +154,13 @@ describe('YelpClient', () => {
           params: { term: 'invalid', location: '' },
         },
         code: 'ERR_BAD_REQUEST',
-      };
+      });
 
       mockAxiosInstance.get.mockRejectedValueOnce(axiosError);
 
       await expect(
         client.searchBusinesses({ term: 'invalid', location: '' })
-      ).rejects.toThrow();
+      ).rejects.toThrow('Bad Request');
 
       // Should log error with safe metadata
       expect(mockLogSafe).toHaveBeenCalledWith(

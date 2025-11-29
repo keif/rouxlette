@@ -51,6 +51,7 @@ describe('Filters Reducer', () => {
 
       expect(newState.filters).toEqual({
         categoryIds: ['pizza', 'italian'], // Updated
+        excludedCategoryIds: [], // Preserved from initialFilters
         priceLevels: [1, 2], // Preserved
         openNow: true, // Updated
         radiusMeters: 1600, // Preserved
@@ -61,6 +62,7 @@ describe('Filters Reducer', () => {
     it('should handle all filter properties', () => {
       const fullFilters: Partial<Filters> = {
         categoryIds: ['pizza', 'burgers'],
+        excludedCategoryIds: [],
         priceLevels: [2, 3, 4],
         openNow: true,
         radiusMeters: 800,
@@ -85,6 +87,7 @@ describe('Filters Reducer', () => {
         ...initialState,
         filters: {
           categoryIds: ['pizza', 'italian'],
+          excludedCategoryIds: ['bars'],
           priceLevels: [1, 2, 3, 4],
           openNow: true,
           radiusMeters: 5000,
@@ -104,12 +107,15 @@ describe('Filters Reducer', () => {
     });
 
     it('should not affect other state properties', () => {
+      const mockBusiness = { id: '1', name: 'Test', is_closed: false } as any;
       const stateWithFilters: AppState = {
         ...initialState,
         location: 'Test Location',
-        results: [{ id: '1' } as any],
+        rawResults: [mockBusiness],
+        results: [mockBusiness],
         filters: {
           categoryIds: ['pizza'],
+          excludedCategoryIds: [],
           priceLevels: [2],
           openNow: true,
           radiusMeters: 3000,
@@ -121,7 +127,8 @@ describe('Filters Reducer', () => {
       const newState = appReducer(stateWithFilters, action);
 
       expect(newState.location).toBe('Test Location');
-      expect(newState.results).toEqual([{ id: '1' }]);
+      // Results are re-filtered from rawResults when filters reset
+      expect(newState.results).toEqual([mockBusiness]);
       expect(newState.filters).toEqual(initialFilters);
     });
 
@@ -135,6 +142,7 @@ describe('Filters Reducer', () => {
     it('should replace entire filters object', () => {
       const hydratedFilters: Filters = {
         categoryIds: ['japanese', 'sushi'],
+        excludedCategoryIds: [],
         priceLevels: [3, 4],
         openNow: true,
         radiusMeters: 2400,
@@ -152,6 +160,7 @@ describe('Filters Reducer', () => {
         ...initialState,
         filters: {
           categoryIds: ['existing'],
+          excludedCategoryIds: ['old'],
           priceLevels: [1],
           openNow: false,
           radiusMeters: 800,
@@ -161,6 +170,7 @@ describe('Filters Reducer', () => {
 
       const hydratedFilters: Filters = {
         categoryIds: ['new'],
+        excludedCategoryIds: [],
         priceLevels: [4],
         openNow: true,
         radiusMeters: 3200,
@@ -185,6 +195,7 @@ describe('Filters Reducer', () => {
 
       const hydratedFilters: Filters = {
         categoryIds: ['hydrated'],
+        excludedCategoryIds: [],
         priceLevels: [2],
         openNow: false,
         radiusMeters: 1200,
@@ -204,6 +215,7 @@ describe('Filters Reducer', () => {
     it('should handle empty filters object', () => {
       const emptyFilters: Filters = {
         categoryIds: [],
+        excludedCategoryIds: [],
         priceLevels: [],
         openNow: false,
         radiusMeters: 1600,

@@ -17,6 +17,7 @@ jest.mock('@react-native-async-storage/async-storage', () => ({
 // Mock safe logging
 jest.mock('../../utils/log', () => ({
   logSafe: jest.fn(),
+  safeStringify: (value: unknown) => JSON.stringify(value),
 }));
 
 const mockAsyncStorage = AsyncStorage as jest.Mocked<typeof AsyncStorage>;

@@ -98,6 +98,19 @@ jest.mock('react-native-gesture-handler', () => {
   };
 });
 jest.mock('react-native-reanimated');
+jest.mock('react-native-safe-area-context', () => {
+  const React = require('react');
+  return {
+    SafeAreaProvider: ({ children }: any) => children,
+    SafeAreaView: ({ children }: any) => React.createElement('SafeAreaView', null, children),
+    useSafeAreaInsets: () => ({ top: 0, right: 0, bottom: 0, left: 0 }),
+    useSafeAreaFrame: () => ({ x: 0, y: 0, width: 375, height: 812 }),
+    initialWindowMetrics: {
+      frame: { x: 0, y: 0, width: 375, height: 812 },
+      insets: { top: 0, right: 0, bottom: 0, left: 0 },
+    },
+  };
+});
 
 // Mock react-native dimensions module before main mock
 jest.mock('react-native/Libraries/Utilities/Dimensions', () => ({
@@ -281,6 +294,13 @@ jest.mock('@react-navigation/native', () => ({
 
 jest.mock('@react-navigation/native-stack', () => ({
   createNativeStackNavigator: () => ({
+    Navigator: ({ children }: any) => children,
+    Screen: ({ children }: any) => children,
+  }),
+}));
+
+jest.mock('@react-navigation/bottom-tabs', () => ({
+  createBottomTabNavigator: () => ({
     Navigator: ({ children }: any) => children,
     Screen: ({ children }: any) => children,
   }),

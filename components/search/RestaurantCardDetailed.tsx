@@ -2,8 +2,9 @@ import React, {useContext, useEffect, useRef, useState} from "react";
 import {Animated, Image, Linking, Platform, Pressable, StyleSheet, Text, useWindowDimensions, View, ActivityIndicator} from "react-native";
 import {BusinessProps} from "../../hooks/useResults";
 import AppStyles from "../../AppStyles";
-import {FontAwesome, Ionicons, MaterialIcons} from "@expo/vector-icons";
+import {FontAwesome, MaterialIcons} from "@expo/vector-icons";
 import StarRating from "../shared/StarRating";
+import ActionButtons from "../shared/ActionButtons";
 import OpenSign from "../results/OpenSign";
 import FlipCard from "../shared/FlipCard";
 import Config from "../../Config";
@@ -174,42 +175,13 @@ const RestaurantCard = ({index, result}: RestaurantCardProps) => {
                     resizeMode="cover"
                 />
                 <Text style={styles.index}>{index + 1}.</Text>
-                <View style={styles.actionButtonsContainer}>
-                    <Pressable
-                        style={styles.actionButton}
-                        onPress={handleBlockPress}
-                        android_ripple={{
-                            color: "rgba(255,255,255,0.3)",
-                            radius: 20,
-                            borderless: true,
-                        }}
-                        accessibilityLabel={isBlocked(result.id) ? "Remove from block list" : "Block this restaurant"}
-                    >
-                        <MaterialIcons
-                            name="block"
-                            size={24}
-                            color={isBlocked(result.id) ? "#ff4444" : AppStyles.color.white}
-                            style={styles.iconAction}
-                        />
-                    </Pressable>
-                    <Pressable
-                        style={styles.actionButton}
-                        onPress={handleFavoritePress}
-                        android_ripple={{
-                            color: "rgba(255,255,255,0.3)",
-                            radius: 20,
-                            borderless: true,
-                        }}
-                        accessibilityLabel={isFavorite(result.id) ? "Remove from favorites" : "Add to favorites"}
-                    >
-                        <Ionicons
-                            name={isFavorite(result.id) ? "heart" : "heart-outline"}
-                            size={24}
-                            color={isFavorite(result.id) ? AppStyles.color.yelp : AppStyles.color.white}
-                            style={styles.iconAction}
-                        />
-                    </Pressable>
-                </View>
+                <ActionButtons
+                    isBlocked={isBlocked(result.id)}
+                    isFavorite={isFavorite(result.id)}
+                    onBlockPress={handleBlockPress}
+                    onFavoritePress={handleFavoritePress}
+                    style={styles.actionButtonsContainer}
+                />
             </View>
             <View style={styles.detail}>
                 <View style={styles.detailHeader}>
@@ -463,25 +435,6 @@ const styles = StyleSheet.create({
         position: "absolute",
         right: 8,
         top: 8,
-        flexDirection: "row",
-        gap: 8,
-    },
-    actionButton: {
-        padding: 8,
-        backgroundColor: "rgba(0,0,0,0.2)",
-        borderRadius: 20,
-        width: 40,
-        height: 40,
-        justifyContent: "center",
-        alignItems: "center",
-    },
-    iconAction: {
-        textShadowColor: AppStyles.color.black,
-        textShadowOffset: {
-            width: 0,
-            height: 0,
-        },
-        textShadowRadius: 4,
     },
     imageContainer: {
         borderTopLeftRadius: 16,
@@ -620,7 +573,7 @@ const styles = StyleSheet.create({
         alignItems: 'center',
         paddingHorizontal: 12,
         paddingVertical: 8,
-        shadowColor: AppStyles.input.shadow,
+        shadowColor: AppStyles.color.shadow,
         ...AppStyles.ButtonPressable,
         borderRadius: 20,
         shadowOpacity: 0.2,

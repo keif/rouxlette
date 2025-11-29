@@ -397,6 +397,7 @@ describe('filterBusinesses', () => {
 
     it('should count all active filters', () => {
       const filters = {
+        ...initialFilters,
         categoryIds: ['pizza'],
         priceLevels: [1, 2] as Array<1|2|3|4>,
         openNow: true,

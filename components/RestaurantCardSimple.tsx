@@ -1,7 +1,8 @@
 import React from 'react';
 import { View, Text, StyleSheet, Pressable, Image, Platform } from 'react-native';
-import { Ionicons, MaterialIcons } from '@expo/vector-icons';
-import { colors, spacing, radius, typography } from '../theme';
+import { Ionicons } from '@expo/vector-icons';
+import ActionButtons from './shared/ActionButtons';
+import AppStyles from '../AppStyles';
 
 export interface Restaurant {
   id: string;
@@ -45,33 +46,13 @@ export const RestaurantCardSimple: React.FC<RestaurantCardProps> = ({
       />
 
       {/* Action Buttons */}
-      <View style={styles.actionButtons}>
-        {/* Block Button */}
-        <Pressable
-          onPress={onBlockToggle}
-          style={styles.actionButton}
-          hitSlop={8}
-        >
-          <MaterialIcons
-            name="block"
-            size={24}
-            color={restaurant.isBlocked ? '#ff4444' : colors.white}
-          />
-        </Pressable>
-
-        {/* Favorite Button */}
-        <Pressable
-          onPress={onFavoriteToggle}
-          style={styles.actionButton}
-          hitSlop={8}
-        >
-          <Ionicons
-            name={restaurant.isFavorite ? 'heart' : 'heart-outline'}
-            size={24}
-            color={restaurant.isFavorite ? colors.error : colors.white}
-          />
-        </Pressable>
-      </View>
+      <ActionButtons
+        isBlocked={restaurant.isBlocked ?? false}
+        isFavorite={restaurant.isFavorite ?? false}
+        onBlockPress={onBlockToggle}
+        onFavoritePress={onFavoriteToggle}
+        style={styles.actionButtons}
+      />
 
       {/* Content */}
       <View style={styles.content}>
@@ -84,7 +65,7 @@ export const RestaurantCardSimple: React.FC<RestaurantCardProps> = ({
         <View style={styles.metadata}>
           {/* Rating */}
           <View style={styles.rating}>
-            <Ionicons name="star" size={14} color={colors.warning} />
+            <Ionicons name="star" size={14} color={AppStyles.color.warning} />
             <Text style={styles.ratingText}>
               {restaurant.rating.toFixed(1)}
             </Text>
@@ -119,14 +100,14 @@ export const RestaurantCardSimple: React.FC<RestaurantCardProps> = ({
 
 const styles = StyleSheet.create({
   card: {
-    backgroundColor: colors.white,
-    borderRadius: radius.lg,
-    marginHorizontal: spacing.md,
-    marginBottom: spacing.md,
+    backgroundColor: AppStyles.color.white,
+    borderRadius: AppStyles.radius.l,
+    marginHorizontal: AppStyles.spacing.m,
+    marginBottom: AppStyles.spacing.m,
     overflow: 'hidden',
     ...Platform.select({
       ios: {
-        shadowColor: colors.shadow,
+        shadowColor: AppStyles.color.shadow,
         shadowOffset: { width: 0, height: 2 },
         shadowOpacity: 0.15,
         shadowRadius: 8,
@@ -142,64 +123,57 @@ const styles = StyleSheet.create({
   image: {
     width: '100%',
     height: 200,
-    backgroundColor: colors.gray200,
+    backgroundColor: AppStyles.color.gray100,
   },
   actionButtons: {
     position: 'absolute',
-    top: spacing.md,
-    right: spacing.md,
-    flexDirection: 'row',
-    gap: spacing.sm,
-  },
-  actionButton: {
-    backgroundColor: 'rgba(0, 0, 0, 0.5)',
-    borderRadius: radius.full,
-    padding: spacing.sm,
+    top: AppStyles.spacing.m,
+    right: AppStyles.spacing.m,
   },
   content: {
-    padding: spacing.md,
+    padding: AppStyles.spacing.m,
   },
   name: {
-    ...typography.headline,
-    color: colors.gray900,
-    marginBottom: spacing.xs,
+    ...AppStyles.typography.headline,
+    color: AppStyles.color.gray900,
+    marginBottom: AppStyles.spacing.xs,
   },
   metadata: {
     flexDirection: 'row',
     alignItems: 'center',
-    marginBottom: spacing.xs,
+    marginBottom: AppStyles.spacing.xs,
   },
   rating: {
     flexDirection: 'row',
     alignItems: 'center',
   },
   ratingText: {
-    ...typography.footnote,
-    color: colors.gray900,
+    ...AppStyles.typography.footnote,
+    color: AppStyles.color.gray900,
     fontWeight: '600',
     marginLeft: 4,
   },
   reviewCount: {
-    ...typography.footnote,
-    color: colors.gray600,
+    ...AppStyles.typography.footnote,
+    color: AppStyles.color.gray500,
     marginLeft: 2,
   },
   divider: {
-    ...typography.footnote,
-    color: colors.gray400,
-    marginHorizontal: spacing.xs,
+    ...AppStyles.typography.footnote,
+    color: AppStyles.color.gray300,
+    marginHorizontal: AppStyles.spacing.xs,
   },
   price: {
-    ...typography.footnote,
-    color: colors.gray700,
+    ...AppStyles.typography.footnote,
+    color: AppStyles.color.gray700,
     fontWeight: '600',
   },
   distance: {
-    ...typography.footnote,
-    color: colors.gray600,
+    ...AppStyles.typography.footnote,
+    color: AppStyles.color.gray500,
   },
   categories: {
-    ...typography.caption1,
-    color: colors.gray600,
+    ...AppStyles.typography.caption1,
+    color: AppStyles.color.gray500,
   },
 });
