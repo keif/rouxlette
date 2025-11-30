@@ -12,15 +12,6 @@
     "precommit": "npm run lint:unsafe-logging",
     "clean": "watchman watch-del-all && rm -rf /tmp/metro-* && rm -rf node_modules/.cache"
   },
-  "jest": {
-    "preset": "jest-expo",
-    "setupFilesAfterEnv": [
-      "<rootDir>/__tests__/setup.js"
-    ],
-    "moduleNameMapper": {
-      "^@env$": "<rootDir>/__tests__/mocks/mockEnv.js"
-    }
-  },
   "dependencies": {
     "@expo/vector-icons": "^15.0.3",
     "@miblanchard/react-native-slider": "^2.1.0",
@@ -68,7 +59,7 @@
     "@babel/core": "^7.12.9",
     "@testing-library/jest-native": "^5.4.3",
     "@testing-library/react-native": "^12.4.5",
-    "@types/jest": "^30.0.0",
+    "@types/jest": "^29.5.0",
     "@types/react": "~19.1.10",
     "@types/react-native": "^0.70.4",
     "@types/react-test-renderer": "^19.1.0",
