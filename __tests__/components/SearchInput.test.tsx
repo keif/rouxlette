@@ -1,13 +1,24 @@
 import React from 'react';
 import { render, fireEvent, waitFor } from '@testing-library/react-native';
 import SearchInput from '../../components/search/SearchInput';
-import { INIT_RESULTS } from '../../hooks/useResults';
+
+// Variables prefixed with 'mock' are allowed in jest.mock factories
+let mockTerm = '';
+const mockSetTerm = (newTerm: string) => {
+  mockTerm = newTerm;
+};
 
 // Mock the hooks
 jest.mock('../../hooks/useResults', () => ({
   __esModule: true,
-  default: () => ['', { id: '', businesses: [] }, jest.fn(), jest.fn(), false],
-  INIT_RESULTS: { id: '', businesses: [] }
+  INIT_RESULTS: { id: '', businesses: [] },
+  default: () => [
+    mockTerm,
+    { id: '', businesses: [] },
+    mockSetTerm,
+    jest.fn(), // searchFunction
+    false,     // isLoading
+  ],
 }));
 
 jest.mock('../../hooks/useLocation', () => ({
@@ -30,19 +41,22 @@ describe('SearchInput', () => {
     jest.clearAllMocks();
   });
 
-  it('should update value when externalQuery changes', async () => {
-    const { rerender, getByDisplayValue } = render(
-      <SearchInput {...mockProps} externalQuery="pizza" />
+  it('should update value when term prop changes', async () => {
+    // The component syncs term prop to internalTerm via useEffect
+    const { rerender, getByPlaceholderText } = render(
+      <SearchInput {...mockProps} term="pizza" />
     );
 
     await waitFor(() => {
-      expect(getByDisplayValue('pizza')).toBeTruthy();
+      const input = getByPlaceholderText('Search restaurants');
+      expect(input.props.value).toBe('pizza');
     });
 
-    rerender(<SearchInput {...mockProps} externalQuery="sushi" />);
+    rerender(<SearchInput {...mockProps} term="sushi" />);
 
     await waitFor(() => {
-      expect(getByDisplayValue('sushi')).toBeTruthy();
+      const input = getByPlaceholderText('Search restaurants');
+      expect(input.props.value).toBe('sushi');
     });
   });
 
