@@ -35,9 +35,12 @@ export interface UsePersistFiltersReturn {
  * Deep equality check for filters
  */
 function filtersEqual(a: Filters, b: Filters): boolean {
+  // Sort copies, never the inputs: `a` is the live Context state and `b` is the
+  // last-saved snapshot. Sorting them in place would mutate React state (a
+  // correctness bug) and reorder the user's category/price arrays.
   return (
-    safeStringify(a.categoryIds.sort()) === safeStringify(b.categoryIds.sort()) &&
-    safeStringify(a.priceLevels.sort()) === safeStringify(b.priceLevels.sort()) &&
+    safeStringify([...a.categoryIds].sort()) === safeStringify([...b.categoryIds].sort()) &&
+    safeStringify([...a.priceLevels].sort()) === safeStringify([...b.priceLevels].sort()) &&
     a.openNow === b.openNow &&
     a.radiusMeters === b.radiusMeters &&
     a.minRating === b.minRating

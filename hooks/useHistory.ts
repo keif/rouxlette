@@ -40,13 +40,15 @@ export function useHistory() {
   const prevSerializedRef = useRef<string>('');
   const hydrateCounterRef = useRef(0);
 
-  // (a) One-time hydrate guard
+  // (a) One-time hydrate guard. `isHydratingRef` is set synchronously below,
+  // before the first await, so StrictMode's double-invoke short-circuits here
+  // on the second run instead of firing a redundant storage read.
   useEffect(() => {
-    if (hasHydratedRef.current) {
+    if (hasHydratedRef.current || isHydratingRef.current) {
       logSafe('[useHistory] Skipping duplicate hydration');
       return;
     }
-    
+
     isHydratingRef.current = true;
     hydrateCounterRef.current += 1;
     const runId = hydrateCounterRef.current;
