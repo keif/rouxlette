@@ -947,6 +947,15 @@
     dotenv-expand "~11.0.6"
     getenv "^2.0.0"
 
+"@expo/env@~2.4.2":
+  version "2.4.2"
+  resolved "https://registry.yarnpkg.com/@expo/env/-/env-2.4.2.tgz#c180fd577e664b6090029157ae0e1b7ddfd66fac"
+  integrity sha512-28pqaEqwnmLduZ00Pq9HkSzE5wbj1MTwp5/n8nm8rD8MCjR9eUnVOwmNksPI3Be2ReAPO/DbPn1puy0mvoocsQ==
+  dependencies:
+    chalk "^4.0.0"
+    debug "^4.3.4"
+    getenv "^2.0.0"
+
 "@expo/fingerprint@0.15.3":
   version "0.15.3"
   resolved "https://registry.yarnpkg.com/@expo/fingerprint/-/fingerprint-0.15.3.tgz#26e7231d1ebd69a375c02ba595bba7b06fe882bb"
@@ -962,6 +971,19 @@
     minimatch "^9.0.0"
     p-limit "^3.1.0"
     resolve-from "^5.0.0"
+    semver "^7.6.0"
+
+"@expo/image-utils@^0.11.4":
+  version "0.11.4"
+  resolved "https://registry.yarnpkg.com/@expo/image-utils/-/image-utils-0.11.4.tgz#2101c05a8449540c12f74687600f2792b3918cb1"
+  integrity sha512-pn/4770DIEOcYZr484uazuwg20FX/qaDkeMRF6J+oxejynDmEmO8wLsCudaNShFE0BhyKGQTYrs2rsRhqrqESw==
+  dependencies:
+    "@expo/require-utils" "^57.0.4"
+    "@expo/spawn-async" "^1.8.0"
+    chalk "^4.0.0"
+    getenv "^2.0.0"
+    jimp-compact "0.16.1"
+    parse-png "^2.1.0"
     semver "^7.6.0"
 
 "@expo/image-utils@^0.8.7":
@@ -1087,6 +1109,15 @@
     semver "^7.6.0"
     xml2js "0.6.0"
 
+"@expo/require-utils@^57.0.4":
+  version "57.0.4"
+  resolved "https://registry.yarnpkg.com/@expo/require-utils/-/require-utils-57.0.4.tgz#fcf4377a64a21a70c00c787a9b8fc95ac438cc79"
+  integrity sha512-e7xbg/9BTQcsZE/oErafZXtI7kh5IgfasLJ97J5sFSzX2cA74pDvdlhW1KHVSaDkQyQv6h1LSLhsY7dEeOk7hw==
+  dependencies:
+    "@babel/code-frame" "^7.20.0"
+    "@babel/core" "^7.25.2"
+    "@babel/plugin-transform-modules-commonjs" "^7.24.8"
+
 "@expo/schema-utils@^0.1.7":
   version "0.1.7"
   resolved "https://registry.yarnpkg.com/@expo/schema-utils/-/schema-utils-0.1.7.tgz#38baa0effa0823cd4eca3f05e5eee3bde311da12"
@@ -1103,6 +1134,13 @@
   integrity sha512-QdWi16+CHB9JYP7gma19OVVg0BFkvU8zNj9GjWorYI8Iv8FUxjOCcYRuAmX4s/h91e4e7BPsskc8cSrZYho9Ew==
   dependencies:
     cross-spawn "^7.0.3"
+
+"@expo/spawn-async@^1.8.0":
+  version "1.8.0"
+  resolved "https://registry.yarnpkg.com/@expo/spawn-async/-/spawn-async-1.8.0.tgz#915e2ab38554fca7d788e16032078554dee633cf"
+  integrity sha512-eb9xxd/LbuEGSdua4NumCu/McVB9EM+F/JxB9pWgnERw4HQ9XyTNH1KapG6oqLWR8TuRK2LQfzJlmNi94CVobw==
+  dependencies:
+    cross-spawn "^7.0.6"
 
 "@expo/sudo-prompt@^9.3.1":
   version "9.3.2"
@@ -2956,13 +2994,21 @@ expect@^29.0.0, expect@^29.7.0:
     jest-message-util "^29.7.0"
     jest-util "^29.7.0"
 
-expo-asset@~12.0.10, expo-asset@~12.0.9:
+expo-asset@~12.0.10:
   version "12.0.10"
   resolved "https://registry.yarnpkg.com/expo-asset/-/expo-asset-12.0.10.tgz#81b91634d8afd1c35927b37409953b77aa3de42f"
   integrity sha512-pZyeJkoDsALh4gpCQDzTA/UCLaPH/1rjQNGubmLn/uDM27S4iYJb/YWw4+CNZOtd5bCUOhDPg5DtGQnydNFSXg==
   dependencies:
     "@expo/image-utils" "^0.8.7"
     expo-constants "~18.0.10"
+
+expo-asset@~57.0.7:
+  version "57.0.7"
+  resolved "https://registry.yarnpkg.com/expo-asset/-/expo-asset-57.0.7.tgz#7b674547a3f07f663eb0bdd18d92ba1f1037a280"
+  integrity sha512-TA6MRQq1HL0N6KGvNMzL6djdH5tGJ/eHPIhML+6bVu52mnXldmup2swdvP37zDnvoMUUXRVGsvwVHFmvhCbW6Q==
+  dependencies:
+    "@expo/image-utils" "^0.11.4"
+    expo-constants "~57.0.7"
 
 expo-constants@~18.0.10:
   version "18.0.10"
@@ -2971,6 +3017,13 @@ expo-constants@~18.0.10:
   dependencies:
     "@expo/config" "~12.0.10"
     "@expo/env" "~2.0.7"
+
+expo-constants@~57.0.7:
+  version "57.0.7"
+  resolved "https://registry.yarnpkg.com/expo-constants/-/expo-constants-57.0.7.tgz#6ffd3d68b72141d71281e5dd8c6b1b7741ac1a23"
+  integrity sha512-ShDwaKnh3UieCQ/dG0kO8PuicTTatn3WDGmXbq/fukyzPXWhdUxf37DINVDQS6D3DDG7nfqItij+QvnDHSQhTg==
+  dependencies:
+    "@expo/env" "~2.4.2"
 
 expo-file-system@~19.0.18:
   version "19.0.18"
