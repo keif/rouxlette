@@ -1,0 +1,32 @@
+# Dependabot configuration
+# Docs: https://docs.github.com/code-security/dependabot/dependabot-version-updates/configuration-options-for-the-dependabot.yml-file
+version: 2
+updates:
+  # JavaScript dependencies (Yarn / npm ecosystem)
+  - package-ecosystem: "npm"
+    directory: "/"
+    schedule:
+      interval: "weekly"
+    open-pull-requests-limit: 10
+    labels:
+      - "dependencies"
+    # Roll minor + patch bumps into a single PR to cut review noise.
+    groups:
+      js-minor-and-patch:
+        update-types:
+          - "minor"
+          - "patch"
+    # Expo pins react-native/expo to SDK-compatible versions. Bumping them
+    # outside `expo install --fix` / an SDK upgrade breaks the app, so leave
+    # them to the Expo tooling rather than Dependabot.
+    ignore:
+      - dependency-name: "expo"
+      - dependency-name: "react-native"
+
+  # GitHub Actions (covers workflows once they're added)
+  - package-ecosystem: "github-actions"
+    directory: "/"
+    schedule:
+      interval: "weekly"
+    labels:
+      - "dependencies"
