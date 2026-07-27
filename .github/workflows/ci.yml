@@ -28,6 +28,12 @@ jobs:
       - name: Install dependencies
         run: yarn install --frozen-lockfile
 
+      # react-native-dotenv (allowUndefined:false) resolves @env imports at
+      # transform time, so a .env must exist. The real .env is gitignored; use
+      # the checked-in example with safe stub values for CI.
+      - name: Provide test env
+        run: cp .env.example .env
+
       # The `test` script is `jest --watchAll`; override to a single CI run so
       # the job doesn't hang in watch mode.
       - name: Run tests
