@@ -8,6 +8,17 @@ jest.mock('react-native-safe-area-context', () => ({
   useSafeAreaInsets: () => ({ bottom: 20, top: 44, left: 0, right: 0 }),
 }));
 
+// Mock RestaurantCardDetailed so ResultsList is tested in isolation, without
+// pulling in the card's ToastProvider/context dependencies. ResultsList imports
+// it as a default export from ../search/RestaurantCardDetailed.
+jest.mock('../../components/search/RestaurantCardDetailed', () => {
+  const React = require('react');
+  const { Text } = require('react-native');
+  return function MockRestaurantCardDetailed({ result }: { result: any }) {
+    return React.createElement(Text, null, result?.name ?? 'restaurant');
+  };
+});
+
 describe('ResultsList', () => {
   const mockEmptyResults = { id: 'test', businesses: [] };
   const mockResultsWithData = {
@@ -55,7 +66,7 @@ describe('ResultsList', () => {
       />
     );
 
-    expect(getByText(/We couldn't find anything/)).toBeTruthy();
+    expect(getByText(/We couldn.t find anything/)).toBeTruthy();
     expect(getByText('Try a broader term or remove some filters.')).toBeTruthy();
   });
 
@@ -86,7 +97,7 @@ describe('ResultsList', () => {
 
     // Should not show loading or empty states
     expect(queryByText('Searching…')).toBeNull();
-    expect(queryByText(/We couldn't find anything/)).toBeNull();
+    expect(queryByText(/We couldn.t find anything/)).toBeNull();
   });
 
   it('should not render anything when no search term', () => {

@@ -26,10 +26,15 @@ export default {
         "<rootDir>/__tests__/setup.js"
     ],
 
+    testPathIgnorePatterns: [
+        "/node_modules/",
+        "<rootDir>/__tests__/setup.js",
+        "<rootDir>/__tests__/mocks/",
+    ],
+
     moduleNameMapper: {
         "\\.(png|jpg|jpeg|gif|webp)$": "<rootDir>/__mocks__/fileMock.js",
         "\\.svg": "<rootDir>/__mocks__/svgMock.js",
-        "^@env$": "<rootDir>/__tests__/mocks/mockEnv.js"
+        "^@env$": "<rootDir>/__tests__/mocks/mockEnv.js",
     },
-
 };

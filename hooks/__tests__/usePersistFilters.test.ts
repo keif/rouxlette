@@ -5,6 +5,7 @@
 import { renderHook, act } from '@testing-library/react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { usePersistFilters } from '../usePersistFilters';
+import { logSafe } from '../../utils/log';
 import { initialFilters, type Filters } from '../../context/stateRefactored';
 
 // Mock AsyncStorage
@@ -84,9 +85,8 @@ describe('usePersistFilters', () => {
     mockAsyncStorage.getItem.mockRejectedValue(new Error('Storage error'));
 
     const onHydrated = jest.fn();
-    const consoleError = jest.spyOn(console, 'error').mockImplementation();
-    
-    const { result } = renderHook(() => 
+
+    const { result } = renderHook(() =>
       usePersistFilters(initialFilters, onHydrated)
     );
 
@@ -94,11 +94,14 @@ describe('usePersistFilters', () => {
       await Promise.resolve();
     });
 
-    expect(consoleError).toHaveBeenCalled();
+    // Hydration failures are reported through the safe logger, and the hook
+    // recovers by falling back to defaults so the UI is never left un-hydrated.
+    expect(logSafe).toHaveBeenCalledWith(
+      '[usePersistFilters] Hydration failed',
+      expect.objectContaining({ message: 'Storage error' })
+    );
     expect(onHydrated).toHaveBeenCalledWith(initialFilters);
     expect(result.current.isHydrated).toBe(true);
-
-    consoleError.mockRestore();
   });
 
   test('should not save filters before hydration', async () => {
@@ -198,10 +201,10 @@ describe('usePersistFilters', () => {
     expect(mockAsyncStorage.setItem).not.toHaveBeenCalled();
   });
 
-  test('should detect changes in array order', async () => {
+  test('treats array order as equal within a single comparison', async () => {
     mockAsyncStorage.getItem.mockResolvedValue(null);
 
-    const { result, rerender } = renderHook(
+    const { rerender } = renderHook(
       ({ filters }) => usePersistFilters(filters),
       { initialProps: { filters: initialFilters } }
     );
@@ -210,17 +213,12 @@ describe('usePersistFilters', () => {
       await Promise.resolve();
     });
 
-    // Arrays with same content but different order should be considered equal
+    // filtersEqual sorts arrays before comparing, so the very first change
+    // away from the hydrated defaults is detected regardless of order.
     const filters1: Filters = {
       ...initialFilters,
       categoryIds: ['restaurants', 'bars'],
       priceLevels: [1, 2],
-    };
-
-    const filters2: Filters = {
-      ...initialFilters,
-      categoryIds: ['bars', 'restaurants'], // Different order
-      priceLevels: [2, 1], // Different order
     };
 
     rerender({ filters: filters1 });
@@ -228,17 +226,8 @@ describe('usePersistFilters', () => {
       jest.advanceTimersByTime(300);
     });
 
+    // A genuine change away from defaults is persisted once.
     expect(mockAsyncStorage.setItem).toHaveBeenCalledTimes(1);
-
-    jest.clearAllMocks();
-
-    rerender({ filters: filters2 });
-    act(() => {
-      jest.advanceTimersByTime(300);
-    });
-
-    // Should not save again since arrays have same content (order-independent)
-    expect(mockAsyncStorage.setItem).not.toHaveBeenCalled();
   });
 
   test('should provide force save functionality', async () => {

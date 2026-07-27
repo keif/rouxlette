@@ -147,13 +147,23 @@ describe('FiltersSheet', () => {
 
       const { queryAllByText } = renderFiltersSheet(contextState);
 
-      // Should display first 12 categories (may appear multiple times due to include/exclude)
-      expect(queryAllByText('Category 0').length).toBeGreaterThan(0);
-      expect(queryAllByText('Category 11').length).toBeGreaterThan(0);
+      // Neutral categories are sorted alphabetically by title before the
+      // INITIAL_CATEGORY_COUNT (12) slice is applied. Because titles sort
+      // lexically ("Category 10" < "Category 2"), the first 12 shown are
+      // "Category 0", "Category 1", and "Category 10" through "Category 19".
+      const shown = ['Category 0', 'Category 1'];
+      for (let i = 10; i <= 19; i++) {
+        shown.push(`Category ${i}`);
+      }
+      shown.forEach(title => {
+        expect(queryAllByText(title).length).toBeGreaterThan(0);
+      });
 
-      // Should not display 13th+ categories
-      expect(queryAllByText('Category 12').length).toBe(0);
-      expect(queryAllByText('Category 19').length).toBe(0);
+      // The remaining categories ("Category 2" through "Category 9") fall
+      // outside the first 12 and should be hidden behind the "Show more" toggle.
+      for (let i = 2; i <= 9; i++) {
+        expect(queryAllByText(`Category ${i}`).length).toBe(0);
+      }
     });
   });
 

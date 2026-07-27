@@ -20,6 +20,17 @@ jest.mock('expo-location', () => ({
   Accuracy: { Balanced: 3 },
 }));
 
+// Mock expo-linking to prevent manifest errors
+jest.mock('expo-linking', () => ({
+  createURL: jest.fn(() => 'rouxlette://'),
+  getInitialURL: jest.fn(() => Promise.resolve(null)),
+  addEventListener: jest.fn(() => ({ remove: jest.fn() })),
+  removeEventListener: jest.fn(),
+  openURL: jest.fn(() => Promise.resolve()),
+  canOpenURL: jest.fn(() => Promise.resolve(true)),
+  parse: jest.fn((url) => ({ path: url, queryParams: {} })),
+}));
+
 // Mock expo-haptics
 jest.mock('expo-haptics', () => ({
   impactAsync: jest.fn(),
@@ -39,7 +50,9 @@ jest.mock('react-native-worklets', () => ({
 // Mock react-native-reanimated fully to avoid native module issues
 jest.mock('react-native-reanimated', () => {
   const React = require('react');
-  const { View, Text, Image, Animated: RNAnimated } = require('react-native');
+  const { View, Text, Image } = require('react-native');
+
+  const createAnimatedComponent = (component) => component;
 
   return {
     __esModule: true,
@@ -49,16 +62,18 @@ jest.mock('react-native-reanimated', () => {
       Image,
       ScrollView: View,
       FlatList: View,
-      createAnimatedComponent: (component) => component,
+      createAnimatedComponent,
       addWhitelistedNativeProps: jest.fn(),
       addWhitelistedUIProps: jest.fn(),
     },
     useSharedValue: (initial) => ({ value: initial }),
     useAnimatedStyle: () => ({}),
-    useDerivedValue: (fn) => ({ value: fn() }),
+    useDerivedValue: (fn) => ({ value: typeof fn === 'function' ? fn() : fn }),
     useAnimatedGestureHandler: () => ({}),
     useAnimatedScrollHandler: () => ({}),
     useAnimatedProps: () => ({}),
+    useAnimatedRef: () => ({ current: null }),
+    useAnimatedReaction: jest.fn(),
     withTiming: (value) => value,
     withSpring: (value) => value,
     withDecay: (value) => value,
@@ -66,19 +81,25 @@ jest.mock('react-native-reanimated', () => {
     withSequence: (...animations) => animations[0],
     withRepeat: (animation) => animation,
     interpolate: () => 0,
+    interpolateColor: () => 'transparent',
     Extrapolate: { CLAMP: 'clamp', EXTEND: 'extend', IDENTITY: 'identity' },
     Extrapolation: { CLAMP: 'clamp', EXTEND: 'extend', IDENTITY: 'identity' },
     runOnJS: (fn) => fn,
     runOnUI: (fn) => fn,
-    createAnimatedComponent: (component) => component,
+    createAnimatedComponent,
     Easing: {
-      linear: jest.fn(),
-      ease: jest.fn(),
-      bezier: jest.fn(() => jest.fn()),
-      in: jest.fn(),
-      out: jest.fn(),
-      inOut: jest.fn(),
+      linear: jest.fn((t) => t),
+      ease: jest.fn((t) => t),
+      bezier: jest.fn(() => jest.fn((t) => t)),
+      in: jest.fn((t) => t),
+      out: jest.fn((t) => t),
+      inOut: jest.fn((t) => t),
     },
+    Layout: { springify: jest.fn(() => ({})) },
+    FadeIn: { duration: jest.fn(() => ({ build: jest.fn() })) },
+    FadeOut: { duration: jest.fn(() => ({ build: jest.fn() })) },
+    SlideInRight: { duration: jest.fn(() => ({})) },
+    SlideOutLeft: { duration: jest.fn(() => ({})) },
     View,
     Text,
     Image,

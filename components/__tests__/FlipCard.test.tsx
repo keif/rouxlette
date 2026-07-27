@@ -4,16 +4,14 @@ import { Text, View } from 'react-native';
 
 import FlipCard from '../shared/FlipCard';
 
-// Mock react-native-reanimated
-jest.mock('react-native-reanimated', () => {
-  const Reanimated = require('react-native-reanimated/mock');
-  Reanimated.default.call = () => {};
-  return Reanimated;
-});
-
-// Mock react-native-gesture-handler
+// react-native-reanimated and react-native-worklets are mocked globally in
+// __tests__/setup.js. react-native-gesture-handler is set up via
+// 'react-native-gesture-handler/jestSetup' in the same file.
+//
+// We only override the gesture handlers here so that FlipCard's front/back
+// children render directly in the snapshot instead of being wrapped by the
+// (non-rendering) native handler components.
 jest.mock('react-native-gesture-handler', () => {
-  const mockReact = require('react');
   const original = jest.requireActual('react-native-gesture-handler');
   return {
     ...original,
@@ -25,7 +23,7 @@ jest.mock('react-native-gesture-handler', () => {
   };
 });
 
-const mockFront = React.createElement(View, { testID: 'front' }, 
+const mockFront = React.createElement(View, { testID: 'front' },
   React.createElement(Text, null, 'Front Content')
 );
 
