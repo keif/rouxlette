@@ -121,13 +121,11 @@ describe('useHistory', () => {
         await new Promise(resolve => setTimeout(resolve, 100));
       });
 
-      // StrictMode intentionally double-invokes effects, so the storage read
-      // may fire twice. The hook guards against double *application* via its
-      // hydrateCounter (only the latest run dispatches), rather than by
-      // suppressing the read itself. Assert the read targeted the right key
-      // and never ran more than StrictMode's double-invoke.
-      expect(mockStorage.getItem.mock.calls.length).toBeGreaterThanOrEqual(1);
-      expect(mockStorage.getItem.mock.calls.length).toBeLessThanOrEqual(2);
+      // StrictMode double-invokes effects on mount. The hydrate effect must
+      // guard the storage READ (not just the dispatch) so it fires exactly
+      // once even under the double-invoke — otherwise every StrictMode mount
+      // costs a redundant AsyncStorage read.
+      expect(mockStorage.getItem).toHaveBeenCalledTimes(1);
       expect(mockStorage.getItem).toHaveBeenCalledWith('storage:history:v1');
     });
 
