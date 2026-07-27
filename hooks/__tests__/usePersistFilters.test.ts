@@ -230,6 +230,36 @@ describe('usePersistFilters', () => {
     expect(mockAsyncStorage.setItem).toHaveBeenCalledTimes(1);
   });
 
+  test('does not mutate the caller\'s filter arrays while detecting changes', async () => {
+    mockAsyncStorage.getItem.mockResolvedValue(null);
+
+    const { rerender } = renderHook(
+      ({ filters }) => usePersistFilters(filters),
+      { initialProps: { filters: initialFilters } }
+    );
+
+    await act(async () => {
+      await Promise.resolve();
+    });
+
+    // Deliberately unsorted arrays. Change-detection must compare copies, not
+    // sort these in place — they come straight from Context state and mutating
+    // state is a React correctness bug.
+    const unsorted: Filters = {
+      ...initialFilters,
+      categoryIds: ['restaurants', 'bars'],
+      priceLevels: [2, 1],
+    };
+
+    rerender({ filters: unsorted });
+    act(() => {
+      jest.advanceTimersByTime(300);
+    });
+
+    expect(unsorted.categoryIds).toEqual(['restaurants', 'bars']);
+    expect(unsorted.priceLevels).toEqual([2, 1]);
+  });
+
   test('should provide force save functionality', async () => {
     mockAsyncStorage.getItem.mockResolvedValue(null);
 
