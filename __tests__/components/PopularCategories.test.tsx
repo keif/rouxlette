@@ -66,6 +66,8 @@ describe('PopularCategories', () => {
     );
 
     const categoryCard = getByTestId('category-pizza');
-    expect(categoryCard.props.disabled).toBe(true);
+    // TouchableOpacity exposes its disabled state through accessibilityState
+    // rather than a raw `disabled` prop on the host node.
+    expect(categoryCard.props.accessibilityState.disabled).toBe(true);
   });
 });

@@ -17,6 +17,30 @@ jest.mock('../../../hooks/useBusinessHours', () => ({
   }))
 }));
 
+// useBlockFavorite depends on ToastContext (useToast), which requires a
+// ToastProvider higher in the tree. The modal's block/favorite actions are not
+// under test here, so stub the hook to keep the render self-contained.
+jest.mock('../../../hooks/useBlockFavorite', () => ({
+  useBlockFavorite: () => ({
+    isFavorite: () => false,
+    isBlocked: () => false,
+    handleFavorite: jest.fn(),
+    handleBlock: jest.fn(),
+  }),
+}));
+
+// Avoid the details fetch (network / async) during render; return the passed
+// business unchanged so the front card renders from the provided data.
+jest.mock('../../../hooks/useBusinessDetails', () => ({
+  __esModule: true,
+  useBusinessDetails: (business: any) => ({
+    business: business || {},
+    loading: false,
+    fetchDetails: jest.fn(),
+    hasDetails: false,
+  }),
+}));
+
 // Sample business data for testing
 const sampleBusiness: YelpBusiness = {
   id: 'test-business-123',
@@ -112,15 +136,16 @@ describe('BusinessCardModal', () => {
   });
 
   it('should render BusinessQuickInfo by default', () => {
-    const { getByText } = render(
+    const { getAllByText } = render(
       <TestHarness>
         <BusinessCardModal />
       </TestHarness>
     );
 
-    // Should show business name and basic info
-    expect(getByText('Test Restaurant')).toBeTruthy();
-    expect(getByText('$$')).toBeTruthy();
+    // FlipCard renders both faces, so the name/price appear on the front and
+    // back of the card. Assert at least one instance is present.
+    expect(getAllByText('Test Restaurant').length).toBeGreaterThan(0);
+    expect(getAllByText('$$').length).toBeGreaterThan(0);
   });
 
   it('should show tab buttons', () => {
@@ -179,14 +204,14 @@ describe('BusinessCardModal', () => {
       // Missing most optional fields
     } as YelpBusiness;
 
-    const { getByText } = render(
+    const { getAllByText } = render(
       <TestHarness business={incompleteBusiness}>
         <BusinessCardModal />
       </TestHarness>
     );
 
-    // Should show business name
-    expect(getByText('Incomplete Business')).toBeTruthy();
+    // Should show business name (rendered on both card faces)
+    expect(getAllByText('Incomplete Business').length).toBeGreaterThan(0);
   });
 
   describe('snapshots', () => {

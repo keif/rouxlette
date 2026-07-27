@@ -13,6 +13,10 @@ const mockGeocoder = Geocoder as jest.Mocked<typeof Geocoder>;
 describe('useLocation', () => {
   beforeEach(() => {
     jest.clearAllMocks();
+    // clearAllMocks only clears call records, not queued one-shot implementations
+    // (mockResolvedValueOnce). Reset Geocoder.from so a value queued by one test
+    // cannot leak into the next and be consumed out of order.
+    mockGeocoder.from.mockReset();
     console.error = jest.fn();
     console.warn = jest.fn();
     console.log = jest.fn();
@@ -69,9 +73,10 @@ describe('useLocation', () => {
       await searchLocation('nonexistent place');
     });
 
-    // Should not throw and should handle gracefully
-    expect(console.error).toHaveBeenCalledWith(
-      expect.stringContaining('Geocoding API error'),
+    // The hook logs through logSafe (console.log with a bracketed label), not
+    // console.error. A non-OK legacy geocoding response is reported gracefully.
+    expect(console.log).toHaveBeenCalledWith(
+      expect.stringContaining('Legacy geocoding response error'),
       expect.objectContaining({
         status: 'ZERO_RESULTS'
       })
@@ -95,11 +100,12 @@ describe('useLocation', () => {
       await searchLocation('some place');
     });
 
-    expect(console.error).toHaveBeenCalledWith(
-      expect.stringContaining('Geocoding API error'),
+    // Legacy path only surfaces the status via logSafe; it does not echo the raw
+    // error_message. Assert the non-OK status is reported gracefully.
+    expect(console.log).toHaveBeenCalledWith(
+      expect.stringContaining('Legacy geocoding response error'),
       expect.objectContaining({
-        status: 'REQUEST_DENIED',
-        error_message: 'The provided API key is invalid.'
+        status: 'REQUEST_DENIED'
       })
     );
   });
@@ -131,9 +137,13 @@ describe('useLocation', () => {
       await searchLocation('test place');
     });
 
-    expect(console.error).toHaveBeenCalledWith(
-      expect.stringContaining('No results in response'),
-      malformedResponse
+    // A response with status OK but no results array is reported via logSafe.
+    expect(console.log).toHaveBeenCalledWith(
+      expect.stringContaining('No results in legacy response'),
+      expect.objectContaining({
+        hasResults: false,
+        isArray: false
+      })
     );
   });
 
@@ -158,7 +168,7 @@ describe('useLocation', () => {
       await searchLocation('test place');
     });
 
-    expect(console.error).toHaveBeenCalledWith(
+    expect(console.log).toHaveBeenCalledWith(
       expect.stringContaining('Invalid result structure - missing address_components'),
       expect.any(Object)
     );

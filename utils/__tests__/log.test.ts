@@ -124,10 +124,19 @@ describe('logSafe', () => {
   });
 
   test('should not log in production', () => {
+    // `isDev` is captured once at module-load time from the global __DEV__
+    // flag (Metro inlines this to a constant in real production builds).
+    // To simulate a production bundle we must set __DEV__ = false *before*
+    // the module is evaluated, then re-require it in isolation.
     (global as any).__DEV__ = false;
-    
-    logSafe('test-label', { data: 'should not log' });
-    
+
+    let prodLogSafe: typeof logSafe;
+    jest.isolateModules(() => {
+      prodLogSafe = require('../log').logSafe;
+    });
+
+    prodLogSafe!('test-label', { data: 'should not log' });
+
     expect(logOutput).toHaveLength(0);
   });
 

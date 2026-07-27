@@ -4,41 +4,13 @@ import renderer from 'react-test-renderer';
 import RestaurantCardDetailed from '../search/RestaurantCardDetailed';
 import { BusinessProps } from '../../hooks/useResults';
 
-// Mock react-native-reanimated
-jest.mock('react-native-reanimated', () => {
-  const Reanimated = require('react-native-reanimated/mock');
-  Reanimated.default.call = () => {};
-  return Reanimated;
-});
-
-// Mock Animated from react-native
-jest.mock('react-native', () => {
-  const RN = jest.requireActual('react-native');
-  return {
-    ...RN,
-    Animated: {
-      ...RN.Animated,
-      parallel: jest.fn(() => ({ start: jest.fn() })),
-      timing: jest.fn(() => ({ start: jest.fn() })),
-      Value: jest.fn(() => ({
-        setValue: jest.fn(),
-        addListener: jest.fn(),
-        removeListener: jest.fn(),
-        hasListeners: jest.fn(),
-        stopAnimation: jest.fn(),
-        resetAnimation: jest.fn(),
-        interpolate: jest.fn(),
-        extractOffset: jest.fn(),
-        setOffset: jest.fn(),
-        flattenOffset: jest.fn(),
-        removeClampedListener: jest.fn(),
-        addClampedListener: jest.fn(),
-      })),
-    },
-  };
-});
-
-// Mock react-native-gesture-handler
+// react-native-reanimated and react-native-worklets are mocked globally in
+// __tests__/setup.js. react-native-gesture-handler is set up via
+// 'react-native-gesture-handler/jestSetup' in the same file.
+//
+// We only override the gesture handlers here so that the card's children render
+// directly in the snapshot instead of being wrapped by the (non-rendering)
+// native handler components.
 jest.mock('react-native-gesture-handler', () => {
   const original = jest.requireActual('react-native-gesture-handler');
   return {

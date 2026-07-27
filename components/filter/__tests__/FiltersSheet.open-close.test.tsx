@@ -57,9 +57,10 @@ describe('FiltersSheet Open/Close Behavior', () => {
       </RootContext.Provider>
     );
 
-    // Modal should not be visible when visible=false
+    // When visible=false the Modal is hidden, so its subtree (including the
+    // testID) is not present in the rendered output.
     const filtersSheet = queryByTestId('test-filters-sheet');
-    expect(filtersSheet).toBeTruthy(); // Component is rendered but not visible
+    expect(filtersSheet).toBeNull();
   });
 
   it('calls onClose when close button is pressed', async () => {

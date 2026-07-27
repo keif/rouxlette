@@ -1,19 +1,31 @@
+// Mock axios so that `axios.create()` returns a controllable instance.
+// The factory runs before imports (jest hoists jest.mock), and we reference
+// the instance lazily via require() inside the test file to satisfy hoisting.
+jest.mock('axios', () => {
+  const instance = {
+    get: jest.fn(),
+    interceptors: {
+      request: { use: jest.fn() },
+      response: { use: jest.fn() },
+    },
+  };
+  return {
+    __esModule: true,
+    default: {
+      create: jest.fn(() => instance),
+    },
+    // Expose the instance for the test to drive `.get` behavior.
+    __mockInstance: instance,
+  };
+});
+
 import { geocode, reverseGeocode, humanizeGeocodeError, GeocodeResponse } from '../../api/google';
 
-// Mock axios
-jest.mock('axios');
-
-const mockAxios = {
-  create: jest.fn(() => mockAxios),
-  get: jest.fn(),
-  interceptors: {
-    request: { use: jest.fn() },
-    response: { use: jest.fn() }
-  }
+// The instance returned by axios.create() — this is what api/google.ts uses internally.
+const mockAxios = (require('axios') as any).__mockInstance as {
+  get: jest.Mock;
+  interceptors: { request: { use: jest.Mock }; response: { use: jest.Mock } };
 };
-
-// Mock the axios instance
-require('axios').default = mockAxios;
 
 describe('Google API Normalizer', () => {
   beforeEach(() => {

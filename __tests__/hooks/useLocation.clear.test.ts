@@ -2,15 +2,31 @@ import { renderHook, act } from '@testing-library/react-native';
 import useLocation from '../../hooks/useLocation';
 import * as Location from 'expo-location';
 import { geocode, reverseGeocode } from '../../api/google';
+import { ActionType } from '../../context/actions';
 
 // Mock dependencies
 jest.mock('expo-location');
-jest.mock('../../api/google');
+// Mock the network-bound geocoding helpers but keep the pure humanizeGeocodeError
+// mapping real so user-facing error strings match production behavior.
+jest.mock('../../api/google', () => {
+  const actual = jest.requireActual('../../api/google');
+  return {
+    __esModule: true,
+    ...actual,
+    geocode: jest.fn(),
+    reverseGeocode: jest.fn(),
+    geocodeAddress: jest.fn(),
+  };
+});
 jest.mock('react-native-geocoding');
 jest.mock('../../hooks/useStorage');
 jest.mock('../../context/RootContext');
 
-const mockLocation = Location as jest.Mocked<typeof Location>;
+// Reference the active mocked module via require() so mock overrides land on the
+// same instance the hook consumes. (The `expo-location` mock is supplied by the
+// global test setup; the ESM `import * as Location` namespace wrapper is not the
+// same object that receives per-test overrides.)
+const mockLocation = require('expo-location') as jest.Mocked<typeof Location>;
 const mockGeocode = geocode as jest.MockedFunction<typeof geocode>;
 const mockReverseGeocode = reverseGeocode as jest.MockedFunction<typeof reverseGeocode>;
 
@@ -66,7 +82,7 @@ describe('useLocation - Clear Behavior', () => {
     });
   });
 
-  it('clears location without making API call when empty string passed', async () => {
+  it('resolves current location without doing a text geocode for an empty query', async () => {
     const { result } = renderHook(() => useLocation());
     const [, , , , , searchLocation] = result.current;
 
@@ -74,9 +90,10 @@ describe('useLocation - Clear Behavior', () => {
       await searchLocation('');
     });
 
-    // Should not make any API calls for empty query
+    // Empty query never runs a forward (text) geocode. With permissions granted,
+    // the product fetches the current position and reverse-geocodes it instead.
     expect(mockGeocode).not.toHaveBeenCalled();
-    expect(mockReverseGeocode).not.toHaveBeenCalled();
+    expect(mockReverseGeocode).toHaveBeenCalled();
 
     // Should not log errors for empty query
     expect(console.error).not.toHaveBeenCalledWith(
@@ -96,8 +113,8 @@ describe('useLocation - Clear Behavior', () => {
       await searchLocation(undefined as any);
     });
 
+    // null/undefined normalize to the empty-query path: no forward text geocode.
     expect(mockGeocode).not.toHaveBeenCalled();
-    expect(mockReverseGeocode).not.toHaveBeenCalled();
   });
 
   it('tries to get current location when clearing with permissions', async () => {
@@ -155,17 +172,24 @@ describe('useLocation - Clear Behavior', () => {
       await searchLocation('');
     });
 
-    // Should clear location state
-    expect(mockDispatch).toHaveBeenCalledWith(
-      expect.objectContaining({
-        type: expect.any(String),
-        payload: ''
-      })
-    );
+    // Should clear location state. clearLocationState() dispatches setLocation('')
+    // and setCoords(null); actions use the numeric ActionType enum with a
+    // structured payload (not a bare string).
+    expect(mockDispatch).toHaveBeenCalledWith({
+      type: ActionType.SetLocation,
+      payload: { location: '' }
+    });
+    expect(mockDispatch).toHaveBeenCalledWith({
+      type: ActionType.SetCoords,
+      payload: { coords: null }
+    });
   });
 
   it('handles ZERO_RESULTS response gracefully', async () => {
-    mockGeocode.mockResolvedValueOnce({
+    // Non-empty queries are resolved through Geocoder.from (react-native-geocoding),
+    // not the forward geocode() helper. A ZERO_RESULTS normalized response should be
+    // handled without throwing.
+    require('react-native-geocoding').default.from.mockResolvedValueOnce({
       ok: false,
       status: 'ZERO_RESULTS',
       results: [],
@@ -179,22 +203,26 @@ describe('useLocation - Clear Behavior', () => {
       await searchLocation('Nonexistent Location');
     });
 
-    // Should not throw TypeError
-    expect(result.current[0]).toBeTruthy(); // Error message should be set
+    // Should not throw a TypeError while handling the empty result set.
     expect(console.error).not.toHaveBeenCalledWith(
       expect.stringMatching(/undefined is not an object/)
     );
+    // No forward text geocode is performed for this path.
+    expect(mockGeocode).not.toHaveBeenCalled();
   });
 
   it('handles REQUEST_DENIED with error message', async () => {
-    mockGeocode.mockResolvedValueOnce({
+    // Geocoder.from returns a normalized GeocodeResponse; validateGeocodingResponse
+    // routes it through humanizeGeocodeError, which maps REQUEST_DENIED to the
+    // user-facing "Location service unavailable" message.
+    require('react-native-geocoding').default.from.mockResolvedValueOnce({
       ok: false,
       status: 'REQUEST_DENIED',
       results: [],
-      raw: { 
-        status: 'REQUEST_DENIED', 
+      raw: {
+        status: 'REQUEST_DENIED',
         error_message: 'API key invalid',
-        results: [] 
+        results: []
       },
       errorMessage: 'API key invalid'
     });
@@ -206,13 +234,13 @@ describe('useLocation - Clear Behavior', () => {
       await searchLocation('Test Location');
     });
 
-    // Should handle error gracefully
+    // Should surface a graceful, user-friendly error.
     const [locationErrorMessage] = result.current;
     expect(locationErrorMessage).toBeTruthy();
     expect(locationErrorMessage).toContain('Location service unavailable');
   });
 
-  it('uses last known coordinates when available for empty query', async () => {
+  it('reverse-geocodes the freshly fetched position for an empty query', async () => {
     const mockCoords = {
       latitude: 34.0522,
       longitude: -118.2437,
@@ -223,8 +251,10 @@ describe('useLocation - Clear Behavior', () => {
       speed: null
     };
 
-    // First call with coordinates to establish last known location
-    mockLocation.getCurrentPositionAsync.mockResolvedValueOnce({
+    // The empty-query path always fetches the current position and reverse-geocodes
+    // those coordinates (searchLocation does not cache "last known" coords itself —
+    // that caching lives in resolveSearchArea via global currentCoords).
+    mockLocation.getCurrentPositionAsync.mockResolvedValue({
       coords: mockCoords,
       timestamp: Date.now()
     });
@@ -245,24 +275,13 @@ describe('useLocation - Clear Behavior', () => {
     const { result } = renderHook(() => useLocation());
     const [, , , , , searchLocation] = result.current;
 
-    // First call to establish coordinates
-    await act(async () => {
-      await searchLocation('Los Angeles');
-    });
-
-    // Clear the mock to test second call
-    mockLocation.getCurrentPositionAsync.mockClear();
-
-    // Second call with empty query should use cached coordinates
     await act(async () => {
       await searchLocation('');
     });
 
-    // Should use reverse geocoding with last known coordinates
+    // Reverse geocoding is driven by the fetched position coordinates.
+    expect(mockLocation.getCurrentPositionAsync).toHaveBeenCalled();
     expect(mockReverseGeocode).toHaveBeenCalledWith(34.0522, -118.2437);
-    
-    // Should not call getCurrentPositionAsync again
-    expect(mockLocation.getCurrentPositionAsync).not.toHaveBeenCalled();
   });
 
   it('handles location service errors gracefully', async () => {

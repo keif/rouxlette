@@ -1,122 +1,132 @@
 import React from 'react';
 import { render, fireEvent } from '@testing-library/react-native';
-import SearchScreen from '../../screens/SearchScreen';
+import { SearchScreen } from '../../screens/SearchScreen';
 import { RootContext } from '../../context/RootContext';
+import { mockInitialState } from '../mocks/mockState';
+import { setShowFilter } from '../../context/reducer';
 
-// Mock navigation
-const mockNavigation = {
-  setOptions: jest.fn(),
-  navigate: jest.fn(),
-  goBack: jest.fn(),
-};
-
-const mockRoute = {
-  params: {},
-  key: 'test',
-  name: 'Search' as const,
-};
-
+// Navigation
 jest.mock('@react-navigation/native', () => ({
-  useNavigation: () => mockNavigation,
-  useRoute: () => mockRoute,
-  useFocusEffect: (callback: any) => callback(),
+  useNavigation: () => ({ navigate: jest.fn(), setOptions: jest.fn(), goBack: jest.fn() }),
 }));
 
-// Mock other hooks
-jest.mock('../../hooks/useFiltersPersistence', () => ({
+// Data hooks. SearchScreen destructures 5 values from useResults and 10 from
+// useLocation; return correctly-shaped tuples so nothing resolves to undefined.
+jest.mock('../../hooks/useResults', () => ({
   __esModule: true,
-  default: () => ({ isHydrated: true }),
+  default: () => ['', { id: '', businesses: [] }, jest.fn(), jest.fn(), false],
+  INIT_RESULTS: { id: '', businesses: [] },
 }));
 
-// Mock safe area
-jest.mock('react-native-safe-area-context', () => ({
-  SafeAreaProvider: ({ children }: any) => children,
-  useSafeAreaInsets: () => ({ bottom: 20, top: 44, left: 0, right: 0 }),
+jest.mock('../../hooks/useLocation', () => ({
+  __esModule: true,
+  default: () => [
+    '',
+    'Columbus, OH',
+    'Columbus, OH',
+    null,
+    jest.fn(),
+    jest.fn(),
+    jest.fn(),
+    false,
+    jest.fn(),
+    jest.fn(),
+  ],
 }));
 
-// Mock SearchInput and other components
-jest.mock('../../components/search/SearchInput', () => {
-  return function MockSearchInput({ setTerm, setResults, onFocus }: any) {
-    return (
-      <input
-        data-testid="search-input"
-        onChange={(e: any) => setTerm(e.target.value)}
-        onFocus={onFocus}
-      />
-    );
+jest.mock('../../hooks/useBlocked', () => ({
+  useBlocked: () => ({ blocked: [] }),
+}));
+
+jest.mock('../../hooks/useBlockFavorite', () => ({
+  useBlockFavorite: () => ({
+    isFavorite: () => false,
+    isBlocked: () => false,
+    handleFavorite: jest.fn(),
+    handleBlock: jest.fn(),
+  }),
+}));
+
+// Stub heavy child components that pull in native-only modules.
+jest.mock('../../components/RestaurantCardSimple', () => {
+  const { View, Text } = require('react-native');
+  return {
+    RestaurantCardSimple: ({ restaurant }: any) => (
+      <View testID={`restaurant-card-${restaurant.id}`}>
+        <Text>{restaurant.name}</Text>
+      </View>
+    ),
   };
 });
 
-jest.mock('../../components/search/LocationInput', () => {
-  return function MockLocationInput() {
-    return <div data-testid="location-input" />;
+jest.mock('../../components/ActiveFilterBar', () => {
+  const { View } = require('react-native');
+  return {
+    ActiveFilterBar: () => <View testID="active-filter-bar" />,
   };
 });
 
-jest.mock('../../components/search/FilteredOutput', () => {
-  return function MockFilteredOutput({ isLoading }: any) {
-    return (
-      <div data-testid="filtered-output">
-        {isLoading && <div data-testid="filtered-output-loading">Loading</div>}
-      </div>
-    );
+jest.mock('../../components/filter/FiltersSheet', () => {
+  const { View } = require('react-native');
+  return {
+    __esModule: true,
+    default: ({ visible }: any) => (visible ? <View testID="filters-sheet" /> : null),
   };
 });
+
+// Render icons with a stable testID derived from name so we can drive the
+// header controls (the product Pressables carry no testID of their own).
+jest.mock('@expo/vector-icons', () => {
+  const { Text } = require('react-native');
+  const Icon = ({ name }: any) => <Text testID={`icon-${name}`}>{name}</Text>;
+  return { Ionicons: Icon, MaterialIcons: Icon, FontAwesome: Icon };
+});
+
+jest.mock('../../utils/filterBusinesses', () => ({
+  applyFilters: (results: any[]) => results,
+  countActiveFilters: jest.fn(() => 0),
+}));
+
+const mockDispatch = jest.fn();
+
+const renderSearch = (state = mockInitialState) =>
+  render(
+    <RootContext.Provider value={{ state, dispatch: mockDispatch }}>
+      <SearchScreen />
+    </RootContext.Provider>
+  );
 
 describe('SearchScreen', () => {
-  const mockState = {
-    results: [],
-    categories: [],
-    location: '',
-    filters: { 
-      openNow: false, 
-      categoryIds: [], 
-      priceLevels: [], 
-      radiusMeters: 1600, 
-      minRating: 1 
-    },
-    showFilter: false,
-  };
-
-  const mockDispatch = jest.fn();
-
-  const renderWithContext = (children: React.ReactNode) => {
-    return render(
-      <RootContext.Provider value={{ state: mockState, dispatch: mockDispatch }}>
-        {children}
-      </RootContext.Provider>
-    );
-  };
-
   beforeEach(() => {
     jest.clearAllMocks();
   });
 
-  it('should show loading state when searching', () => {
-    const { getByTestId, getByText } = renderWithContext(<SearchScreen />);
-
-    const searchInput = getByTestId('search-input');
-    
-    // Focus the input and enter a term to trigger isSearching state
-    fireEvent.focus(searchInput);
-    fireEvent.change(searchInput, { target: { value: 'pizza' } });
-
-    // Should show the searching indicator
-    expect(getByText('Searching…')).toBeTruthy();
+  it('renders the empty state prompt when there are no results', () => {
+    const { getByText } = renderSearch();
+    expect(getByText('Search for restaurants')).toBeTruthy();
   });
 
-  it('should pass loading state to FilteredOutput', () => {
-    const { getByTestId } = renderWithContext(<SearchScreen />);
+  it('renders the search input placeholder', () => {
+    const { getByPlaceholderText } = renderSearch();
+    expect(getByPlaceholderText('What are you craving?')).toBeTruthy();
+  });
 
-    const searchInput = getByTestId('search-input');
-    
-    // Focus and enter term to trigger loading state
-    fireEvent.focus(searchInput);
-    fireEvent.change(searchInput, { target: { value: 'pizza' } });
+  it('dispatches setShowFilter(true) when the filters button is pressed', () => {
+    const { getByTestId } = renderSearch();
+    fireEvent.press(getByTestId('icon-options-outline'));
+    expect(mockDispatch).toHaveBeenCalledWith(setShowFilter(true));
+  });
 
-    // The FilteredOutput component should be present
-    // (though it may not be visible due to no results)
-    const filteredOutput = getByTestId('filtered-output');
-    expect(filteredOutput).toBeTruthy();
+  it('renders a card for each result', () => {
+    const state = {
+      ...mockInitialState,
+      results: [
+        { id: 'a', name: 'Alpha Cafe', categories: [] },
+        { id: 'b', name: 'Beta Bistro', categories: [] },
+      ] as any,
+    };
+    const { getByTestId } = renderSearch(state);
+    expect(getByTestId('restaurant-card-a')).toBeTruthy();
+    expect(getByTestId('restaurant-card-b')).toBeTruthy();
   });
 });

@@ -4,9 +4,10 @@ import { SafeAreaProvider } from 'react-native-safe-area-context';
 import ResultsList from '../../components/results/ResultsList';
 import { ResultsProps } from '../../hooks/useResults';
 
-// Mock RestaurantCard since we're testing ResultsList in isolation
-jest.mock('../../components/search/RestaurantCard', () => {
-  return function MockRestaurantCard({ result }: { result: any }) {
+// Mock RestaurantCardDetailed since we're testing ResultsList in isolation.
+// ResultsList imports it as a default export from ../search/RestaurantCardDetailed.
+jest.mock('../../components/search/RestaurantCardDetailed', () => {
+  return function MockRestaurantCardDetailed({ result }: { result: any }) {
     return null; // Return minimal mock
   };
 });
@@ -132,7 +133,7 @@ describe('ResultsList Iterables Safety', () => {
       </TestWrapper>
     );
 
-    expect(getByText(/We couldn't find anything/)).toBeTruthy();
+    expect(getByText(/We couldn.t find anything/)).toBeTruthy();
   });
 
   it('shows "no results" message when businesses is undefined and has search term', () => {
@@ -152,7 +153,7 @@ describe('ResultsList Iterables Safety', () => {
       </TestWrapper>
     );
 
-    expect(getByText(/We couldn't find anything/)).toBeTruthy();
+    expect(getByText(/We couldn.t find anything/)).toBeTruthy();
   });
 
   it('renders FlatList when businesses array is valid', () => {
@@ -246,7 +247,7 @@ describe('ResultsList Iterables Safety', () => {
     );
 
     // Should not show the "no results" message for whitespace-only terms
-    expect(queryByText(/We couldn't find anything/)).toBeNull();
+    expect(queryByText(/We couldn.t find anything/)).toBeNull();
   });
 
   it('handles complex filter terms without crashing', () => {
