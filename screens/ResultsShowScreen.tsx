@@ -102,7 +102,7 @@ const ResultsShowScreen = ({ navigation, route }: ResultsShowScreenProps<`Result
 				<Text style={styles.price}><OpenSign is_open_now={is_open_now} /></Text>
 				<View style={styles.starRating}>
 					<StarRating rating={result.rating} shadow />
-					<Text>{result.review_count} Review{result.review_count > 1 ? `s` : ``}</Text>
+					<Text style={styles.text}>{result.review_count} Review{result.review_count > 1 ? `s` : ``}</Text>
 				</View>
 			</View>
 
@@ -142,12 +142,12 @@ const ResultsShowScreen = ({ navigation, route }: ResultsShowScreenProps<`Result
 						name={`phone-in-talk`}
 						size={20}
 					/>
-					<Text>{result.display_phone}</Text>
+					<Text style={styles.text}>{result.display_phone}</Text>
 				</Pressable>
 			</View>
 			<ScrollView style={styles.codeblock}>
-				<Text>is_closed: {result.is_closed.toString()}</Text>
-				<Text>Address: {result.location.display_address.join(`, `)}</Text>
+				<Text style={styles.text}>is_closed: {result.is_closed.toString()}</Text>
+				<Text style={styles.text}>Address: {result.location.display_address.join(`, `)}</Text>
 			</ScrollView>
 		</Animated.View>
 	);
@@ -168,6 +168,9 @@ const styles = StyleSheet.create({
 	codeblock: {
 		marginLeft: 10,
 		marginRight: 10,
+	},
+	text: {
+		color: supperClub.text,
 	},
 	container: {
 		backgroundColor: supperClub.background,
