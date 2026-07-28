@@ -10,6 +10,41 @@ jest.mock('@react-native-async-storage/async-storage', () =>
 jest.mock('react-native-vector-icons/MaterialIcons', () => 'MaterialIcons');
 jest.mock('react-native-vector-icons/Ionicons', () => 'Ionicons');
 
+// Mock react-native-svg (native module — avoids the "Mixin"/TurboModule load
+// errors its real module throws in some jest suites). Renders as plain Views.
+jest.mock('react-native-svg', () => {
+  const React = require('react');
+  const { View } = require('react-native');
+  const make = (name) => {
+    const C = ({ children, ...props }) => React.createElement(View, props, children);
+    C.displayName = name;
+    return C;
+  };
+  const Svg = make('Svg');
+  return {
+    __esModule: true,
+    default: Svg,
+    Svg,
+    Path: make('Path'),
+    Circle: make('Circle'),
+    G: make('G'),
+    Rect: make('Rect'),
+    Defs: make('Defs'),
+    LinearGradient: make('SvgLinearGradient'),
+    Stop: make('Stop'),
+    Text: make('SvgText'),
+  };
+});
+
+// Mock expo-linear-gradient (native module) as a plain View wrapper.
+jest.mock('expo-linear-gradient', () => {
+  const React = require('react');
+  const { View } = require('react-native');
+  return {
+    LinearGradient: ({ children, ...props }) => React.createElement(View, props, children),
+  };
+});
+
 // Mock expo-location to prevent native module errors
 jest.mock('expo-location', () => ({
   requestForegroundPermissionsAsync: jest.fn(() => Promise.resolve({ status: 'granted' })),
