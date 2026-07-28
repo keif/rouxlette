@@ -5,6 +5,7 @@ import { StatusBar } from 'expo-status-bar';
 import { View } from '../components/Themed';
 import FavoriteCard from '../components/shared/FavoriteCard';
 import AppStyles from '../AppStyles';
+import { supperClub } from '../theme/supperClub';
 import { useFavorites } from '../hooks/useFavorites';
 import { MaterialIcons, Ionicons } from '@expo/vector-icons';
 import { FavoriteItem } from '../types/favorites';
@@ -62,15 +63,15 @@ const FavoritesScreen: React.FC = () => {
                 ]}
                 onPress={toggleSearch}
                 android_ripple={{
-                  color: AppStyles.color.background,
+                  color: supperClub.borderSoft,
                   radius: 20,
                   borderless: true,
                 }}
               >
-                <MaterialIcons 
-                  name={showSearch ? "close" : "search"} 
-                  size={24} 
-                  color={AppStyles.color.primary} 
+                <MaterialIcons
+                  name={showSearch ? "close" : "search"}
+                  size={24}
+                  color={supperClub.gold}
                 />
               </Pressable>
             )}
@@ -78,10 +79,10 @@ const FavoritesScreen: React.FC = () => {
 
           {showSearch && (
             <View style={styles.searchContainer}>
-              <MaterialIcons 
-                name="search" 
-                size={20} 
-                color={AppStyles.color.greylight} 
+              <MaterialIcons
+                name="search"
+                size={20}
+                color={supperClub.textMuted}
                 style={styles.searchIcon}
               />
               <TextInput
@@ -91,17 +92,17 @@ const FavoritesScreen: React.FC = () => {
                 onChangeText={setSearchQuery}
                 autoFocus
                 returnKeyType="search"
-                placeholderTextColor={AppStyles.color.greylight}
+                placeholderTextColor={supperClub.textMuted}
               />
               {searchQuery.length > 0 && (
                 <Pressable
                   onPress={() => setSearchQuery('')}
                   style={styles.clearButton}
                 >
-                  <MaterialIcons 
-                    name="clear" 
-                    size={20} 
-                    color={AppStyles.color.greylight} 
+                  <MaterialIcons
+                    name="clear"
+                    size={20}
+                    color={supperClub.textMuted}
                   />
                 </Pressable>
               )}
@@ -120,7 +121,7 @@ const FavoritesScreen: React.FC = () => {
           />
         ) : favorites.length === 0 ? (
           <View style={styles.emptyState}>
-            <Ionicons name="heart-outline" size={64} color={AppStyles.color.gray300} />
+            <Ionicons name="heart-outline" size={64} color={supperClub.textMuted} />
             <Text style={styles.emptyTitle}>No favorites yet</Text>
             <Text style={styles.emptyText}>
               Search for restaurants and tap the heart icon to save your favorites!
@@ -128,7 +129,7 @@ const FavoritesScreen: React.FC = () => {
           </View>
         ) : (
           <View style={styles.emptyState}>
-            <MaterialIcons name="search-off" size={64} color={AppStyles.color.gray300} />
+            <MaterialIcons name="search-off" size={64} color={supperClub.textMuted} />
             <Text style={styles.emptyTitle}>No matches found</Text>
             <Text style={styles.emptyText}>
               Try adjusting your search or browse all {favorites.length} favorites.
@@ -145,15 +146,15 @@ const FavoritesScreen: React.FC = () => {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: AppStyles.color.background,
+    backgroundColor: supperClub.background,
   },
   header: {
     paddingTop: 20,
     paddingBottom: 16,
     paddingHorizontal: 16,
-    backgroundColor: AppStyles.color.white,
+    backgroundColor: supperClub.surfaceElevated,
     borderBottomWidth: 1,
-    borderBottomColor: AppStyles.color.background,
+    borderBottomColor: supperClub.borderSoft,
   },
   titleRow: {
     flexDirection: 'row',
@@ -166,16 +167,16 @@ const styles = StyleSheet.create({
   title: {
     fontSize: 28,
     fontFamily: AppStyles.fonts.bold,
-    color: AppStyles.color.greydark,
+    color: '#FFFFFF',
     marginBottom: 4,
   },
   subtitle: {
     fontSize: 14,
     fontFamily: AppStyles.fonts.medium,
-    color: AppStyles.color.greylight,
+    color: supperClub.textMuted,
   },
   searchButton: {
-    backgroundColor: AppStyles.color.background,
+    backgroundColor: 'rgba(255, 255, 255, 0.05)',
     borderRadius: 24,
     width: 48,
     height: 48,
@@ -193,7 +194,7 @@ const styles = StyleSheet.create({
   searchContainer: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: AppStyles.color.background,
+    backgroundColor: 'rgba(255, 255, 255, 0.05)',
     borderRadius: 12,
     marginTop: 12,
     paddingHorizontal: 12,
@@ -206,7 +207,7 @@ const styles = StyleSheet.create({
     flex: 1,
     fontSize: 16,
     fontFamily: AppStyles.fonts.regular,
-    color: AppStyles.color.black,
+    color: supperClub.text,
     paddingVertical: 4,
   },
   clearButton: {
@@ -232,14 +233,14 @@ const styles = StyleSheet.create({
   emptyTitle: {
     fontSize: 24,
     fontFamily: AppStyles.fonts.bold,
-    color: AppStyles.color.greydark,
+    color: '#FFFFFF',
     textAlign: 'center',
     marginBottom: 12,
   },
   emptyText: {
     fontSize: 16,
     fontFamily: AppStyles.fonts.medium,
-    color: AppStyles.color.greylight,
+    color: supperClub.textMuted,
     textAlign: 'center',
     lineHeight: 24,
   },

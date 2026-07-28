@@ -4,6 +4,7 @@ import { SafeAreaProvider, SafeAreaView } from 'react-native-safe-area-context';
 import { StatusBar } from 'expo-status-bar';
 import { MaterialIcons } from '@expo/vector-icons';
 import AppStyles from '../AppStyles';
+import { supperClub } from '../theme/supperClub';
 import { useHistory } from '../hooks/useHistory';
 import { HistoryItem } from '../types/favorites';
 import { RootContext } from '../context/RootContext';
@@ -109,7 +110,7 @@ const HistoryScreen: React.FC = () => {
       ]}
       onPress={() => handleHistoryItemPress(item)}
       android_ripple={{
-        color: AppStyles.color.background,
+        color: supperClub.borderSoft,
         radius: 200,
       }}
     >
@@ -123,7 +124,7 @@ const HistoryScreen: React.FC = () => {
               <MaterialIcons
                 name={item.source === 'spin' ? 'casino' : 'touch-app'}
                 size={12}
-                color={AppStyles.color.white}
+                color={'#FFFFFF'}
               />
               <Text style={styles.sourceBadgeText}>
                 {item.source === 'spin' ? 'Spin' : 'Manual'}
@@ -139,13 +140,13 @@ const HistoryScreen: React.FC = () => {
           <View style={styles.contextContainer}>
             {item.context.searchTerm && (
               <Text style={styles.contextText}>
-                <MaterialIcons name="search" size={14} color={AppStyles.color.greylight} />
+                <MaterialIcons name="search" size={14} color={supperClub.textMuted} />
                 {' '}{item.context.searchTerm}
               </Text>
             )}
             {item.context.locationText && (
               <Text style={styles.contextText}>
-                <MaterialIcons name="location-on" size={14} color={AppStyles.color.greylight} />
+                <MaterialIcons name="location-on" size={14} color={supperClub.textMuted} />
                 {' '}{item.context.locationText}
               </Text>
             )}
@@ -177,11 +178,11 @@ const HistoryScreen: React.FC = () => {
             ]}
             onPress={() => handleHistoryItemPress(item)}
             android_ripple={{
-              color: AppStyles.color.white,
+              color: '#FFFFFF',
               radius: 20,
             }}
           >
-            <MaterialIcons name="open-in-new" size={16} color={AppStyles.color.white} />
+            <MaterialIcons name="open-in-new" size={16} color={'#FFFFFF'} />
             <Text style={styles.actionButtonTextWhite}>Open</Text>
           </Pressable>
 
@@ -194,11 +195,11 @@ const HistoryScreen: React.FC = () => {
               ]}
               onPress={() => handleSpinAgain(item)}
               android_ripple={{
-                color: AppStyles.color.background,
+                color: supperClub.borderSoft,
                 radius: 20,
               }}
             >
-              <MaterialIcons name="casino" size={16} color={AppStyles.color.primary} />
+              <MaterialIcons name="casino" size={16} color={supperClub.gold} />
               <Text style={styles.actionButtonText}>Spin Again</Text>
             </Pressable>
           )}
@@ -229,15 +230,15 @@ const HistoryScreen: React.FC = () => {
                 ]}
                 onPress={handleClearHistory}
                 android_ripple={{
-                  color: AppStyles.color.background,
+                  color: supperClub.borderSoft,
                   radius: 20,
                   borderless: true,
                 }}
               >
-                <MaterialIcons 
-                  name="clear-all" 
-                  size={24} 
-                  color={AppStyles.color.error} 
+                <MaterialIcons
+                  name="clear-all"
+                  size={24}
+                  color={supperClub.error}
                 />
               </Pressable>
             )}
@@ -255,7 +256,7 @@ const HistoryScreen: React.FC = () => {
           />
         ) : (
           <View style={styles.emptyState}>
-            <MaterialIcons name="history" size={64} color={AppStyles.color.gray300} />
+            <MaterialIcons name="history" size={64} color={supperClub.textMuted} />
             <Text style={styles.emptyTitle}>No spins yet</Text>
             <Text style={styles.emptyText}>
               Try the roulette feature to discover new restaurants. Your selections will appear here with options to revisit or spin again with the same criteria!
@@ -272,15 +273,15 @@ const HistoryScreen: React.FC = () => {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: AppStyles.color.background,
+    backgroundColor: supperClub.background,
   },
   header: {
     paddingTop: 20,
     paddingBottom: 16,
     paddingHorizontal: 16,
-    backgroundColor: AppStyles.color.white,
+    backgroundColor: supperClub.surfaceElevated,
     borderBottomWidth: 1,
-    borderBottomColor: AppStyles.color.background,
+    borderBottomColor: supperClub.borderSoft,
   },
   titleRow: {
     flexDirection: 'row',
@@ -293,16 +294,16 @@ const styles = StyleSheet.create({
   title: {
     fontSize: 28,
     fontFamily: AppStyles.fonts.bold,
-    color: AppStyles.color.greydark,
+    color: '#FFFFFF',
     marginBottom: 4,
   },
   subtitle: {
     fontSize: 14,
     fontFamily: AppStyles.fonts.medium,
-    color: AppStyles.color.greylight,
+    color: supperClub.textMuted,
   },
   clearButton: {
-    backgroundColor: AppStyles.color.background,
+    backgroundColor: 'rgba(255, 255, 255, 0.05)',
     borderRadius: 24,
     width: 48,
     height: 48,
@@ -325,7 +326,7 @@ const styles = StyleSheet.create({
     paddingVertical: 16,
   },
   historyItem: {
-    backgroundColor: AppStyles.color.white,
+    backgroundColor: supperClub.surfaceElevated,
     borderRadius: 12,
     marginBottom: 12,
     shadowColor: AppStyles.color.shadow,
@@ -353,20 +354,20 @@ const styles = StyleSheet.create({
   itemName: {
     fontSize: 18,
     fontFamily: AppStyles.fonts.semiBold,
-    color: AppStyles.color.black,
+    color: '#FFFFFF',
     marginBottom: 4,
   },
   sourceBadge: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: AppStyles.color.primary,
+    backgroundColor: supperClub.primary,
     paddingHorizontal: 8,
     paddingVertical: 4,
     borderRadius: 12,
     alignSelf: 'flex-start',
   },
   sourceBadgeText: {
-    color: AppStyles.color.white,
+    color: '#FFFFFF',
     fontSize: 12,
     fontFamily: AppStyles.fonts.medium,
     marginLeft: 4,
@@ -374,7 +375,7 @@ const styles = StyleSheet.create({
   timestamp: {
     fontSize: 14,
     fontFamily: AppStyles.fonts.medium,
-    color: AppStyles.color.greylight,
+    color: supperClub.textMuted,
   },
   contextContainer: {
     marginBottom: 12,
@@ -382,7 +383,7 @@ const styles = StyleSheet.create({
   contextText: {
     fontSize: 14,
     fontFamily: AppStyles.fonts.regular,
-    color: AppStyles.color.greylight,
+    color: supperClub.textMuted,
     marginBottom: 4,
   },
   filtersContainer: {
@@ -392,7 +393,7 @@ const styles = StyleSheet.create({
     marginTop: 4,
   },
   filterChip: {
-    backgroundColor: AppStyles.color.background,
+    backgroundColor: 'rgba(255, 255, 255, 0.05)',
     paddingHorizontal: 8,
     paddingVertical: 4,
     borderRadius: 8,
@@ -400,7 +401,7 @@ const styles = StyleSheet.create({
   filterChipText: {
     fontSize: 12,
     fontFamily: AppStyles.fonts.medium,
-    color: AppStyles.color.greydark,
+    color: supperClub.text,
   },
   actions: {
     flexDirection: 'row',
@@ -422,21 +423,21 @@ const styles = StyleSheet.create({
     elevation: 2,
   },
   openButton: {
-    backgroundColor: AppStyles.color.primary,
+    backgroundColor: supperClub.primary,
   },
   spinAgainButton: {
-    backgroundColor: AppStyles.color.background,
+    backgroundColor: 'rgba(255, 255, 255, 0.05)',
     borderWidth: 1,
-    borderColor: AppStyles.color.primary,
+    borderColor: supperClub.gold,
   },
   actionButtonTextWhite: {
-    color: AppStyles.color.white,
+    color: '#FFFFFF',
     fontSize: 14,
     fontFamily: AppStyles.fonts.medium,
     marginLeft: 4,
   },
   actionButtonText: {
-    color: AppStyles.color.primary,
+    color: supperClub.gold,
     fontSize: 14,
     fontFamily: AppStyles.fonts.medium,
     marginLeft: 4,
@@ -454,14 +455,14 @@ const styles = StyleSheet.create({
   emptyTitle: {
     fontSize: 24,
     fontFamily: AppStyles.fonts.bold,
-    color: AppStyles.color.greydark,
+    color: '#FFFFFF',
     textAlign: 'center',
     marginBottom: 12,
   },
   emptyText: {
     fontSize: 16,
     fontFamily: AppStyles.fonts.medium,
-    color: AppStyles.color.greylight,
+    color: supperClub.textMuted,
     textAlign: 'center',
     lineHeight: 24,
   },

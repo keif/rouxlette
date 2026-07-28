@@ -14,6 +14,7 @@ import Config from '../../Config';
 import { RootContext } from '../../context/RootContext';
 import { setFilters, resetFilters } from '../../context/reducer';
 import AppStyles from '../../AppStyles';
+import { supperClub } from '../../theme/supperClub';
 import { Text } from '../Themed';
 import Divider from '../shared/Divider';
 import { Filters } from '../../context/state';
@@ -130,8 +131,8 @@ const FiltersSheet: React.FC<FiltersSheetProps> = ({ visible, onClose, testID })
       visible={visible}
       testID={testID}
     >
-      <StatusBar backgroundColor={AppStyles.color.white} />
-      <SafeAreaView style={{ flex: 1, backgroundColor: AppStyles.color.white }}>
+      <StatusBar backgroundColor={supperClub.background} />
+      <SafeAreaView style={{ flex: 1, backgroundColor: supperClub.background }}>
         {/* Header */}
         <View style={styles.header}>
           <View style={{ flex: 1, alignItems: 'flex-start' }}>
@@ -142,7 +143,7 @@ const FiltersSheet: React.FC<FiltersSheetProps> = ({ visible, onClose, testID })
               onPress={handleClose}
               android_ripple={{ color: 'grey', radius: 20, borderless: true }}
             >
-              <Icon name="close" size={25} color="black" />
+              <Icon name="close" size={25} color={supperClub.text} />
             </Pressable>
           </View>
           <Text style={styles.headerText}>Filters</Text>
@@ -248,7 +249,7 @@ const FiltersSheet: React.FC<FiltersSheetProps> = ({ visible, onClose, testID })
                     <Icon
                       name={showAllCategories ? 'keyboard-arrow-up' : 'keyboard-arrow-down'}
                       size={20}
-                      color={AppStyles.color.primary}
+                      color={supperClub.gold}
                     />
                   </Pressable>
                 )}
@@ -268,8 +269,8 @@ const FiltersSheet: React.FC<FiltersSheetProps> = ({ visible, onClose, testID })
               <Switch
                 value={localFilters.openNow}
                 onValueChange={(value) => updateLocalFilters({ openNow: value })}
-                trackColor={{ false: AppStyles.color.greylight, true: AppStyles.color.roulette.green }}
-                thumbColor={AppStyles.color.white}
+                trackColor={{ false: supperClub.textMuted, true: supperClub.success }}
+                thumbColor={'#FFFFFF'}
               />
             </View>
           </View>
@@ -299,10 +300,10 @@ const FiltersSheet: React.FC<FiltersSheetProps> = ({ visible, onClose, testID })
                           key={key} 
                           name="attach-money" 
                           size={18} 
-                          color={localFilters.priceLevels.includes(level as 1|2|3|4) 
-                            ? AppStyles.color.white 
-                            : AppStyles.color.roulette.accent
-                          } 
+                          color={localFilters.priceLevels.includes(level as 1|2|3|4)
+                            ? '#FFFFFF'
+                            : supperClub.gold
+                          }
                         />
                       ))}
                     </View>
@@ -381,10 +382,10 @@ const FiltersSheet: React.FC<FiltersSheetProps> = ({ visible, onClose, testID })
                           key={key} 
                           name="star" 
                           size={16} 
-                          color={localFilters.minRating === rating 
-                            ? AppStyles.color.white 
-                            : AppStyles.color.roulette.accent
-                          } 
+                          color={localFilters.minRating === rating
+                            ? '#FFFFFF'
+                            : supperClub.gold
+                          }
                         />
                       ))
                     )}
@@ -434,28 +435,29 @@ const styles = StyleSheet.create({
     fontSize: 22,
     textAlign: 'center',
     textAlignVertical: 'center',
+    color: '#FFFFFF',
   },
   resetText: {
     fontSize: 16,
-    color: AppStyles.color.roulette.red,
+    color: supperClub.textMuted,
     fontFamily: AppStyles.fonts.medium,
   },
   headerShadow: {
-    backgroundColor: AppStyles.color.greydark,
+    backgroundColor: supperClub.borderSoft,
     elevation: 4,
     height: Config.isAndroid ? 0.2 : 1,
   },
   fixedSelectedSection: {
-    backgroundColor: AppStyles.color.gray50,
+    backgroundColor: supperClub.surfaceElevated,
     paddingVertical: 12,
     paddingHorizontal: 16,
     borderBottomWidth: 1,
-    borderBottomColor: AppStyles.color.gray300,
+    borderBottomColor: supperClub.borderSoft,
   },
   fixedSelectedLabel: {
     fontSize: 12,
     fontFamily: AppStyles.fonts.medium,
-    color: AppStyles.color.gray500,
+    color: supperClub.textMuted,
     marginBottom: 8,
     textTransform: 'uppercase',
     letterSpacing: 0.5,
@@ -469,13 +471,13 @@ const styles = StyleSheet.create({
     paddingBottom: 8,
   },
   sectionTitle: {
-    color: AppStyles.color.black,
+    color: '#FFFFFF',
     fontFamily: AppStyles.fonts.bold,
     fontSize: 18,
     paddingVertical: 8,
   },
   sectionSubtitle: {
-    color: AppStyles.color.greylight,
+    color: supperClub.textMuted,
     fontFamily: AppStyles.fonts.regular,
     fontSize: 14,
   },
@@ -489,14 +491,15 @@ const styles = StyleSheet.create({
     marginHorizontal: 4,
   },
   priceButton: {
-    borderColor: AppStyles.color.roulette.accent,
+    borderColor: supperClub.borderSoft,
     borderRadius: 24,
     borderWidth: 1,
-    backgroundColor: 'transparent',
+    backgroundColor: 'rgba(255, 255, 255, 0.05)',
     overflow: 'hidden',
   },
   priceButtonSelected: {
-    backgroundColor: AppStyles.color.roulette.accent,
+    backgroundColor: supperClub.primary,
+    borderColor: supperClub.primary,
   },
   priceButtonText: {
     flexDirection: 'row',
@@ -513,29 +516,29 @@ const styles = StyleSheet.create({
   categoryChip: {
     flexDirection: 'row',
     alignItems: 'center',
-    borderColor: AppStyles.color.gray300,
+    borderColor: supperClub.borderSoft,
     borderWidth: 1,
     borderRadius: 16,
     paddingHorizontal: 12,
     paddingVertical: 6,
     margin: 4,
-    backgroundColor: 'transparent',
+    backgroundColor: 'rgba(255, 255, 255, 0.05)',
   },
   categoryChipIncluded: {
-    backgroundColor: AppStyles.color.success,
-    borderColor: AppStyles.color.success,
+    backgroundColor: supperClub.success,
+    borderColor: supperClub.success,
   },
   categoryChipExcluded: {
-    backgroundColor: AppStyles.color.accentRed,
-    borderColor: AppStyles.color.accentRed,
+    backgroundColor: supperClub.error,
+    borderColor: supperClub.error,
   },
   categoryChipText: {
     fontSize: 14,
     fontFamily: AppStyles.fonts.regular,
-    color: AppStyles.color.gray500,
+    color: supperClub.text,
   },
   categoryChipTextSelected: {
-    color: AppStyles.color.white,
+    color: '#FFFFFF',
   },
   categoryIcon: {
     marginRight: 4,
@@ -551,7 +554,7 @@ const styles = StyleSheet.create({
   showMoreText: {
     fontSize: 14,
     fontFamily: AppStyles.fonts.medium,
-    color: AppStyles.color.primary,
+    color: supperClub.gold,
     marginRight: 4,
   },
   switchContainer: {
@@ -565,7 +568,7 @@ const styles = StyleSheet.create({
     flex: 1,
     fontSize: 16,
     fontFamily: AppStyles.fonts.regular,
-    color: AppStyles.color.greydark,
+    color: supperClub.text,
     marginRight: 16,
   },
   distanceContainer: {
@@ -575,24 +578,25 @@ const styles = StyleSheet.create({
   },
   distanceOption: {
     flex: 1,
-    borderColor: AppStyles.color.roulette.neutral,
+    borderColor: supperClub.borderSoft,
     borderWidth: 1,
     borderRadius: 8,
     paddingVertical: 8,
     marginHorizontal: 2,
-    backgroundColor: 'transparent',
+    backgroundColor: 'rgba(255, 255, 255, 0.05)',
   },
   distanceOptionSelected: {
-    backgroundColor: AppStyles.color.roulette.neutral,
+    backgroundColor: supperClub.primary,
+    borderColor: supperClub.primary,
   },
   distanceOptionText: {
     textAlign: 'center',
     fontSize: 14,
     fontFamily: AppStyles.fonts.regular,
-    color: AppStyles.color.roulette.neutral,
+    color: supperClub.text,
   },
   distanceOptionTextSelected: {
-    color: AppStyles.color.white,
+    color: '#FFFFFF',
   },
   ratingContainer: {
     flexDirection: 'row',
@@ -601,15 +605,16 @@ const styles = StyleSheet.create({
   },
   ratingOption: {
     flex: 1,
-    borderColor: AppStyles.color.roulette.accent,
+    borderColor: supperClub.borderSoft,
     borderWidth: 1,
     borderRadius: 8,
     paddingVertical: 8,
     marginHorizontal: 2,
-    backgroundColor: 'transparent',
+    backgroundColor: 'rgba(255, 255, 255, 0.05)',
   },
   ratingOptionSelected: {
-    backgroundColor: AppStyles.color.roulette.accent,
+    backgroundColor: supperClub.primary,
+    borderColor: supperClub.primary,
   },
   ratingStars: {
     flexDirection: 'row',
@@ -620,15 +625,15 @@ const styles = StyleSheet.create({
     textAlign: 'center',
     fontSize: 14,
     fontFamily: AppStyles.fonts.regular,
-    color: AppStyles.color.roulette.accent,
+    color: supperClub.gold,
   },
   ratingOptionTextSelected: {
-    color: AppStyles.color.white,
+    color: '#FFFFFF',
   },
   ratingPlusText: {
     fontSize: 12,
     fontFamily: AppStyles.fonts.regular,
-    color: AppStyles.color.roulette.accent,
+    color: supperClub.gold,
     marginLeft: 2,
   },
   buttonContainer: {
@@ -644,7 +649,7 @@ const styles = StyleSheet.create({
   },
   button: {
     alignItems: 'center',
-    backgroundColor: AppStyles.color.roulette.accent,
+    backgroundColor: supperClub.primary,
     height: 48,
     justifyContent: 'center',
   },
