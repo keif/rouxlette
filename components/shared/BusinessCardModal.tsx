@@ -15,6 +15,7 @@ import {useSafeAreaInsets} from 'react-native-safe-area-context';
 import {RootContext} from '../../context/RootContext';
 import {hideBusinessModal} from '../../context/reducer';
 import AppStyles from '../../AppStyles';
+import {supperClub} from '../../theme/supperClub';
 import FlipCard from './FlipCard';
 import StarRating from './StarRating';
 import OpenSign from '../results/OpenSign';
@@ -185,7 +186,7 @@ export function BusinessCardModal() {
                         <MaterialIcons
                             name={isBlocked(business.id) ? "block" : "block"}
                             size={24}
-                            color={isBlocked(business.id) ? "#ff4444" : AppStyles.color.white}
+                            color={isBlocked(business.id) ? supperClub.error : "#FFFFFF"}
                             style={styles.iconAction}
                         />
                     </Pressable>
@@ -202,7 +203,7 @@ export function BusinessCardModal() {
                         <Ionicons
                             name={isFavorite(business.id) ? "heart" : "heart-outline"}
                             size={24}
-                            color={isFavorite(business.id) ? AppStyles.color.yelp : AppStyles.color.white}
+                            color={isFavorite(business.id) ? AppStyles.color.yelp : "#FFFFFF"}
                             style={styles.iconAction}
                         />
                     </Pressable>
@@ -211,7 +212,7 @@ export function BusinessCardModal() {
             <View style={styles.detail}>
                 <View style={styles.detailHeader}>
                     <Text style={styles.name} numberOfLines={2}>{business.name}</Text>
-                    <Text style={{fontSize: 22, fontFamily: AppStyles.fonts.semiBold}}>
+                    <Text style={{fontSize: 22, fontFamily: AppStyles.fonts.semiBold, color: supperClub.gold}}>
                         {business.price}
                     </Text>
                 </View>
@@ -235,7 +236,7 @@ export function BusinessCardModal() {
                 }}
                 accessibilityLabel="View details"
             >
-                <MaterialIcons name="info" size={28} color={AppStyles.color.primary}/>
+                <MaterialIcons name="info" size={28} color={supperClub.gold}/>
             </Pressable>
         </View>
     );
@@ -261,7 +262,7 @@ export function BusinessCardModal() {
 
             {detailsLoading && (
                 <View style={styles.loadingContainer}>
-                    <ActivityIndicator size="small" color={AppStyles.color.primary}/>
+                    <ActivityIndicator size="small" color={supperClub.gold}/>
                     <Text style={styles.loadingText}>Loading details...</Text>
                 </View>
             )}
@@ -283,7 +284,7 @@ export function BusinessCardModal() {
                                 resizeMode="cover"
                             />
                             <View style={styles.photoOverlay}>
-                                <MaterialIcons name="zoom-out-map" size={20} color={AppStyles.color.white}/>
+                                <MaterialIcons name="zoom-out-map" size={20} color={"#FFFFFF"}/>
                             </View>
                         </Pressable>
                     ))}
@@ -292,13 +293,13 @@ export function BusinessCardModal() {
 
             <View style={styles.backDetails}>
                 <Text style={styles.backDetailText}>
-                    <MaterialIcons name="location-on" size={16} color={AppStyles.color.primary}/>
+                    <MaterialIcons name="location-on" size={16} color={supperClub.gold}/>
                     {' '}{business.location?.display_address?.join(', ')}
                 </Text>
 
                 {business.phone && (
                     <Text style={styles.backDetailText}>
-                        <MaterialIcons name="phone" size={16} color={AppStyles.color.primary}/>
+                        <MaterialIcons name="phone" size={16} color={supperClub.gold}/>
                         {' '}{business.display_phone}
                     </Text>
                 )}
@@ -306,7 +307,7 @@ export function BusinessCardModal() {
                 {business.categories && business.categories.length > 0 && (
                     <View style={styles.categoriesContainer}>
                         <View style={styles.categoriesHeader}>
-                            <MaterialIcons name="category" size={16} color={AppStyles.color.primary}/>
+                            <MaterialIcons name="category" size={16} color={supperClub.gold}/>
                             <Text style={styles.categoriesHeaderText}>Categories</Text>
                         </View>
                         <View style={styles.categoriesTags}>
@@ -338,7 +339,7 @@ export function BusinessCardModal() {
                     }}
                 >
                     <MaterialIcons
-                        color={AppStyles.color.primary}
+                        color={supperClub.gold}
                         name="map"
                         size={20}
                     />
@@ -397,7 +398,7 @@ export function BusinessCardModal() {
                     }}
                     accessibilityLabel="Close details"
                 >
-                    <MaterialIcons name="rotate-left" size={28} color={AppStyles.color.primary}/>
+                    <MaterialIcons name="rotate-left" size={28} color={supperClub.gold}/>
                 </Pressable>
             </View>
         </View>
@@ -446,14 +447,14 @@ export function BusinessCardModal() {
 }
 
 const textStyle = {
-    color: "rgba(128,128,128, 0.80)",
+    color: supperClub.textMuted,
     fontFamily: AppStyles.fonts.regular,
 };
 
 const styles = StyleSheet.create({
     backdrop: {
         flex: 1,
-        backgroundColor: 'rgba(0,0,0,0.5)',
+        backgroundColor: 'rgba(6,3,4,0.66)',
     },
     modalContainer: {
         flex: 1,
@@ -467,9 +468,9 @@ const styles = StyleSheet.create({
     cardContent: {
         borderRadius: 16,
         overflow: 'hidden',
-        backgroundColor: AppStyles.color.white,
+        backgroundColor: supperClub.background,
         borderWidth: 1,
-        borderColor: 'rgba(0, 0, 0, 0.08)',
+        borderColor: supperClub.borderSoft,
         elevation: 12,
         shadowColor: '#000',
         shadowOffset: {
@@ -480,7 +481,7 @@ const styles = StyleSheet.create({
         shadowRadius: 8,
     },
     detail: {
-        backgroundColor: AppStyles.color.white,
+        backgroundColor: supperClub.surfaceElevated,
         paddingHorizontal: 16,
         paddingVertical: 6,
         paddingBottom: 16,
@@ -520,17 +521,17 @@ const styles = StyleSheet.create({
         overflow: "hidden",
     },
     noImage: {
-        backgroundColor: AppStyles.color.background,
+        backgroundColor: supperClub.surface,
         justifyContent: 'center',
         alignItems: 'center',
     },
     noImageText: {
         fontSize: 18,
         fontFamily: AppStyles.fonts.medium,
-        color: AppStyles.color.greylight,
+        color: supperClub.textMuted,
     },
     name: {
-        color: AppStyles.color.black,
+        color: supperClub.textPrimary,
         flex: 1,
         fontSize: 22,
         fontFamily: AppStyles.fonts.semiBold,
@@ -556,10 +557,10 @@ const styles = StyleSheet.create({
         alignItems: 'center',
         paddingHorizontal: 16,
         paddingVertical: 12,
-        backgroundColor: AppStyles.color.primary,
+        backgroundColor: supperClub.primary,
     },
     backTitle: {
-        color: AppStyles.color.white,
+        color: "#FFFFFF",
         fontSize: 20,
         fontFamily: AppStyles.fonts.semiBold,
         fontWeight: 'bold',
@@ -574,7 +575,7 @@ const styles = StyleSheet.create({
     quickInfoText: {
         fontSize: 14,
         fontFamily: AppStyles.fonts.medium,
-        color: AppStyles.color.black,
+        color: supperClub.text,
     },
     backRating: {
         flexDirection: 'row',
@@ -597,7 +598,7 @@ const styles = StyleSheet.create({
         marginLeft: 8,
         fontSize: 14,
         fontFamily: AppStyles.fonts.regular,
-        color: AppStyles.color.primary,
+        color: supperClub.gold,
     },
     photoContainer: {
         flexDirection: 'row',
@@ -663,14 +664,16 @@ const styles = StyleSheet.create({
         paddingBottom: 20,
     },
     backButton: {
-        backgroundColor: 'rgba(255, 255, 255, 0.9)',
+        backgroundColor: supperClub.surfaceElevated,
         flexDirection: 'row',
         alignItems: 'center',
         paddingHorizontal: 12,
         paddingVertical: 8,
-        shadowColor: AppStyles.input.shadow,
+        shadowColor: '#000',
         ...AppStyles.ButtonPressable,
         borderRadius: 20,
+        borderWidth: 1,
+        borderColor: supperClub.borderSoft,
         shadowOpacity: 0.2,
         shadowRadius: 3,
         elevation: 3,
@@ -679,7 +682,7 @@ const styles = StyleSheet.create({
         marginLeft: 6,
         fontSize: 14,
         fontFamily: AppStyles.fonts.medium,
-        color: AppStyles.color.black,
+        color: supperClub.text,
     },
     flipButtonCorner: {
         position: 'absolute',
