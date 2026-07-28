@@ -152,8 +152,9 @@ export const RouletteWheel: React.FC<RouletteWheelProps> = ({
           </View>
         </Pressable>
 
-        {/* Fixed gold pointer at the top */}
+        {/* Fixed gold pointer at the top (decorative — let taps reach the wheel) */}
         <View
+          pointerEvents="none"
           style={[
             styles.pointer,
             {
