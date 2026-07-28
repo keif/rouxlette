@@ -1,11 +1,14 @@
 import React, {useContext, useEffect, useState} from 'react';
-import {ActivityIndicator, FlatList, Platform, Pressable, StyleSheet, Text, TextInput, View,} from 'react-native';
+import {ActivityIndicator, FlatList, Linking, Platform, Pressable, StyleSheet, Text, TextInput, View,} from 'react-native';
 import {SafeAreaView} from 'react-native-safe-area-context';
 import {Ionicons} from '@expo/vector-icons';
 import {useNavigation} from '@react-navigation/native';
-import {Restaurant, RestaurantCardSimple} from '../components/RestaurantCardSimple';
+import {Restaurant} from '../components/RestaurantCardSimple';
+import {RestaurantTopPick} from '../components/RestaurantTopPick';
+import {RestaurantRow} from '../components/RestaurantRow';
 import {ActiveFilter, ActiveFilterBar} from '../components/ActiveFilterBar';
-import {colors, radius, spacing, typography} from '../theme';
+import {radius, spacing, typography} from '../theme';
+import {supperClub} from '../theme/supperClub';
 import {RootContext} from '../context/RootContext';
 import {
     setCategories,
@@ -198,6 +201,31 @@ export const SearchScreen: React.FC = () => {
         }
     };
 
+    const handleDirections = (restaurant: Restaurant) => {
+        const business = filteredBusinesses.find(b => b.id === restaurant.id);
+        const lat = business?.coordinates?.latitude;
+        const lng = business?.coordinates?.longitude;
+        const query = encodeURIComponent(restaurant.name);
+        const url = lat != null && lng != null
+            ? Platform.select({
+                ios: `maps://?q=${query}&ll=${lat},${lng}`,
+                default: `https://www.google.com/maps/search/?api=1&query=${lat},${lng}`,
+            })
+            : `https://www.google.com/maps/search/?api=1&query=${query}`;
+        if (url) {
+            Linking.openURL(url).catch(() => {});
+        }
+    };
+
+    // "Spin again" re-rolls a random pick from the current results and opens it
+    // in the same detail modal the wheel uses.
+    const handleSpinAgain = () => {
+        if (filteredBusinesses.length === 0) return;
+        const pick = filteredBusinesses[Math.floor(Math.random() * filteredBusinesses.length)];
+        dispatch(setSelectedBusiness(pick));
+        dispatch(showBusinessModal());
+    };
+
     const handleUseCurrentLocation = async () => {
         setIsEditingLocation(false);
         setIsManualLocation(false);
@@ -261,13 +289,13 @@ export const SearchScreen: React.FC = () => {
                     <Ionicons
                         name="search"
                         size={20}
-                        color={colors.gray500}
+                        color={supperClub.textMuted}
                         style={styles.searchIcon}
                     />
                     <TextInput
                         style={styles.searchInput}
                         placeholder="What are you craving?"
-                        placeholderTextColor={colors.gray500}
+                        placeholderTextColor={supperClub.textMuted}
                         value={searchQuery}
                         onChangeText={setSearchQuery}
                         returnKeyType="search"
@@ -276,7 +304,7 @@ export const SearchScreen: React.FC = () => {
                     />
                     {searchQuery.length > 0 && (
                         <Pressable onPress={() => setSearchQuery('')} hitSlop={8}>
-                            <Ionicons name="close-circle" size={20} color={colors.gray400}/>
+                            <Ionicons name="close-circle" size={20} color={supperClub.textMuted}/>
                         </Pressable>
                     )}
                 </View>
@@ -289,7 +317,7 @@ export const SearchScreen: React.FC = () => {
                         pressed && styles.filtersButtonPressed,
                     ]}
                 >
-                    <Ionicons name="options-outline" size={24} color={colors.primary}/>
+                    <Ionicons name="options-outline" size={24} color={supperClub.gold}/>
                     {countActiveFilters(state.filters) > 0 && (
                         <View style={styles.filtersBadge}>
                             <Text style={styles.filtersBadgeText}>
@@ -304,7 +332,7 @@ export const SearchScreen: React.FC = () => {
             {isEditingLocation ? (
                 <View style={styles.locationEditContainer}>
                     <View style={styles.locationInputWrapper}>
-                        <Ionicons name="location" size={16} color={colors.primary}/>
+                        <Ionicons name="location" size={16} color={supperClub.gold}/>
                         <TextInput
                             style={styles.locationInput}
                             value={locationInput}
@@ -317,7 +345,7 @@ export const SearchScreen: React.FC = () => {
                         />
                         {locationInput.length > 0 && (
                             <Pressable onPress={() => setLocationInput('')} hitSlop={8}>
-                                <Ionicons name="close-circle" size={20} color={colors.gray400}/>
+                                <Ionicons name="close-circle" size={20} color={supperClub.textMuted}/>
                             </Pressable>
                         )}
                     </View>
@@ -328,15 +356,15 @@ export const SearchScreen: React.FC = () => {
                             pressed && styles.gpsButtonPressed,
                         ]}
                     >
-                        <Ionicons name="navigate" size={16} color={colors.primary}/>
+                        <Ionicons name="navigate" size={16} color={supperClub.gold}/>
                         <Text style={styles.gpsButtonText}>Use GPS</Text>
                     </Pressable>
                 </View>
             ) : (
                 <Pressable style={styles.locationButton} onPress={handleLocationPress}>
-                    <Ionicons name="location" size={16} color={colors.primary}/>
+                    <Ionicons name="location" size={16} color={supperClub.gold}/>
                     <Text style={styles.locationText}>{displayLocation}</Text>
-                    <Ionicons name="chevron-down" size={16} color={colors.gray500}/>
+                    <Ionicons name="chevron-down" size={16} color={supperClub.textMuted}/>
                 </Pressable>
             )}
 
@@ -348,7 +376,7 @@ export const SearchScreen: React.FC = () => {
             {/* Loading State */}
             {isLoading && (
                 <View style={styles.loadingContainer}>
-                    <ActivityIndicator size="large" color={colors.primary}/>
+                    <ActivityIndicator size="large" color={supperClub.gold}/>
                     <Text style={styles.loadingText}>Searching...</Text>
                 </View>
             )}
@@ -360,38 +388,45 @@ export const SearchScreen: React.FC = () => {
                 </View>
             )}
 
-            {/* Results */}
+            {/* Results — hero top pick + compact rows (Supper Club) */}
             {!isLoading && restaurants.length > 0 && (
-                <>
-                    {/* Results Count */}
-                    <View style={styles.resultsHeader}>
-                        <Text style={styles.resultsCount}>
-                            {restaurants.length} Result{restaurants.length !== 1 ? 's' : ''}
-                        </Text>
-                    </View>
-
-                    {/* Results List */}
-                    <FlatList
-                        data={restaurants}
-                        keyExtractor={(item) => item.id}
-                        renderItem={({item}) => (
-                            <RestaurantCardSimple
-                                restaurant={item}
-                                onPress={() => handleRestaurantPress(item)}
-                                onFavoriteToggle={() => handleFavoriteToggle(item.id)}
-                                onBlockToggle={() => handleBlockToggle(item.id)}
+                <FlatList
+                    data={restaurants.slice(1)}
+                    keyExtractor={(item) => item.id}
+                    ListHeaderComponent={
+                        <>
+                            <View style={styles.resultsHeader}>
+                                <Text style={styles.resultsCount}>
+                                    {restaurants.length} Result{restaurants.length !== 1 ? 's' : ''}
+                                </Text>
+                            </View>
+                            <RestaurantTopPick
+                                restaurant={restaurants[0]}
+                                onPress={() => handleRestaurantPress(restaurants[0])}
+                                onFavoriteToggle={() => handleFavoriteToggle(restaurants[0].id)}
+                                onDirections={() => handleDirections(restaurants[0])}
+                                onSpinAgain={handleSpinAgain}
                             />
-                        )}
-                        contentContainerStyle={styles.listContent}
-                        showsVerticalScrollIndicator={false}
-                    />
-                </>
+                            {restaurants.length > 1 && (
+                                <Text style={styles.subhead}>More nearby</Text>
+                            )}
+                        </>
+                    }
+                    renderItem={({item}) => (
+                        <RestaurantRow
+                            restaurant={item}
+                            onPress={() => handleRestaurantPress(item)}
+                        />
+                    )}
+                    contentContainerStyle={styles.listContent}
+                    showsVerticalScrollIndicator={false}
+                />
             )}
 
             {/* Empty State */}
             {!isLoading && restaurants.length === 0 && state.results.length === 0 && (
                 <View style={styles.emptyContainer}>
-                    <Ionicons name="search-outline" size={64} color={colors.gray400}/>
+                    <Ionicons name="search-outline" size={64} color={supperClub.textMuted}/>
                     <Text style={styles.emptyTitle}>Search for restaurants</Text>
                     <Text style={styles.emptySubtitle}>
                         Enter a search term above to find restaurants
@@ -402,7 +437,7 @@ export const SearchScreen: React.FC = () => {
             {/* No Results After Filtering */}
             {!isLoading && restaurants.length === 0 && state.results.length > 0 && (
                 <View style={styles.emptyContainer}>
-                    <Ionicons name="options-outline" size={64} color={colors.gray400}/>
+                    <Ionicons name="options-outline" size={64} color={supperClub.textMuted}/>
                     <Text style={styles.emptyTitle}>No matches found</Text>
                     <Text style={styles.emptySubtitle}>
                         Try adjusting your filters to see more results
@@ -422,7 +457,7 @@ export const SearchScreen: React.FC = () => {
 const styles = StyleSheet.create({
     container: {
         flex: 1,
-        backgroundColor: colors.background,
+        backgroundColor: supperClub.background,
     },
     header: {
         flexDirection: 'row',
@@ -435,15 +470,15 @@ const styles = StyleSheet.create({
         flex: 1,
         flexDirection: 'row',
         alignItems: 'center',
-        backgroundColor: colors.white,
+        backgroundColor: 'rgba(255,255,255,0.05)',
         borderRadius: radius.md,
         borderWidth: 1,
-        borderColor: colors.border,
+        borderColor: supperClub.border,
         paddingHorizontal: spacing.md,
         height: 44,
         ...Platform.select({
             ios: {
-                shadowColor: colors.shadow,
+                shadowColor: 'rgba(0,0,0,0.6)',
                 shadowOffset: {width: 0, height: 1},
                 shadowOpacity: 0.05,
                 shadowRadius: 2,
@@ -459,14 +494,14 @@ const styles = StyleSheet.create({
     searchInput: {
         flex: 1,
         ...typography.body,
-        color: colors.gray900,
+        color: supperClub.textPrimary,
         paddingVertical: 0,
     },
     filtersButton: {
         width: 44,
         height: 44,
         borderRadius: radius.full,
-        backgroundColor: colors.gray100,
+        backgroundColor: 'rgba(255,255,255,0.05)',
         alignItems: 'center',
         justifyContent: 'center',
     },
@@ -477,7 +512,7 @@ const styles = StyleSheet.create({
         position: 'absolute',
         top: 0,
         right: 0,
-        backgroundColor: colors.error,
+        backgroundColor: supperClub.error,
         borderRadius: radius.full,
         minWidth: 18,
         height: 18,
@@ -487,7 +522,7 @@ const styles = StyleSheet.create({
     },
     filtersBadgeText: {
         ...typography.caption2,
-        color: colors.white,
+        color: supperClub.textPrimary,
     },
     locationEditContainer: {
         flexDirection: 'row',
@@ -515,12 +550,12 @@ const styles = StyleSheet.create({
     },
     locationText: {
         ...typography.callout,
-        color: colors.gray700,
+        color: supperClub.text,
     },
     locationInput: {
         flex: 1,
         ...typography.callout,
-        color: colors.gray900,
+        color: supperClub.textPrimary,
         paddingVertical: 0,
         marginLeft: spacing.xs,
     },
@@ -529,10 +564,10 @@ const styles = StyleSheet.create({
         alignItems: 'center',
         paddingHorizontal: spacing.md,
         paddingVertical: spacing.sm,
-        backgroundColor: colors.white,
+        backgroundColor: 'rgba(255,255,255,0.05)',
         borderRadius: radius.full,
         borderWidth: 1,
-        borderColor: colors.primary,
+        borderColor: supperClub.gold,
         gap: spacing.xs,
         flexShrink: 0,
     },
@@ -541,7 +576,7 @@ const styles = StyleSheet.create({
     },
     gpsButtonText: {
         ...typography.callout,
-        color: colors.primary,
+        color: supperClub.gold,
         fontWeight: '600',
         flexShrink: 0,
     },
@@ -553,33 +588,41 @@ const styles = StyleSheet.create({
     },
     loadingText: {
         ...typography.callout,
-        color: colors.gray600,
+        color: supperClub.textMuted,
         marginTop: spacing.md,
     },
     errorContainer: {
         marginHorizontal: spacing.md,
         marginTop: spacing.md,
-        backgroundColor: colors.error + '15',
+        backgroundColor: supperClub.error + '15',
         paddingHorizontal: spacing.md,
         paddingVertical: spacing.md,
         borderRadius: radius.md,
         borderLeftWidth: 3,
-        borderLeftColor: colors.error,
+        borderLeftColor: supperClub.error,
     },
     errorText: {
         ...typography.callout,
-        color: colors.error,
+        color: supperClub.error,
     },
     resultsHeader: {
-        paddingHorizontal: spacing.md,
         paddingVertical: spacing.md,
     },
     resultsCount: {
         ...typography.headline,
-        color: colors.gray900,
+        color: supperClub.textPrimary,
+    },
+    subhead: {
+        fontSize: 11,
+        letterSpacing: 1.4,
+        textTransform: 'uppercase',
+        color: supperClub.textMuted,
+        marginTop: spacing.xs,
+        marginBottom: spacing.sm,
     },
     listContent: {
         paddingTop: spacing.sm,
+        paddingHorizontal: spacing.md,
     },
     emptyContainer: {
         flex: 1,
@@ -590,13 +633,13 @@ const styles = StyleSheet.create({
     },
     emptyTitle: {
         ...typography.title3,
-        color: colors.gray900,
+        color: supperClub.textPrimary,
         marginTop: spacing.lg,
         textAlign: 'center',
     },
     emptySubtitle: {
         ...typography.callout,
-        color: colors.gray600,
+        color: supperClub.textMuted,
         marginTop: spacing.sm,
         textAlign: 'center',
     },
