@@ -16,12 +16,13 @@ updates:
         update-types:
           - "minor"
           - "patch"
-    # Expo pins react-native/expo to SDK-compatible versions. Bumping them
-    # outside `expo install --fix` / an SDK upgrade breaks the app, so leave
-    # them to the Expo tooling rather than Dependabot.
+    # Expo pins expo, react-native, and the whole expo-* family to
+    # SDK-compatible versions. Bumping them outside `expo install --fix` /
+    # an SDK upgrade breaks the app, so leave them to the Expo tooling.
     ignore:
       - dependency-name: "expo"
       - dependency-name: "react-native"
+      - dependency-name: "expo-*"
 
   # GitHub Actions (covers workflows once they're added)
   - package-ecosystem: "github-actions"
