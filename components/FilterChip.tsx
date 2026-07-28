@@ -1,7 +1,8 @@
 import React from 'react';
 import { Pressable, Text, StyleSheet, Platform } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
-import { colors, spacing, radius, typography } from '../theme';
+import { spacing, radius, typography } from '../theme';
+import { supperClub } from '../theme/supperClub';
 
 export type FilterChipVariant = 'default' | 'included' | 'excluded';
 
@@ -32,11 +33,11 @@ export const FilterChip: React.FC<FilterChipProps> = ({
   const getTextColor = () => {
     switch (variant) {
       case 'included':
-        return colors.white;
+        return '#FFFFFF';
       case 'excluded':
-        return colors.white;
+        return '#FFFFFF';
       default:
-        return colors.gray700;
+        return supperClub.text;
     }
   };
 
@@ -56,7 +57,7 @@ export const FilterChip: React.FC<FilterChipProps> = ({
         <Ionicons
           name="remove-circle"
           size={14}
-          color={colors.white}
+          color="#FFFFFF"
           style={styles.icon}
         />
       )}
@@ -67,7 +68,7 @@ export const FilterChip: React.FC<FilterChipProps> = ({
         <Ionicons
           name="checkmark-circle"
           size={14}
-          color={colors.white}
+          color="#FFFFFF"
           style={styles.iconRight}
         />
       )}
@@ -85,15 +86,15 @@ const styles = StyleSheet.create({
     height: 32,
   },
   chipDefault: {
-    backgroundColor: colors.gray200,
+    backgroundColor: 'rgba(255,255,255,0.05)',
     borderWidth: 1,
-    borderColor: colors.gray300,
+    borderColor: supperClub.chipBorder,
   },
   chipIncluded: {
-    backgroundColor: colors.primary,
+    backgroundColor: supperClub.primary,
   },
   chipExcluded: {
-    backgroundColor: colors.error,
+    backgroundColor: supperClub.error,
   },
   chipPressed: {
     opacity: 0.8,

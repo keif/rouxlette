@@ -50,7 +50,7 @@ exports[`BusinessCardModal snapshots should match snapshot for QuickInfo view 1`
       onStartShouldSetResponder={[Function]}
       style={
         {
-          "backgroundColor": "rgba(0,0,0,0.5)",
+          "backgroundColor": "rgba(6,3,4,0.66)",
           "flex": 1,
         }
       }
@@ -134,8 +134,8 @@ exports[`BusinessCardModal snapshots should match snapshot for QuickInfo view 1`
                   style={
                     [
                       {
-                        "backgroundColor": "#FFFFFF",
-                        "borderColor": "rgba(0, 0, 0, 0.08)",
+                        "backgroundColor": "#1A1013",
+                        "borderColor": "rgba(255, 194, 75, 0.28)",
                         "borderRadius": 16,
                         "borderWidth": 1,
                         "elevation": 12,
@@ -337,7 +337,7 @@ exports[`BusinessCardModal snapshots should match snapshot for QuickInfo view 1`
                   <View
                     style={
                       {
-                        "backgroundColor": "#FFFFFF",
+                        "backgroundColor": "rgba(255, 255, 255, 0.06)",
                         "paddingBottom": 16,
                         "paddingHorizontal": 16,
                         "paddingVertical": 6,
@@ -357,7 +357,7 @@ exports[`BusinessCardModal snapshots should match snapshot for QuickInfo view 1`
                         numberOfLines={2}
                         style={
                           {
-                            "color": "#000000",
+                            "color": "#FFFFFF",
                             "flex": 1,
                             "fontFamily": "System",
                             "fontSize": 22,
@@ -372,6 +372,7 @@ exports[`BusinessCardModal snapshots should match snapshot for QuickInfo view 1`
                       <Text
                         style={
                           {
+                            "color": "#FFC24B",
                             "fontFamily": "System",
                             "fontSize": 22,
                           }
@@ -391,7 +392,7 @@ exports[`BusinessCardModal snapshots should match snapshot for QuickInfo view 1`
                         numberOfLines={1}
                         style={
                           {
-                            "color": "rgba(128,128,128, 0.80)",
+                            "color": "#B9A894",
                             "flex": 1,
                             "fontFamily": "System",
                             "paddingRight": 4,
@@ -537,7 +538,7 @@ exports[`BusinessCardModal snapshots should match snapshot for QuickInfo view 1`
                       <Text
                         style={
                           {
-                            "color": "rgba(128,128,128, 0.80)",
+                            "color": "#B9A894",
                             "fontFamily": "System",
                             "marginLeft": 8,
                           }
@@ -599,7 +600,7 @@ exports[`BusinessCardModal snapshots should match snapshot for QuickInfo view 1`
                       style={
                         [
                           {
-                            "color": "#007AFF",
+                            "color": "#FFC24B",
                             "fontSize": 28,
                           },
                           undefined,
@@ -632,8 +633,8 @@ exports[`BusinessCardModal snapshots should match snapshot for QuickInfo view 1`
                 <View
                   style={
                     {
-                      "backgroundColor": "#FFFFFF",
-                      "borderColor": "rgba(0, 0, 0, 0.08)",
+                      "backgroundColor": "#1A1013",
+                      "borderColor": "rgba(255, 194, 75, 0.28)",
                       "borderRadius": 16,
                       "borderWidth": 1,
                       "elevation": 12,
@@ -652,7 +653,9 @@ exports[`BusinessCardModal snapshots should match snapshot for QuickInfo view 1`
                     style={
                       {
                         "alignItems": "center",
-                        "backgroundColor": "#007AFF",
+                        "backgroundColor": "rgba(255, 255, 255, 0.06)",
+                        "borderBottomColor": "rgba(255, 194, 75, 0.28)",
+                        "borderBottomWidth": 0.5,
                         "borderTopLeftRadius": 16,
                         "borderTopRightRadius": 16,
                         "flexDirection": "row",
@@ -707,7 +710,7 @@ exports[`BusinessCardModal snapshots should match snapshot for QuickInfo view 1`
                     <Text
                       style={
                         {
-                          "color": "#000000",
+                          "color": "#F3E9DC",
                           "fontFamily": "System",
                           "fontSize": 14,
                         }
@@ -853,7 +856,7 @@ exports[`BusinessCardModal snapshots should match snapshot for QuickInfo view 1`
                     <Text
                       style={
                         {
-                          "color": "rgba(128,128,128, 0.80)",
+                          "color": "#B9A894",
                           "fontFamily": "System",
                           "marginLeft": 8,
                         }
@@ -875,7 +878,7 @@ exports[`BusinessCardModal snapshots should match snapshot for QuickInfo view 1`
                     <Text
                       style={
                         {
-                          "color": "rgba(128,128,128, 0.80)",
+                          "color": "#B9A894",
                           "fontFamily": "System",
                           "fontSize": 15,
                           "lineHeight": 20,
@@ -889,7 +892,7 @@ exports[`BusinessCardModal snapshots should match snapshot for QuickInfo view 1`
                         style={
                           [
                             {
-                              "color": "#007AFF",
+                              "color": "#FFC24B",
                               "fontSize": 16,
                             },
                             undefined,
@@ -910,7 +913,7 @@ exports[`BusinessCardModal snapshots should match snapshot for QuickInfo view 1`
                     <Text
                       style={
                         {
-                          "color": "rgba(128,128,128, 0.80)",
+                          "color": "#B9A894",
                           "fontFamily": "System",
                           "fontSize": 15,
                           "lineHeight": 20,
@@ -924,7 +927,7 @@ exports[`BusinessCardModal snapshots should match snapshot for QuickInfo view 1`
                         style={
                           [
                             {
-                              "color": "#007AFF",
+                              "color": "#FFC24B",
                               "fontSize": 16,
                             },
                             undefined,
@@ -964,7 +967,7 @@ exports[`BusinessCardModal snapshots should match snapshot for QuickInfo view 1`
                           style={
                             [
                               {
-                                "color": "#007AFF",
+                                "color": "#FFC24B",
                                 "fontSize": 16,
                               },
                               undefined,
@@ -982,7 +985,7 @@ exports[`BusinessCardModal snapshots should match snapshot for QuickInfo view 1`
                         <Text
                           style={
                             {
-                              "color": "rgba(128,128,128, 0.80)",
+                              "color": "#B9A894",
                               "fontFamily": "System",
                               "fontSize": 15,
                               "lineHeight": 20,
@@ -1193,15 +1196,17 @@ exports[`BusinessCardModal snapshots should match snapshot for QuickInfo view 1`
                         [
                           {
                             "alignItems": "center",
-                            "backgroundColor": "rgba(255, 255, 255, 0.9)",
+                            "backgroundColor": "rgba(255, 255, 255, 0.06)",
+                            "borderColor": "rgba(255, 194, 75, 0.28)",
                             "borderRadius": 20,
+                            "borderWidth": 1,
                             "elevation": 3,
                             "flexDirection": "row",
                             "fontSize": 30,
                             "padding": 16,
                             "paddingHorizontal": 12,
                             "paddingVertical": 8,
-                            "shadowColor": undefined,
+                            "shadowColor": "#000",
                             "shadowOffset": {
                               "height": 4,
                               "width": 0,
@@ -1221,7 +1226,7 @@ exports[`BusinessCardModal snapshots should match snapshot for QuickInfo view 1`
                         style={
                           [
                             {
-                              "color": "#007AFF",
+                              "color": "#FFC24B",
                               "fontSize": 20,
                             },
                             undefined,
@@ -1239,7 +1244,7 @@ exports[`BusinessCardModal snapshots should match snapshot for QuickInfo view 1`
                       <Text
                         style={
                           {
-                            "color": "#000000",
+                            "color": "#F3E9DC",
                             "fontFamily": "System",
                             "fontSize": 14,
                             "marginLeft": 6,
@@ -1283,15 +1288,17 @@ exports[`BusinessCardModal snapshots should match snapshot for QuickInfo view 1`
                         [
                           {
                             "alignItems": "center",
-                            "backgroundColor": "rgba(255, 255, 255, 0.9)",
+                            "backgroundColor": "rgba(255, 255, 255, 0.06)",
+                            "borderColor": "rgba(255, 194, 75, 0.28)",
                             "borderRadius": 20,
+                            "borderWidth": 1,
                             "elevation": 3,
                             "flexDirection": "row",
                             "fontSize": 30,
                             "padding": 16,
                             "paddingHorizontal": 12,
                             "paddingVertical": 8,
-                            "shadowColor": undefined,
+                            "shadowColor": "#000",
                             "shadowOffset": {
                               "height": 4,
                               "width": 0,
@@ -1329,7 +1336,7 @@ exports[`BusinessCardModal snapshots should match snapshot for QuickInfo view 1`
                       <Text
                         style={
                           {
-                            "color": "#000000",
+                            "color": "#F3E9DC",
                             "fontFamily": "System",
                             "fontSize": 14,
                             "marginLeft": 6,
@@ -1373,15 +1380,17 @@ exports[`BusinessCardModal snapshots should match snapshot for QuickInfo view 1`
                         [
                           {
                             "alignItems": "center",
-                            "backgroundColor": "rgba(255, 255, 255, 0.9)",
+                            "backgroundColor": "rgba(255, 255, 255, 0.06)",
+                            "borderColor": "rgba(255, 194, 75, 0.28)",
                             "borderRadius": 20,
+                            "borderWidth": 1,
                             "elevation": 3,
                             "flexDirection": "row",
                             "fontSize": 30,
                             "padding": 16,
                             "paddingHorizontal": 12,
                             "paddingVertical": 8,
-                            "shadowColor": undefined,
+                            "shadowColor": "#000",
                             "shadowOffset": {
                               "height": 4,
                               "width": 0,
@@ -1419,7 +1428,7 @@ exports[`BusinessCardModal snapshots should match snapshot for QuickInfo view 1`
                       <Text
                         style={
                           {
-                            "color": "#000000",
+                            "color": "#F3E9DC",
                             "fontFamily": "System",
                             "fontSize": 14,
                             "marginLeft": 6,
@@ -1478,7 +1487,7 @@ exports[`BusinessCardModal snapshots should match snapshot for QuickInfo view 1`
                         style={
                           [
                             {
-                              "color": "#007AFF",
+                              "color": "#FFC24B",
                               "fontSize": 28,
                             },
                             undefined,
@@ -1508,8 +1517,8 @@ exports[`BusinessCardModal snapshots should match snapshot for QuickInfo view 1`
                   style={
                     [
                       {
-                        "backgroundColor": "#FFFFFF",
-                        "borderColor": "rgba(0, 0, 0, 0.08)",
+                        "backgroundColor": "#1A1013",
+                        "borderColor": "rgba(255, 194, 75, 0.28)",
                         "borderRadius": 16,
                         "borderWidth": 1,
                         "elevation": 12,
@@ -1711,7 +1720,7 @@ exports[`BusinessCardModal snapshots should match snapshot for QuickInfo view 1`
                   <View
                     style={
                       {
-                        "backgroundColor": "#FFFFFF",
+                        "backgroundColor": "rgba(255, 255, 255, 0.06)",
                         "paddingBottom": 16,
                         "paddingHorizontal": 16,
                         "paddingVertical": 6,
@@ -1731,7 +1740,7 @@ exports[`BusinessCardModal snapshots should match snapshot for QuickInfo view 1`
                         numberOfLines={2}
                         style={
                           {
-                            "color": "#000000",
+                            "color": "#FFFFFF",
                             "flex": 1,
                             "fontFamily": "System",
                             "fontSize": 22,
@@ -1746,6 +1755,7 @@ exports[`BusinessCardModal snapshots should match snapshot for QuickInfo view 1`
                       <Text
                         style={
                           {
+                            "color": "#FFC24B",
                             "fontFamily": "System",
                             "fontSize": 22,
                           }
@@ -1765,7 +1775,7 @@ exports[`BusinessCardModal snapshots should match snapshot for QuickInfo view 1`
                         numberOfLines={1}
                         style={
                           {
-                            "color": "rgba(128,128,128, 0.80)",
+                            "color": "#B9A894",
                             "flex": 1,
                             "fontFamily": "System",
                             "paddingRight": 4,
@@ -1911,7 +1921,7 @@ exports[`BusinessCardModal snapshots should match snapshot for QuickInfo view 1`
                       <Text
                         style={
                           {
-                            "color": "rgba(128,128,128, 0.80)",
+                            "color": "#B9A894",
                             "fontFamily": "System",
                             "marginLeft": 8,
                           }
@@ -1973,7 +1983,7 @@ exports[`BusinessCardModal snapshots should match snapshot for QuickInfo view 1`
                       style={
                         [
                           {
-                            "color": "#007AFF",
+                            "color": "#FFC24B",
                             "fontSize": 28,
                           },
                           undefined,
