@@ -16,13 +16,25 @@ updates:
         update-types:
           - "minor"
           - "patch"
-    # Expo pins expo, react-native, and the whole expo-* family to
-    # SDK-compatible versions. Bumping them outside `expo install --fix` /
-    # an SDK upgrade breaks the app, so leave them to the Expo tooling.
+    # Expo pins a whole constellation to SDK-compatible versions: expo itself,
+    # react-native, the expo-* family, the React runtime (which must match the
+    # version RN bundles), and the Expo-managed native modules. Bumping any of
+    # them outside `expo install --fix` / an SDK upgrade breaks the native and
+    # test stack, so leave them to the Expo tooling.
     ignore:
       - dependency-name: "expo"
       - dependency-name: "react-native"
       - dependency-name: "expo-*"
+      # React runtime — pinned to the version react-native bundles.
+      - dependency-name: "react"
+      - dependency-name: "react-dom"
+      - dependency-name: "react-test-renderer"
+      - dependency-name: "@types/react"
+      # Expo-managed native modules — pinned by the SDK.
+      - dependency-name: "react-native-reanimated"
+      - dependency-name: "react-native-worklets"
+      - dependency-name: "react-native-screens"
+      - dependency-name: "react-native-safe-area-context"
 
   # GitHub Actions (covers workflows once they're added)
   - package-ecosystem: "github-actions"
