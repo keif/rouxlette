@@ -11,7 +11,8 @@ import {
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
-import { colors, spacing, radius, typography } from '../theme';
+import { spacing, radius, typography } from '../theme';
+import { supperClub } from '../theme/supperClub';
 
 interface FiltersModalProps {
   visible: boolean;
@@ -77,7 +78,7 @@ export const FiltersModal: React.FC<FiltersModalProps> = ({
           <Text style={styles.title}>Filters</Text>
 
           <Pressable onPress={onClose} hitSlop={8}>
-            <Ionicons name="close" size={28} color={colors.gray700} />
+            <Ionicons name="close" size={28} color={supperClub.text} />
           </Pressable>
         </View>
 
@@ -143,8 +144,8 @@ export const FiltersModal: React.FC<FiltersModalProps> = ({
               <Switch
                 value={openNow}
                 onValueChange={setOpenNow}
-                trackColor={{ false: colors.gray300, true: colors.primary }}
-                thumbColor={colors.white}
+                trackColor={{ false: 'rgba(255,255,255,0.12)', true: supperClub.primary }}
+                thumbColor={supperClub.textPrimary}
               />
             </View>
           </View>
@@ -166,7 +167,7 @@ export const FiltersModal: React.FC<FiltersModalProps> = ({
                     name="star"
                     size={16}
                     color={
-                      minRating === rating ? colors.white : colors.warning
+                      minRating === rating ? supperClub.textPrimary : supperClub.gold
                     }
                   />
                   <Text
@@ -203,7 +204,7 @@ export const FiltersModal: React.FC<FiltersModalProps> = ({
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: colors.background,
+    backgroundColor: supperClub.background,
   },
   header: {
     flexDirection: 'row',
@@ -212,15 +213,15 @@ const styles = StyleSheet.create({
     paddingHorizontal: spacing.md,
     paddingVertical: spacing.md,
     borderBottomWidth: 1,
-    borderBottomColor: colors.border,
+    borderBottomColor: supperClub.border,
   },
   clearButton: {
     ...typography.callout,
-    color: colors.primary,
+    color: supperClub.gold,
   },
   title: {
     ...typography.headline,
-    color: colors.gray900,
+    color: supperClub.textPrimary,
   },
   content: {
     flex: 1,
@@ -229,11 +230,11 @@ const styles = StyleSheet.create({
     paddingHorizontal: spacing.md,
     paddingVertical: spacing.lg,
     borderBottomWidth: 1,
-    borderBottomColor: colors.border,
+    borderBottomColor: supperClub.border,
   },
   sectionTitle: {
     ...typography.headline,
-    color: colors.gray900,
+    color: supperClub.textPrimary,
     marginBottom: spacing.md,
   },
   priceGrid: {
@@ -243,22 +244,22 @@ const styles = StyleSheet.create({
   priceButton: {
     flex: 1,
     paddingVertical: spacing.md,
-    backgroundColor: colors.gray100,
+    backgroundColor: 'rgba(255,255,255,0.05)',
     borderRadius: radius.md,
     borderWidth: 2,
     borderColor: 'transparent',
     alignItems: 'center',
   },
   priceButtonSelected: {
-    backgroundColor: colors.primary,
-    borderColor: colors.primary,
+    backgroundColor: supperClub.primary,
+    borderColor: supperClub.primary,
   },
   priceButtonText: {
     ...typography.headline,
-    color: colors.gray700,
+    color: supperClub.text,
   },
   priceButtonTextSelected: {
-    color: colors.white,
+    color: supperClub.textPrimary,
   },
   distanceGrid: {
     flexDirection: 'row',
@@ -268,21 +269,21 @@ const styles = StyleSheet.create({
   distanceButton: {
     paddingVertical: spacing.sm,
     paddingHorizontal: spacing.lg,
-    backgroundColor: colors.gray100,
+    backgroundColor: 'rgba(255,255,255,0.05)',
     borderRadius: radius.md,
     borderWidth: 2,
     borderColor: 'transparent',
   },
   distanceButtonSelected: {
-    backgroundColor: colors.primary,
-    borderColor: colors.primary,
+    backgroundColor: supperClub.primary,
+    borderColor: supperClub.primary,
   },
   distanceButtonText: {
     ...typography.callout,
-    color: colors.gray700,
+    color: supperClub.text,
   },
   distanceButtonTextSelected: {
-    color: colors.white,
+    color: supperClub.textPrimary,
   },
   toggleRow: {
     flexDirection: 'row',
@@ -291,7 +292,7 @@ const styles = StyleSheet.create({
   },
   toggleLabel: {
     ...typography.headline,
-    color: colors.gray900,
+    color: supperClub.textPrimary,
   },
   ratingGrid: {
     flexDirection: 'row',
@@ -303,37 +304,37 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     paddingVertical: spacing.sm,
     paddingHorizontal: spacing.md,
-    backgroundColor: colors.gray100,
+    backgroundColor: 'rgba(255,255,255,0.05)',
     borderRadius: radius.md,
     borderWidth: 2,
     borderColor: 'transparent',
     gap: spacing.xs,
   },
   ratingButtonSelected: {
-    backgroundColor: colors.primary,
-    borderColor: colors.primary,
+    backgroundColor: supperClub.primary,
+    borderColor: supperClub.primary,
   },
   ratingButtonText: {
     ...typography.callout,
-    color: colors.gray700,
+    color: supperClub.text,
   },
   ratingButtonTextSelected: {
-    color: colors.white,
+    color: supperClub.textPrimary,
   },
   footer: {
     paddingHorizontal: spacing.md,
     paddingVertical: spacing.md,
     borderTopWidth: 1,
-    borderTopColor: colors.border,
+    borderTopColor: supperClub.border,
   },
   applyButton: {
-    backgroundColor: colors.primary,
+    backgroundColor: supperClub.primary,
     borderRadius: radius.md,
     paddingVertical: spacing.md,
     alignItems: 'center',
     ...Platform.select({
       ios: {
-        shadowColor: colors.shadow,
+        shadowColor: 'rgba(0,0,0,0.6)',
         shadowOffset: { width: 0, height: 2 },
         shadowOpacity: 0.2,
         shadowRadius: 8,
@@ -348,6 +349,6 @@ const styles = StyleSheet.create({
   },
   applyButtonText: {
     ...typography.headline,
-    color: colors.white,
+    color: supperClub.textPrimary,
   },
 });

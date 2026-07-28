@@ -16,6 +16,7 @@ import { ResultsShowScreenProps } from "../types";
 import { BusinessProps } from "../hooks/useResults";
 import { FontAwesome, MaterialIcons } from "@expo/vector-icons";
 import AppStyles from "../AppStyles";
+import { supperClub } from "../theme/supperClub";
 import { View } from "../components/Themed";
 import StarRating from "../components/shared/StarRating";
 import Config from "../Config";
@@ -159,7 +160,7 @@ const styles = StyleSheet.create({
 		paddingVertical: 24,
 	},
 	button: {
-		backgroundColor: `rgba(255, 255, 255, 0.69)`,
+		backgroundColor: supperClub.surfaceElevated,
 		flexDirection: `row`,
 		shadowColor: AppStyles.input.shadow,
 		...AppStyles.ButtonPressable,
@@ -169,6 +170,7 @@ const styles = StyleSheet.create({
 		marginRight: 10,
 	},
 	container: {
+		backgroundColor: supperClub.background,
 		flex: 1,
 	},
 	imageContainer: {
@@ -193,7 +195,7 @@ const styles = StyleSheet.create({
 		position: `absolute`,
 	},
 	title: {
-		color: AppStyles.color.white,
+		color: "#FFFFFF",
 		fontSize: 24,
 		fontWeight: `bold`,
 		left: 16,
