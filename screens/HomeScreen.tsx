@@ -13,7 +13,9 @@ import { Ionicons } from '@expo/vector-icons';
 import { useNavigation } from '@react-navigation/native';
 import { RouletteWheel } from '../components/RouletteWheel';
 import { ActiveFilterBar, ActiveFilter } from '../components/ActiveFilterBar';
-import { colors, spacing, radius, typography } from '../theme';
+import { LinearGradient } from 'expo-linear-gradient';
+import { spacing, radius, typography } from '../theme';
+import { supperClub, supperClubPalette, supperClubGlow } from '../theme/supperClub';
 import { RootContext } from '../context/RootContext';
 import { setResults, setShowFilter, addSpinHistory, setSelectedBusiness, showBusinessModal, setFilters, setCategories, setLocation, setCoords } from '../context/reducer';
 import useResults, { BusinessProps } from '../hooks/useResults';
@@ -273,6 +275,11 @@ export const HomeScreen: React.FC = () => {
 
   return (
     <SafeAreaView style={styles.container} edges={['top']}>
+      <LinearGradient
+        colors={[supperClubPalette.aubergine, supperClubPalette.espresso]}
+        style={StyleSheet.absoluteFillObject}
+        pointerEvents="none"
+      />
       <ScrollView
         contentContainerStyle={styles.scrollContent}
         showsVerticalScrollIndicator={false}
@@ -292,7 +299,7 @@ export const HomeScreen: React.FC = () => {
               pressed && styles.filtersButtonPressed,
             ]}
           >
-            <Ionicons name="options-outline" size={24} color={colors.primary} />
+            <Ionicons name="options-outline" size={24} color={supperClub.gold} />
             {countActiveFilters(state.filters) > 0 && (
               <View style={styles.filtersBadge}>
                 <Text style={styles.filtersBadgeText}>
@@ -336,13 +343,13 @@ export const HomeScreen: React.FC = () => {
             <Ionicons
               name="search"
               size={20}
-              color={colors.gray500}
+              color={supperClub.textMuted}
               style={styles.searchIcon}
             />
             <TextInput
               style={styles.searchInput}
               placeholder="What are you craving?"
-              placeholderTextColor={colors.gray500}
+              placeholderTextColor={supperClub.textMuted}
               value={searchQuery}
               onChangeText={setSearchQuery}
               returnKeyType="search"
@@ -357,7 +364,7 @@ export const HomeScreen: React.FC = () => {
                 <Ionicons
                   name="close-circle"
                   size={20}
-                  color={colors.gray400}
+                  color={supperClub.textMuted}
                 />
               </Pressable>
             )}
@@ -368,7 +375,7 @@ export const HomeScreen: React.FC = () => {
         {isEditingLocation ? (
           <View style={styles.locationEditContainer}>
             <View style={styles.locationInputWrapper}>
-              <Ionicons name="location" size={16} color={colors.primary} />
+              <Ionicons name="location" size={16} color={supperClub.gold} />
               <TextInput
                 style={styles.locationInput}
                 value={locationInput}
@@ -381,7 +388,7 @@ export const HomeScreen: React.FC = () => {
               />
               {locationInput.length > 0 && (
                 <Pressable onPress={() => setLocationInput('')}>
-                  <Ionicons name="close-circle" size={20} color={colors.gray500} />
+                  <Ionicons name="close-circle" size={20} color={supperClub.textMuted} />
                 </Pressable>
               )}
             </View>
@@ -392,15 +399,15 @@ export const HomeScreen: React.FC = () => {
                 pressed && styles.gpsButtonPressed,
               ]}
             >
-              <Ionicons name="navigate" size={16} color={colors.primary} />
+              <Ionicons name="navigate" size={16} color={supperClub.gold} />
               <Text style={styles.gpsButtonText}>Use GPS</Text>
             </Pressable>
           </View>
         ) : (
           <Pressable style={styles.locationButton} onPress={handleLocationPress}>
-            <Ionicons name="location" size={16} color={colors.primary} />
+            <Ionicons name="location" size={16} color={supperClub.gold} />
             <Text style={styles.locationText}>{displayLocation}</Text>
-            <Ionicons name="chevron-down" size={16} color={colors.gray500} />
+            <Ionicons name="chevron-down" size={16} color={supperClub.textMuted} />
           </Pressable>
         )}
 
@@ -414,7 +421,7 @@ export const HomeScreen: React.FC = () => {
         {/* Results Count */}
         {hasResults && (
           <View style={styles.resultsInfo}>
-            <Ionicons name="checkmark-circle" size={20} color={colors.success} />
+            <Ionicons name="checkmark-circle" size={20} color={supperClub.success} />
             <Text style={styles.resultsText}>
               {restaurantCount} restaurant{restaurantCount !== 1 ? 's' : ''} found
             </Text>
@@ -481,15 +488,15 @@ export const HomeScreen: React.FC = () => {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: colors.background,
+    backgroundColor: supperClub.background,
   },
   scrollContent: {
     paddingBottom: 100, // Space for fixed bottom buttons
   },
   bottomButtonContainer: {
-    backgroundColor: colors.background,
+    backgroundColor: supperClub.background,
     borderTopWidth: 1,
-    borderTopColor: colors.gray200,
+    borderTopColor: 'rgba(255,255,255,0.08)',
     paddingTop: spacing.sm,
   },
   header: {
@@ -502,23 +509,25 @@ const styles = StyleSheet.create({
   },
   title: {
     ...typography.title1,
-    color: colors.gray900,
+    fontFamily: 'Georgia',
+    color: '#FFFFFF',
+    ...supperClubGlow.wordmarkText,
   },
   subtitle: {
     ...typography.callout,
-    color: colors.gray600,
+    color: supperClub.textMuted,
     marginTop: 2,
   },
   filtersButton: {
     width: 44,
     height: 44,
     borderRadius: radius.full,
-    backgroundColor: colors.gray100,
+    backgroundColor: 'rgba(255,255,255,0.05)',
     alignItems: 'center',
     justifyContent: 'center',
     ...Platform.select({
       ios: {
-        shadowColor: colors.shadow,
+        shadowColor: 'rgba(0,0,0,0.6)',
         shadowOffset: { width: 0, height: 2 },
         shadowOpacity: 0.1,
         shadowRadius: 4,
@@ -535,7 +544,7 @@ const styles = StyleSheet.create({
     position: 'absolute',
     top: 0,
     right: 0,
-    backgroundColor: colors.error,
+    backgroundColor: supperClub.error,
     borderRadius: radius.full,
     minWidth: 18,
     height: 18,
@@ -545,7 +554,7 @@ const styles = StyleSheet.create({
   },
   filtersBadgeText: {
     ...typography.caption2,
-    color: colors.white,
+    color: supperClub.textPrimary,
   },
   wheelContainer: {
     alignItems: 'center',
@@ -553,7 +562,7 @@ const styles = StyleSheet.create({
   },
   wheelHint: {
     ...typography.callout,
-    color: colors.gray600,
+    color: supperClub.textMuted,
     marginTop: spacing.md,
   },
   searchContainer: {
@@ -563,15 +572,15 @@ const styles = StyleSheet.create({
   searchInputWrapper: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: colors.white,
+    backgroundColor: 'rgba(255,255,255,0.05)',
     borderRadius: radius.md,
     borderWidth: 1,
-    borderColor: colors.border,
+    borderColor: supperClub.border,
     paddingHorizontal: spacing.md,
     height: 50,
     ...Platform.select({
       ios: {
-        shadowColor: colors.shadow,
+        shadowColor: 'rgba(0,0,0,0.6)',
         shadowOffset: { width: 0, height: 1 },
         shadowOpacity: 0.05,
         shadowRadius: 2,
@@ -587,7 +596,7 @@ const styles = StyleSheet.create({
   searchInput: {
     flex: 1,
     ...typography.body,
-    color: colors.gray900,
+    color: supperClub.textPrimary,
     paddingVertical: 0,
   },
   locationEditContainer: {
@@ -619,12 +628,12 @@ const styles = StyleSheet.create({
   },
   locationText: {
     ...typography.callout,
-    color: colors.gray700,
+    color: supperClub.text,
   },
   locationInput: {
     flex: 1,
     ...typography.callout,
-    color: colors.gray900,
+    color: supperClub.textPrimary,
     paddingVertical: 0,
     marginLeft: spacing.xs,
   },
@@ -633,10 +642,10 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     paddingHorizontal: spacing.md,
     paddingVertical: spacing.sm,
-    backgroundColor: colors.white,
+    backgroundColor: 'rgba(255,255,255,0.05)',
     borderRadius: radius.full,
     borderWidth: 1,
-    borderColor: colors.primary,
+    borderColor: supperClub.gold,
     gap: spacing.xs,
     flexShrink: 0,
   },
@@ -645,28 +654,28 @@ const styles = StyleSheet.create({
   },
   gpsButtonText: {
     ...typography.callout,
-    color: colors.primary,
+    color: supperClub.gold,
     fontWeight: '600',
     flexShrink: 0,
   },
   errorContainer: {
     marginHorizontal: spacing.md,
     marginBottom: spacing.md,
-    backgroundColor: colors.error + '15',
+    backgroundColor: supperClub.error + '15',
     paddingHorizontal: spacing.md,
     paddingVertical: spacing.md,
     borderRadius: radius.md,
     borderLeftWidth: 3,
-    borderLeftColor: colors.error,
+    borderLeftColor: supperClub.error,
   },
   errorText: {
     ...typography.callout,
-    color: colors.error,
+    color: supperClub.error,
   },
   resultsInfo: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: colors.success + '15',
+    backgroundColor: supperClub.success + '15',
     marginHorizontal: spacing.md,
     paddingHorizontal: spacing.md,
     paddingVertical: spacing.md,
@@ -677,7 +686,7 @@ const styles = StyleSheet.create({
   resultsText: {
     ...typography.callout,
     fontWeight: '600',
-    color: colors.success,
+    color: supperClub.success,
   },
   ctaContainer: {
     flexDirection: 'row',
@@ -686,13 +695,13 @@ const styles = StyleSheet.create({
   },
   primaryButton: {
     flex: 1,
-    backgroundColor: colors.primary,
+    backgroundColor: supperClub.primary,
     borderRadius: radius.md,
     paddingVertical: spacing.md,
     alignItems: 'center',
     ...Platform.select({
       ios: {
-        shadowColor: colors.shadow,
+        shadowColor: 'rgba(0,0,0,0.6)',
         shadowOffset: { width: 0, height: 2 },
         shadowOpacity: 0.2,
         shadowRadius: 8,
@@ -703,7 +712,7 @@ const styles = StyleSheet.create({
     }),
   },
   primaryButtonDisabled: {
-    backgroundColor: colors.gray300,
+    backgroundColor: 'rgba(255,255,255,0.12)',
     ...Platform.select({
       ios: {
         shadowOpacity: 0.05,
@@ -714,7 +723,7 @@ const styles = StyleSheet.create({
     }),
   },
   primaryButtonActive: {
-    backgroundColor: colors.success,
+    backgroundColor: supperClub.success,
     ...Platform.select({
       ios: {
         shadowOpacity: 0.3,
@@ -730,39 +739,39 @@ const styles = StyleSheet.create({
   },
   primaryButtonText: {
     ...typography.headline,
-    color: colors.white,
+    color: supperClub.textPrimary,
   },
   primaryButtonTextDisabled: {
-    color: colors.gray500,
+    color: supperClub.textMuted,
   },
   secondaryButton: {
     flex: 1,
-    backgroundColor: colors.white,
+    backgroundColor: 'rgba(255,255,255,0.05)',
     borderRadius: radius.md,
     borderWidth: 2,
-    borderColor: colors.primary,
+    borderColor: supperClub.gold,
     paddingVertical: spacing.md,
     alignItems: 'center',
   },
   secondaryButtonDisabled: {
-    borderColor: colors.gray300,
-    backgroundColor: colors.gray100,
+    borderColor: 'rgba(255,255,255,0.12)',
+    backgroundColor: 'rgba(255,255,255,0.05)',
   },
   secondaryButtonActive: {
-    borderColor: colors.success,
-    backgroundColor: colors.white,
+    borderColor: supperClub.success,
+    backgroundColor: 'rgba(255,255,255,0.05)',
   },
   secondaryButtonPressed: {
     opacity: 0.7,
   },
   secondaryButtonText: {
     ...typography.headline,
-    color: colors.primary,
+    color: supperClub.gold,
   },
   secondaryButtonTextDisabled: {
-    color: colors.gray500,
+    color: supperClub.textMuted,
   },
   secondaryButtonTextActive: {
-    color: colors.success,
+    color: supperClub.success,
   },
 });
