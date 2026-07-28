@@ -557,7 +557,11 @@ const styles = StyleSheet.create({
         alignItems: 'center',
         paddingHorizontal: 16,
         paddingVertical: 12,
-        backgroundColor: supperClub.primary,
+        // Dark header (not magenta) so OpenSign's red "closed" / green "open"
+        // status stays legible; magenta reads as an accent, not a fill here.
+        backgroundColor: supperClub.surfaceElevated,
+        borderBottomWidth: StyleSheet.hairlineWidth,
+        borderBottomColor: supperClub.borderSoft,
     },
     backTitle: {
         color: "#FFFFFF",

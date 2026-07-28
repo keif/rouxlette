@@ -653,7 +653,9 @@ exports[`BusinessCardModal snapshots should match snapshot for QuickInfo view 1`
                     style={
                       {
                         "alignItems": "center",
-                        "backgroundColor": "#FF3D81",
+                        "backgroundColor": "rgba(255, 255, 255, 0.06)",
+                        "borderBottomColor": "rgba(255, 194, 75, 0.28)",
+                        "borderBottomWidth": 0.5,
                         "borderTopLeftRadius": 16,
                         "borderTopRightRadius": 16,
                         "flexDirection": "row",
