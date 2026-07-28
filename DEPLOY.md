@@ -14,13 +14,19 @@ iOS / TestFlight release.
 
 The app reads `YELP_API_KEY`, `GOOGLE_API_KEY`, `DEV_USE_MOCK` via `@env`
 (react-native-dotenv) from a **gitignored `.env`**. EAS cloud builders don't have
-your local `.env`, so register them as EAS environment variables once:
+your local `.env`, so register them as EAS environment variables once. EAS scopes
+env vars to an **environment**; the `production` build profile maps to the
+`production` environment (set in `eas.json`), so set them there:
 
 ```
-eas env:create --scope project --name YELP_API_KEY   --value "<key>"  --visibility secret
-eas env:create --scope project --name GOOGLE_API_KEY --value "<key>"  --visibility secret
-eas env:create --scope project --name DEV_USE_MOCK   --value "false"
+eas env:set --environment production --name YELP_API_KEY   --value "<key>"  --visibility secret
+eas env:set --environment production --name GOOGLE_API_KEY --value "<key>"  --visibility secret
+eas env:set --environment production --name DEV_USE_MOCK   --value "false"
 ```
+
+(`eas env:set` replaces the deprecated `eas env:create`. Repeat with
+`--environment preview` / `development` if you build those profiles. Never paste a
+real key into a shared terminal/chat — if you do, rotate it.)
 
 The `eas-build-pre-install` hook (`scripts/eas-write-env.js`) writes these into a
 `.env` on the builder so react-native-dotenv can inline them at build time.
