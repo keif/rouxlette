@@ -23,7 +23,7 @@
       "infoPlist": {
         "NSLocationWhenInUseUsageDescription": "Rouxlette needs your location to find nearby restaurants for your roulette selections."
       },
-      "bundleIdentifier": "com.anonymous.rouxlette"
+      "bundleIdentifier": "com.fullybakedlabs.rouxlette"
     },
     "android": {
       "adaptiveIcon": {
@@ -34,7 +34,7 @@
         "ACCESS_FINE_LOCATION",
         "ACCESS_COARSE_LOCATION"
       ],
-      "package": "com.anonymous.rouxlette"
+      "package": "com.fullybakedlabs.rouxlette"
     },
     "web": {
       "favicon": "./assets/favicon.png"

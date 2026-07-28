@@ -10,7 +10,8 @@
     "test": "jest --watchAll",
     "lint:unsafe-logging": "node scripts/checkUnsafeLogging.js",
     "precommit": "npm run lint:unsafe-logging",
-    "clean": "watchman watch-del-all && rm -rf /tmp/metro-* && rm -rf node_modules/.cache"
+    "clean": "watchman watch-del-all && rm -rf /tmp/metro-* && rm -rf node_modules/.cache",
+    "eas-build-pre-install": "node ./scripts/eas-write-env.js"
   },
   "dependencies": {
     "@expo/vector-icons": "^15.0.3",
