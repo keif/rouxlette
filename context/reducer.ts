@@ -113,8 +113,10 @@ export function appReducer(state: AppState, action: AppActions): AppState {
 			return {
 				...state,
 				location: newLocation,
-				// Clear results when location changes to prevent stale results from wrong cities
-				...(locationChanged && { results: [] })
+				// Clear results — and the committed search identity — when the
+				// location changes, so radius reconciliation can't replay the old
+				// term for a city that has no committed results (#58).
+				...(locationChanged && { results: [], lastSearch: null })
 			};
 		case ActionType.SetCoords:
 			return {

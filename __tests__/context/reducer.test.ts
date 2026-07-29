@@ -1,4 +1,4 @@
-import { appReducer, setSelectedBusiness, showBusinessModal, hideBusinessModal, setLastSearch } from '../../context/reducer';
+import { appReducer, setSelectedBusiness, showBusinessModal, hideBusinessModal, setLastSearch, setLocation } from '../../context/reducer';
 import { initialAppState } from '../../context/state';
 import { ActionType } from '../../context/actions';
 import { YelpBusiness } from '../../types/yelp';
@@ -114,6 +114,25 @@ describe('appReducer', () => {
       const seeded = appReducer(initialAppState, setLastSearch({ term: 'x', coords: null, radiusMeters: 1600 }));
       const cleared = appReducer(seeded, setLastSearch(null));
       expect(cleared.lastSearch).toBe(null);
+    });
+
+    it('clears lastSearch (and results) when a location change clears results', () => {
+      const seeded = {
+        ...initialAppState,
+        location: 'Columbus, OH',
+        results: [{ id: 'a' } as any],
+        lastSearch: { term: 'pizza', coords: null, radiusMeters: 1600 },
+      };
+      const newState = appReducer(seeded, setLocation('Cleveland, OH'));
+      expect(newState.results).toEqual([]);
+      expect(newState.lastSearch).toBe(null);
+    });
+
+    it('preserves lastSearch when the location is unchanged', () => {
+      const identity = { term: 'pizza', coords: null, radiusMeters: 1600 };
+      const seeded = { ...initialAppState, location: 'Columbus, OH', lastSearch: identity };
+      const newState = appReducer(seeded, setLocation('Columbus, OH'));
+      expect(newState.lastSearch).toEqual(identity);
     });
   });
 });
