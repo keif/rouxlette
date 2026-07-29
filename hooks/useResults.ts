@@ -11,6 +11,14 @@ import { hasBlockedCategory } from "../constants/foodCategories";
 
 export const PRICE_OPTIONS = [`$`, `$$`, `$$$`, `$$$$`];
 
+// Yelp caps its search radius at 40,000 m (~25 mi). The distance slider clamps
+// too, but this is the API boundary so we guard here as well (#55).
+const YELP_MAX_RADIUS_METERS = 40000;
+const DEFAULT_RADIUS_METERS = 1600; // ~1 mile
+
+const clampRadius = (radiusMeters: number): number =>
+	Math.min(YELP_MAX_RADIUS_METERS, Math.max(1, Math.round(radiusMeters)));
+
 export interface ResultsProps {
 	id: string;
 	businesses: BusinessProps[];
@@ -87,17 +95,19 @@ export default function useResults() {
 	};
 
 	const searchApi = useCallback(async (
-		searchTerm: string, 
-		location = `columbus`, 
-		coords: LocationObjectCoords | null = null
+		searchTerm: string,
+		location = `columbus`,
+		coords: LocationObjectCoords | null = null,
+		radiusMeters: number = DEFAULT_RADIUS_METERS
 	): Promise<BusinessProps[]> => {
 		setIsLoading(true);
+		const radius = clampRadius(radiusMeters);
 		try {
 			devLog('Starting search:', { searchTerm, location, coords: coords ? `${coords.latitude},${coords.longitude}` : 'none' });
 			setErrorMessage('');
 			
 			// First, try to get cached results
-			const cachedResults = await resultsPersistence.getCachedResults(location, searchTerm, coords);
+			const cachedResults = await resultsPersistence.getCachedResults(location, searchTerm, coords, radius);
 			if (cachedResults) {
 				const businesses = Array.isArray(cachedResults) ? cachedResults : [];
 				const cachedResultsObj: ResultsProps = {
@@ -123,11 +133,13 @@ export default function useResults() {
 				// Use coordinates for more accurate search
 				searchParams.latitude = coords.latitude;
 				searchParams.longitude = coords.longitude;
-				searchParams.radius = 1600; // ~1 mile in meters
+				searchParams.radius = radius; // slider-driven, clamped to Yelp max (#55)
 				devLog('Using coordinates for search:', coords);
 			} else if (location.trim() !== '') {
-				// Fallback to location string
+				// Fallback to location string. Yelp supports `radius` with
+				// `location`, so the slider applies on this path too (#55).
 				searchParams.location = location;
+				searchParams.radius = radius;
 				devLog('Using location string for search:', location);
 			} else {
 				devLog('Invalid search parameters');
@@ -173,7 +185,7 @@ export default function useResults() {
 				};
 
 				// Cache the results (this is debounced and change-detected automatically)
-				await resultsPersistence.cacheResults(location, searchTerm, filteredBusinesses, coords);
+				await resultsPersistence.cacheResults(location, searchTerm, filteredBusinesses, coords, radius);
 
 				setResults(finalResults);
 				return filteredBusinesses;
@@ -216,9 +228,11 @@ export default function useResults() {
 	 */
 	const searchApiWithResolver = useCallback(async (
 		searchTerm: string,
-		resolvedLocation: ResolvedLocation
+		resolvedLocation: ResolvedLocation,
+		radiusMeters: number = DEFAULT_RADIUS_METERS
 	): Promise<BusinessProps[]> => {
 		setIsLoading(true);
+		const radius = clampRadius(radiusMeters);
 		try {
 			devLog('Enhanced search starting:', { 
 				searchTerm, 
@@ -230,9 +244,10 @@ export default function useResults() {
 
 			// Generate versioned cache key to avoid corrupted entries
 			const cacheKey = resultsPersistence.generateCacheKey(
-				resolvedLocation.label, 
-				searchTerm, 
-				resolvedLocation.coords
+				resolvedLocation.label,
+				searchTerm,
+				resolvedLocation.coords,
+				radius
 			);
 
 			devLog('Using cache key:', cacheKey);
@@ -264,11 +279,13 @@ export default function useResults() {
 				// PREFERRED: Use coordinates for most accurate search
 				searchParams.latitude = resolvedLocation.coords.latitude;
 				searchParams.longitude = resolvedLocation.coords.longitude;
-				searchParams.radius = 1600; // ~1 mile in meters
+				searchParams.radius = radius; // slider-driven, clamped to Yelp max (#55)
 				devLog('Using coordinates for Yelp search:', resolvedLocation.coords);
 			} else if (resolvedLocation.label) {
-				// FALLBACK: Use canonical location string (e.g., "Powell, OH")
+				// FALLBACK: Use canonical location string (e.g., "Powell, OH").
+				// Yelp supports `radius` with `location`, so apply it here too (#55).
 				searchParams.location = resolvedLocation.label;
+				searchParams.radius = radius;
 				devLog('Using canonical location string for Yelp search:', resolvedLocation.label);
 			} else {
 				devLog('No valid search location available');

@@ -1,4 +1,4 @@
-import React, {useContext, useEffect, useState} from 'react';
+import React, {useContext, useEffect, useRef, useState} from 'react';
 import {ActivityIndicator, FlatList, Linking, Platform, Pressable, StyleSheet, Text, TextInput, View,} from 'react-native';
 import {SafeAreaView} from 'react-native-safe-area-context';
 import {Ionicons} from '@expo/vector-icons';
@@ -159,10 +159,19 @@ export const SearchScreen: React.FC = () => {
         }
     }, [state.results]);
 
-    const handleSearch = async () => {
-        const term = searchQuery.trim();
+    // The last *submitted* term and the radius its results were fetched with
+    // (both empty/null until the first search). The radius-refetch effect below
+    // replays the submitted term — never the current draft input — so editing
+    // the box without submitting can't hijack a refetch (#55).
+    const lastSubmittedTermRef = useRef<string>('');
+    const lastFetchedRadiusRef = useRef<number | null>(null);
+
+    const handleSearch = async (termOverride?: string) => {
+        const term = (termOverride ?? searchQuery).trim();
         if (!term) return;
 
+        lastSubmittedTermRef.current = term;
+        lastFetchedRadiusRef.current = state.filters.radiusMeters;
         setIsSearching(true);
         setErrorMessage('');
         try {
@@ -170,9 +179,9 @@ export const SearchScreen: React.FC = () => {
             const resolvedLocation = await resolveSearchArea(state.location || canonicalLocation);
 
             if (resolvedLocation) {
-                businesses = await searchApiWithResolver(term, resolvedLocation);
+                businesses = await searchApiWithResolver(term, resolvedLocation, state.filters.radiusMeters);
             } else {
-                businesses = await searchApi(term, state.location || 'Current Location', coords);
+                businesses = await searchApi(term, state.location || 'Current Location', coords, state.filters.radiusMeters);
             }
 
             // Filter out blocked restaurants
@@ -187,6 +196,26 @@ export const SearchScreen: React.FC = () => {
             setIsSearching(false);
         }
     };
+
+    // Re-fetch when the applied radius no longer matches what the displayed
+    // results were fetched with (e.g. the user applies a larger distance in the
+    // filter sheet). Radius changes WHAT Yelp returns, so a client-side
+    // re-filter can't surface farther restaurants — we must refetch (#55). Other
+    // filters (price/category/rating) stay client-side.
+    //
+    // Keyed on `isSearching` too: if the radius changes mid-flight we skip while
+    // busy, then this re-runs when the in-flight search settles so the change is
+    // never dropped. Comparing against the last *fetched* radius (not the last
+    // seen value) makes that reconciliation self-correcting and loop-free —
+    // handleSearch resets the ref to the radius it fetched.
+    useEffect(() => {
+        if (isSearching) return;                          // wait for any in-flight search
+        if (!lastSubmittedTermRef.current) return;        // no search submitted yet
+        if (lastFetchedRadiusRef.current === state.filters.radiusMeters) return; // already current
+        handleSearch(lastSubmittedTermRef.current);       // replay the submitted term, not the draft
+        // handleSearch reads the current coords via closure at fire time.
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [state.filters.radiusMeters, isSearching]);
 
     const handleFiltersPress = () => {
         dispatch(setShowFilter(true));
@@ -313,7 +342,7 @@ export const SearchScreen: React.FC = () => {
                         value={searchQuery}
                         onChangeText={setSearchQuery}
                         returnKeyType="search"
-                        onSubmitEditing={handleSearch}
+                        onSubmitEditing={() => handleSearch()}
                         editable={!isLoading}
                     />
                     {searchQuery.length > 0 && (
