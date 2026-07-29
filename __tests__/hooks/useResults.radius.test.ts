@@ -90,6 +90,26 @@ describe('useResults radius wiring (#55)', () => {
   });
 });
 
+describe('useResults failure propagation (#58)', () => {
+  it('rejects when the Yelp request fails, so callers can clear committed state', async () => {
+    mockedGet.mockRejectedValueOnce(new Error('network down'));
+    const { result } = renderHook(() => useResults());
+    await act(async () => {
+      await expect(result.current[2]('pizza', 'Columbus', coords, 1600)).rejects.toThrow('network down');
+    });
+  });
+
+  it('still resolves an empty array for a genuine no-results response', async () => {
+    mockedGet.mockResolvedValueOnce({ status: 200, data: { businesses: [] } });
+    const { result } = renderHook(() => useResults());
+    let out: any;
+    await act(async () => {
+      out = await result.current[2]('pizza', 'Columbus', coords, 1600);
+    });
+    expect(out).toEqual([]);
+  });
+});
+
 describe('generateCacheKey radius (#55)', () => {
   it('varies the cache key by radius so radii do not collide', () => {
     const { result } = renderHook(() => useResultsPersistence());

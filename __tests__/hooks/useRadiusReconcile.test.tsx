@@ -116,6 +116,26 @@ describe('useRadiusReconcile (#58)', () => {
     expect(runSearch).toHaveBeenCalledTimes(2);
   });
 
+  it('reconciles when the committed search lands from another screen (external lastSearch update)', () => {
+    const runSearch = jest.fn();
+    // Focused, filter at 8047, nothing committed yet → no refetch.
+    const { rerender } = renderHarness(stateWith(null, 8047), {
+      isSearching: false,
+      autoWhenIdle: true,
+      runSearch,
+    });
+    expect(runSearch).not.toHaveBeenCalled();
+
+    // A Home search completes and commits at 1600 (radius/focus/isSearching all
+    // unchanged) — the effect must still run because lastSearch changed.
+    rerender(
+      <RootContext.Provider value={{ state: stateWith(committed, 8047), dispatch: jest.fn() }}>
+        <Harness isSearching={false} autoWhenIdle={true} runSearch={runSearch} />
+      </RootContext.Provider>
+    );
+    expect(runSearch).toHaveBeenCalledWith('pizza');
+  });
+
   it('reconciles a pending radius when autoWhenIdle flips to true (regaining focus)', () => {
     const runSearch = jest.fn();
     // Blurred (autoWhenIdle false) with a stale radius → no background refetch.
