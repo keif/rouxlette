@@ -290,6 +290,8 @@ jest.mock('@react-navigation/native', () => ({
     navigate: jest.fn(),
     goBack: jest.fn(),
   }),
+  useIsFocused: () => true,
+  createNavigationContainerRef: () => ({ isReady: () => false, navigate: jest.fn() }),
 }));
 
 jest.mock('@react-navigation/native-stack', () => ({

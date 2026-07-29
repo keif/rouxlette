@@ -1,4 +1,4 @@
-import { appReducer, setSelectedBusiness, showBusinessModal, hideBusinessModal, setLastSearch, setLocation } from '../../context/reducer';
+import { appReducer, setSelectedBusiness, showBusinessModal, hideBusinessModal, setLastSearch, setLocation, requestSpin } from '../../context/reducer';
 import { initialAppState } from '../../context/state';
 import { ActionType } from '../../context/actions';
 import { YelpBusiness } from '../../types/yelp';
@@ -88,6 +88,32 @@ describe('appReducer', () => {
       expect(newState.location).toBe('Columbus, OH');
       expect(newState.results).toEqual([]);
       expect(newState.selectedBusiness).toEqual(mockBusiness);
+    });
+  });
+
+  describe('winner modal actions (Spin Again / View All)', () => {
+    it('showBusinessModal tags the source (spin winner vs plain detail)', () => {
+      const spin = appReducer(initialAppState, showBusinessModal('spin'));
+      expect(spin.isBusinessModalOpen).toBe(true);
+      expect(spin.businessModalSource).toBe('spin');
+
+      const detail = appReducer(initialAppState, showBusinessModal());
+      expect(detail.isBusinessModalOpen).toBe(true);
+      expect(detail.businessModalSource).toBe(null);
+    });
+
+    it('hideBusinessModal clears the source', () => {
+      const open = appReducer(initialAppState, showBusinessModal('spin'));
+      const closed = appReducer(open, hideBusinessModal());
+      expect(closed.isBusinessModalOpen).toBe(false);
+      expect(closed.businessModalSource).toBe(null);
+    });
+
+    it('requestSpin bumps spinRequestId', () => {
+      const s1 = appReducer(initialAppState, requestSpin());
+      expect(s1.spinRequestId).toBe(initialAppState.spinRequestId + 1);
+      const s2 = appReducer(s1, requestSpin());
+      expect(s2.spinRequestId).toBe(initialAppState.spinRequestId + 2);
     });
   });
 

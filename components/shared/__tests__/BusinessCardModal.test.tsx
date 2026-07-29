@@ -1,11 +1,16 @@
 import React, { useEffect, useContext } from 'react';
-import { render, fireEvent } from '@testing-library/react-native';
+import { render, fireEvent, act } from '@testing-library/react-native';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
 import { BusinessCardModal } from '../BusinessCardModal';
 import { RootContext } from '../../../context/RootContext';
 import { initialAppState } from '../../../context/state';
-import { setSelectedBusiness, showBusinessModal } from '../../../context/reducer';
+import { setSelectedBusiness, showBusinessModal, hideBusinessModal, requestSpin } from '../../../context/reducer';
 import { YelpBusiness } from '../../../types/yelp';
+
+// The winner modal's "View All" navigates via the ref-based helper (the modal is
+// rendered outside the NavigationContainer).
+jest.mock('../../../navigation', () => ({ navigate: jest.fn() }));
+const { navigate } = require('../../../navigation');
 
 // Mock useBusinessHours to avoid Date mocking complexity in component tests
 jest.mock('../../../hooks/useBusinessHours', () => ({
@@ -228,6 +233,93 @@ describe('BusinessCardModal', () => {
     it('should match snapshot for Details view', () => {
       // Skip - component was redesigned to use flip card instead of tabs
       expect(true).toBe(true);
+    });
+  });
+
+  describe('winner action bar (Spin Again / View All)', () => {
+    const renderWinner = (dispatch: jest.Mock, source: 'spin' | null = 'spin') =>
+      render(
+        <SafeAreaProvider initialMetrics={{ insets: { top: 0, left: 0, right: 0, bottom: 0 }, frame: { x: 0, y: 0, width: 0, height: 0 } }}>
+          <RootContext.Provider value={{
+            state: {
+              ...initialAppState,
+              selectedBusiness: sampleBusiness,
+              isBusinessModalOpen: true,
+              businessModalSource: source,
+              results: [{ id: sampleBusiness.id } as any], // non-empty → Spin Again can proceed
+            },
+            dispatch,
+          }}>
+            <BusinessCardModal />
+          </RootContext.Provider>
+        </SafeAreaProvider>
+      );
+
+    it('shows the action bar only for the spin-winner modal', () => {
+      const spin = renderWinner(jest.fn(), 'spin');
+      expect(spin.getByTestId('modal-spin-again')).toBeTruthy();
+      expect(spin.getByTestId('modal-view-all')).toBeTruthy();
+
+      const detail = renderWinner(jest.fn(), null);
+      expect(detail.queryByTestId('modal-spin-again')).toBeNull();
+      expect(detail.queryByTestId('modal-view-all')).toBeNull();
+    });
+
+    it('Spin Again dispatches requestSpin and shows the spinning state', () => {
+      const dispatch = jest.fn();
+      const { getByTestId, getByText, queryByTestId } = renderWinner(dispatch);
+
+      fireEvent.press(getByTestId('modal-spin-again'));
+
+      expect(dispatch).toHaveBeenCalledWith(requestSpin());
+      // Card fades to the spinning hint (wheel visible behind); bar is gone.
+      expect(getByText('Spinning the wheel…')).toBeTruthy();
+      expect(queryByTestId('modal-spin-again')).toBeNull();
+    });
+
+    it('View All closes the modal and navigates to the results list', () => {
+      const dispatch = jest.fn();
+      const { getByTestId } = renderWinner(dispatch);
+
+      fireEvent.press(getByTestId('modal-view-all'));
+
+      expect(dispatch).toHaveBeenCalledWith(hideBusinessModal());
+      expect(navigate).toHaveBeenCalledWith('Search');
+    });
+
+    it('does not enter the spinning state when there are no results to spin', () => {
+      const dispatch = jest.fn();
+      const { getByTestId, queryByText } = render(
+        <SafeAreaProvider initialMetrics={{ insets: { top: 0, left: 0, right: 0, bottom: 0 }, frame: { x: 0, y: 0, width: 0, height: 0 } }}>
+          <RootContext.Provider value={{
+            state: { ...initialAppState, selectedBusiness: sampleBusiness, isBusinessModalOpen: true, businessModalSource: 'spin', results: [] },
+            dispatch,
+          }}>
+            <BusinessCardModal />
+          </RootContext.Provider>
+        </SafeAreaProvider>
+      );
+
+      fireEvent.press(getByTestId('modal-spin-again'));
+
+      expect(dispatch).not.toHaveBeenCalledWith(requestSpin());
+      expect(queryByText('Spinning the wheel…')).toBeNull();
+    });
+
+    it('failsafe: restores the card if a requested spin never lands', () => {
+      jest.useFakeTimers();
+      try {
+        const { getByTestId, getByText, queryByText } = renderWinner(jest.fn());
+        fireEvent.press(getByTestId('modal-spin-again'));
+        expect(getByText('Spinning the wheel…')).toBeTruthy();
+
+        act(() => { jest.advanceTimersByTime(5000); }); // spin never landed
+
+        expect(queryByText('Spinning the wheel…')).toBeNull();
+        expect(getByTestId('modal-spin-again')).toBeTruthy(); // card + bar restored
+      } finally {
+        jest.useRealTimers();
+      }
     });
   });
 });

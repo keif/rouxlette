@@ -49,10 +49,13 @@ exports[`BusinessCardModal snapshots should match snapshot for QuickInfo view 1`
       onResponderTerminationRequest={[Function]}
       onStartShouldSetResponder={[Function]}
       style={
-        {
-          "backgroundColor": "rgba(6,3,4,0.66)",
-          "flex": 1,
-        }
+        [
+          {
+            "backgroundColor": "rgba(6,3,4,0.66)",
+            "flex": 1,
+          },
+          false,
+        ]
       }
       testID="modal-backdrop"
     >
@@ -96,6 +99,11 @@ exports[`BusinessCardModal snapshots should match snapshot for QuickInfo view 1`
           onResponderTerminate={[Function]}
           onResponderTerminationRequest={[Function]}
           onStartShouldSetResponder={[Function]}
+          style={
+            {
+              "alignItems": "center",
+            }
+          }
         >
           <View
             style={

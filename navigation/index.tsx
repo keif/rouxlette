@@ -1,4 +1,4 @@
-import {DarkTheme, DefaultTheme, NavigationContainer} from "@react-navigation/native";
+import {DarkTheme, DefaultTheme, NavigationContainer, createNavigationContainerRef} from "@react-navigation/native";
 import {createNativeStackNavigator} from "@react-navigation/native-stack";
 import {createBottomTabNavigator} from "@react-navigation/bottom-tabs";
 import * as React from "react";
@@ -13,9 +13,22 @@ import {HomeScreen} from "../screens/HomeScreen";
 import {SavedTabNavigator} from "./SavedTabNavigator";
 import AppStyles from "../AppStyles";
 
+// Ref so components rendered OUTSIDE the NavigationContainer (e.g. the global
+// BusinessCardModal in App.tsx) can navigate — used by the winner modal's
+// "View All" action to jump to the Search results list.
+export const navigationRef = createNavigationContainerRef<RootStackParamList>();
+
+export function navigate(name: keyof RootTabParamList) {
+    if (navigationRef.isReady()) {
+        // Tabs live under the "Root" screen of the root stack.
+        navigationRef.navigate('Root', {screen: name} as never);
+    }
+}
+
 export default function Navigation({colorScheme}: { colorScheme: ColorSchemeName }) {
     return (
         <NavigationContainer
+            ref={navigationRef}
             linking={LinkingConfiguration}
             theme={colorScheme === "dark" ? DarkTheme : DefaultTheme}>
             <RootNavigator/>

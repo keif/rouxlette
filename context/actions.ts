@@ -30,6 +30,7 @@ export enum ActionType {
 	HideBusinessModal,
 	ToggleCategoryFilter,
 	SetLastSearch,
+	RequestSpin,
 }
 
 // String constants as requested
@@ -133,10 +134,15 @@ export interface SetSelectedBusiness {
 
 export interface ShowBusinessModal {
 	type: ActionType.ShowBusinessModal;
+	payload: { source: 'spin' | null };
 }
 
 export interface HideBusinessModal {
 	type: ActionType.HideBusinessModal;
+}
+
+export interface RequestSpin {
+	type: ActionType.RequestSpin;
 }
 
 export interface SetFilters {
@@ -158,4 +164,4 @@ export interface ToggleCategoryFilter {
 	payload: { categoryAlias: string };
 }
 
-export type AppActions = SetCategories | SetDetail | SetFilter | SetFilters | ResetFilters | HydrateFilters | SetLocation | SetCoords | SetResults | SetShowFilter | AddFavorite | RemoveFavorite | HydrateFavorites | AddBlocked | RemoveBlocked | HydrateBlocked | AddHistory | ClearHistory | HydrateHistory | AddSpinHistory | SetSelectedBusiness | ShowBusinessModal | HideBusinessModal | ToggleCategoryFilter | SetLastSearch;
+export type AppActions = SetCategories | SetDetail | SetFilter | SetFilters | ResetFilters | HydrateFilters | SetLocation | SetCoords | SetResults | SetShowFilter | AddFavorite | RemoveFavorite | HydrateFavorites | AddBlocked | RemoveBlocked | HydrateBlocked | AddHistory | ClearHistory | HydrateHistory | AddSpinHistory | SetSelectedBusiness | ShowBusinessModal | HideBusinessModal | ToggleCategoryFilter | SetLastSearch | RequestSpin;
