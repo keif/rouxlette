@@ -128,11 +128,23 @@ export function BusinessCardModal() {
     // "Spin Again": fade the card out to a translucent backdrop, ask Home to
     // re-spin the wheel (visible behind), and reveal the new winner on landing.
     const handleSpinAgain = () => {
+        // Nothing to spin (e.g. filters removed every match) → Home's handleSpin
+        // would no-op and never land, so don't enter the spinning state at all.
+        if (!state.results || state.results.length === 0) return;
         respinBaselineRef.current = spinHistory[0];
         setIsFlipped(false);
         setRespinning(true);
         dispatch(requestSpin());
     };
+
+    // Failsafe: never trap the user on the "Spinning…" overlay. If a requested
+    // spin doesn't land within a few seconds (Home couldn't spin, no handler,
+    // etc.), restore the card so it stays dismissable.
+    useEffect(() => {
+        if (!respinning) return;
+        const timeout = setTimeout(() => setRespinning(false), 5000);
+        return () => clearTimeout(timeout);
+    }, [respinning]);
 
     // "View All": close the winner modal and jump to the results list.
     const handleViewAll = () => {

@@ -1,5 +1,5 @@
 import React, { useEffect, useContext } from 'react';
-import { render, fireEvent } from '@testing-library/react-native';
+import { render, fireEvent, act } from '@testing-library/react-native';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
 import { BusinessCardModal } from '../BusinessCardModal';
 import { RootContext } from '../../../context/RootContext';
@@ -241,7 +241,13 @@ describe('BusinessCardModal', () => {
       render(
         <SafeAreaProvider initialMetrics={{ insets: { top: 0, left: 0, right: 0, bottom: 0 }, frame: { x: 0, y: 0, width: 0, height: 0 } }}>
           <RootContext.Provider value={{
-            state: { ...initialAppState, selectedBusiness: sampleBusiness, isBusinessModalOpen: true, businessModalSource: source },
+            state: {
+              ...initialAppState,
+              selectedBusiness: sampleBusiness,
+              isBusinessModalOpen: true,
+              businessModalSource: source,
+              results: [{ id: sampleBusiness.id } as any], // non-empty → Spin Again can proceed
+            },
             dispatch,
           }}>
             <BusinessCardModal />
@@ -279,6 +285,41 @@ describe('BusinessCardModal', () => {
 
       expect(dispatch).toHaveBeenCalledWith(hideBusinessModal());
       expect(navigate).toHaveBeenCalledWith('Search');
+    });
+
+    it('does not enter the spinning state when there are no results to spin', () => {
+      const dispatch = jest.fn();
+      const { getByTestId, queryByText } = render(
+        <SafeAreaProvider initialMetrics={{ insets: { top: 0, left: 0, right: 0, bottom: 0 }, frame: { x: 0, y: 0, width: 0, height: 0 } }}>
+          <RootContext.Provider value={{
+            state: { ...initialAppState, selectedBusiness: sampleBusiness, isBusinessModalOpen: true, businessModalSource: 'spin', results: [] },
+            dispatch,
+          }}>
+            <BusinessCardModal />
+          </RootContext.Provider>
+        </SafeAreaProvider>
+      );
+
+      fireEvent.press(getByTestId('modal-spin-again'));
+
+      expect(dispatch).not.toHaveBeenCalledWith(requestSpin());
+      expect(queryByText('Spinning the wheel…')).toBeNull();
+    });
+
+    it('failsafe: restores the card if a requested spin never lands', () => {
+      jest.useFakeTimers();
+      try {
+        const { getByTestId, getByText, queryByText } = renderWinner(jest.fn());
+        fireEvent.press(getByTestId('modal-spin-again'));
+        expect(getByText('Spinning the wheel…')).toBeTruthy();
+
+        act(() => { jest.advanceTimersByTime(5000); }); // spin never landed
+
+        expect(queryByText('Spinning the wheel…')).toBeNull();
+        expect(getByTestId('modal-spin-again')).toBeTruthy(); // card + bar restored
+      } finally {
+        jest.useRealTimers();
+      }
     });
   });
 });
