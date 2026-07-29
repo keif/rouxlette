@@ -1,4 +1,4 @@
-import React, { useState, useContext, useEffect } from 'react';
+import React, { useState, useContext, useEffect, useRef } from 'react';
 import {
   View,
   Text,
@@ -118,6 +118,9 @@ export const HomeScreen: React.FC = () => {
     });
   });
 
+  // Radius the current results were fetched with (null until the first search).
+  const lastFetchedRadiusRef = useRef<number | null>(null);
+
   const handleSpin = () => {
     // If no results yet but have valid query, trigger search first
     if (!hasResults && hasValidSearchQuery) {
@@ -127,6 +130,18 @@ export const HomeScreen: React.FC = () => {
 
     if (!hasResults) {
       setErrorMessage('Please enter a search term first');
+      return;
+    }
+
+    // Radius changed since the current results were fetched (e.g. the user
+    // widened Distance in the filter sheet). Yelp returns a different set for a
+    // new radius, so re-search before spinning instead of spinning the stale,
+    // narrower result set (#55). The refetch auto-spins on completion.
+    if (
+      lastFetchedRadiusRef.current !== null &&
+      lastFetchedRadiusRef.current !== state.filters.radiusMeters
+    ) {
+      handleSearch();
       return;
     }
 
@@ -141,6 +156,7 @@ export const HomeScreen: React.FC = () => {
     const term = searchQuery.trim();
     if (!term) return;
 
+    lastFetchedRadiusRef.current = state.filters.radiusMeters;
     setIsSearching(true);
     setErrorMessage('');
     try {
