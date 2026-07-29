@@ -21,7 +21,8 @@
     "ios": {
       "supportsTablet": true,
       "infoPlist": {
-        "NSLocationWhenInUseUsageDescription": "Rouxlette needs your location to find nearby restaurants for your roulette selections."
+        "NSLocationWhenInUseUsageDescription": "Rouxlette needs your location to find nearby restaurants for your roulette selections.",
+        "ITSAppUsesNonExemptEncryption": false
       },
       "bundleIdentifier": "com.fullybakedlabs.rouxlette"
     },
@@ -32,7 +33,9 @@
       },
       "permissions": [
         "ACCESS_FINE_LOCATION",
-        "ACCESS_COARSE_LOCATION"
+        "ACCESS_COARSE_LOCATION",
+        "android.permission.ACCESS_COARSE_LOCATION",
+        "android.permission.ACCESS_FINE_LOCATION"
       ],
       "package": "com.fullybakedlabs.rouxlette"
     },
@@ -52,6 +55,11 @@
           "imageWidth": 200
         }
       ]
-    ]
+    ],
+    "extra": {
+      "eas": {
+        "projectId": "9ce1b098-76b7-4b79-a11a-bb337043c712"
+      }
+    }
   }
 }
