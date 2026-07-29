@@ -15,6 +15,7 @@ import { ToastProvider } from "./context/ToastContext";
 import { StatusBar } from "expo-status-bar";
 import { BusinessCardModal } from "./components/shared/BusinessCardModal";
 import DevStorageDebug from "./components/shared/DevStorageDebug";
+import { ErrorBoundary } from "./components/shared/ErrorBoundary";
 
 // Match splash screen background color to prevent white flash
 const SPLASH_BACKGROUND = "#1B5E20";
@@ -36,13 +37,15 @@ export default function App() {
 				<SafeAreaProvider>
 					<RootContext.Provider value={contextValue}>
 						<ToastProvider>
-							<Navigation colorScheme={colorScheme} />
-							<StatusBar
-								backgroundColor="transparent"
-								translucent
-							/>
-							<BusinessCardModal />
-							<DevStorageDebug />
+							<ErrorBoundary>
+								<Navigation colorScheme={colorScheme} />
+								<StatusBar
+									backgroundColor="transparent"
+									translucent
+								/>
+								<BusinessCardModal />
+								<DevStorageDebug />
+							</ErrorBoundary>
 						</ToastProvider>
 					</RootContext.Provider>
 				</SafeAreaProvider>

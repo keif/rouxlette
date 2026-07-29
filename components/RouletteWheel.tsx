@@ -62,8 +62,12 @@ export const RouletteWheel: React.FC<RouletteWheelProps> = ({
       duration: 1400,
       useNativeDriver: true,
     }).start(async () => {
+      // Haptics can reject/throw on some devices; never let it abort the spin
+      // completion (which would leave the wheel stuck and never open the result).
       if (Platform.OS === 'ios') {
-        await Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
+        try {
+          await Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
+        } catch {}
       }
       setIsSpinning(false);
       spinAnim.setValue(0);
@@ -82,7 +86,9 @@ export const RouletteWheel: React.FC<RouletteWheelProps> = ({
     if (disabled || isSpinning) return;
 
     if (Platform.OS === 'ios') {
-      await Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
+      try {
+        await Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
+      } catch {}
     }
 
     Animated.sequence([
