@@ -1,5 +1,5 @@
 import React from 'react';
-import { render, fireEvent } from '@testing-library/react-native';
+import { render, fireEvent, within } from '@testing-library/react-native';
 import { SearchScreen } from '../../screens/SearchScreen';
 import { RootContext } from '../../context/RootContext';
 import { mockInitialState } from '../mocks/mockState';
@@ -128,5 +128,57 @@ describe('SearchScreen', () => {
     const { getByTestId } = renderSearch(state);
     expect(getByTestId('restaurant-card-a')).toBeTruthy();
     expect(getByTestId('restaurant-card-b')).toBeTruthy();
+  });
+
+  it('makes the actual spun winner the "wheel picked" hero, not the first result', () => {
+    const state = {
+      ...mockInitialState,
+      results: [
+        { id: 'a', name: 'Alpha Cafe', categories: [] },
+        { id: 'b', name: 'Beta Bistro', categories: [] },
+      ] as any,
+      // The wheel landed on B, which is NOT the first result.
+      spinHistory: [
+        { restaurant: { id: 'b', name: 'Beta Bistro', categories: [] }, timestamp: 1 },
+      ] as any,
+    };
+    const { getByTestId } = renderSearch(state);
+    // The hero card carries the wheel badge + the hero-only "Spin again" action,
+    // and it must be the winner (B), not the first result (A).
+    const heroB = getByTestId('restaurant-card-b');
+    expect(within(heroB).getByText(/The wheel picked/)).toBeTruthy();
+    expect(within(heroB).getByText(/Spin again/)).toBeTruthy();
+    // A is a plain row — no hero-only action.
+    expect(within(getByTestId('restaurant-card-a')).queryByText(/Spin again/)).toBeNull();
+  });
+
+  it('does not claim "wheel picked" when there was no spin this session', () => {
+    const state = {
+      ...mockInitialState,
+      results: [{ id: 'a', name: 'Alpha Cafe', categories: [] }] as any,
+      spinHistory: [] as any,
+    };
+    const { queryByText, getByText } = renderSearch(state);
+    expect(queryByText(/The wheel picked/)).toBeNull();
+    expect(getByText('Top result')).toBeTruthy();
+  });
+
+  it('ignores a stale spin winner not present in the current results', () => {
+    const state = {
+      ...mockInitialState,
+      results: [
+        { id: 'a', name: 'Alpha Cafe', categories: [] },
+        { id: 'b', name: 'Beta Bistro', categories: [] },
+      ] as any,
+      // A prior spin from a different result set — its winner isn't in these results.
+      spinHistory: [
+        { restaurant: { id: 'z', name: 'Zeta Diner', categories: [] }, timestamp: 1 },
+      ] as any,
+    };
+    const { queryByText, getByText, getByTestId } = renderSearch(state);
+    // No stale "wheel picked" badge; hero falls back to the top result (A).
+    expect(queryByText(/The wheel picked/)).toBeNull();
+    expect(getByText('Top result')).toBeTruthy();
+    expect(within(getByTestId('restaurant-card-a')).getByText(/Spin again/)).toBeTruthy();
   });
 });
