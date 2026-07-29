@@ -54,6 +54,41 @@ describe('useRadiusReconcile (#58)', () => {
     expect(runSearch).not.toHaveBeenCalled();
   });
 
+  it('does not retry the same radius after a failed reconcile (no infinite loop)', () => {
+    const runSearch = jest.fn();
+    // Idle + stale → attempts once.
+    const { rerender } = renderHarness(stateWith(committed, 8047), {
+      isSearching: false,
+      autoWhenIdle: true,
+      runSearch,
+    });
+    expect(runSearch).toHaveBeenCalledTimes(1);
+
+    // Simulate a FAILED search cycle: isSearching flips true→false but the
+    // failure left `lastSearch` unchanged (still stale at 8047).
+    const stale = () => (
+      <RootContext.Provider value={{ state: stateWith(committed, 8047), dispatch: jest.fn() }}>
+        <Harness isSearching={true} autoWhenIdle={true} runSearch={runSearch} />
+      </RootContext.Provider>
+    );
+    rerender(stale());
+    rerender(
+      <RootContext.Provider value={{ state: stateWith(committed, 8047), dispatch: jest.fn() }}>
+        <Harness isSearching={false} autoWhenIdle={true} runSearch={runSearch} />
+      </RootContext.Provider>
+    );
+    // Must NOT retry the same (failed) radius.
+    expect(runSearch).toHaveBeenCalledTimes(1);
+
+    // But a change to a NEW radius attempts again.
+    rerender(
+      <RootContext.Provider value={{ state: stateWith(committed, 5000), dispatch: jest.fn() }}>
+        <Harness isSearching={false} autoWhenIdle={true} runSearch={runSearch} />
+      </RootContext.Provider>
+    );
+    expect(runSearch).toHaveBeenCalledTimes(2);
+  });
+
   it('reconciles after an in-flight search settles even when autoWhenIdle is false', () => {
     const runSearch = jest.fn();
     const { rerender } = renderHarness(stateWith(committed, 8047), {
