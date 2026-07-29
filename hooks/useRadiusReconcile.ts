@@ -42,7 +42,12 @@ export function useRadiusReconcile({ isSearching, runSearch, autoWhenIdle }: Use
 		wasSearchingRef.current = isSearching;
 
 		if (isSearching) return;              // wait for any in-flight search
-		if (!isStale || !last) return;        // results already match the applied radius
+		if (!isStale || !last) {
+			// Caught up (or nothing committed): clear the failed-attempt guard so a
+			// later divergence back to a previously-attempted radius retries fresh.
+			attemptedRadiusRef.current = null;
+			return;
+		}
 		if (attemptedRadiusRef.current === radius) return; // already tried this radius; wait for a change
 
 		// Refetch when browsing (auto) or when a search just settled with a now-stale

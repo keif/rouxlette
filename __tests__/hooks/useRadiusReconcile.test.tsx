@@ -89,6 +89,33 @@ describe('useRadiusReconcile (#58)', () => {
     expect(runSearch).toHaveBeenCalledTimes(2);
   });
 
+  it('re-attempts a radius that failed once, after returning to the committed radius (#58)', () => {
+    const runSearch = jest.fn();
+    // Committed at 1600. Diverge to 8047 → one attempt (fails: lastSearch stays 1600).
+    const { rerender } = renderHarness(stateWith(committed, 8047), {
+      isSearching: false,
+      autoWhenIdle: true,
+      runSearch,
+    });
+    expect(runSearch).toHaveBeenCalledTimes(1);
+
+    // Back to the committed radius → no longer stale, no attempt (and the guard clears).
+    rerender(
+      <RootContext.Provider value={{ state: stateWith(committed, 1600), dispatch: jest.fn() }}>
+        <Harness isSearching={false} autoWhenIdle={true} runSearch={runSearch} />
+      </RootContext.Provider>
+    );
+    expect(runSearch).toHaveBeenCalledTimes(1);
+
+    // Select the same radius again → must attempt afresh (was permanently blocked).
+    rerender(
+      <RootContext.Provider value={{ state: stateWith(committed, 8047), dispatch: jest.fn() }}>
+        <Harness isSearching={false} autoWhenIdle={true} runSearch={runSearch} />
+      </RootContext.Provider>
+    );
+    expect(runSearch).toHaveBeenCalledTimes(2);
+  });
+
   it('reconciles a pending radius when autoWhenIdle flips to true (regaining focus)', () => {
     const runSearch = jest.fn();
     // Blurred (autoWhenIdle false) with a stale radius → no background refetch.
