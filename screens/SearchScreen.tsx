@@ -496,8 +496,19 @@ export const SearchScreen: React.FC = () => {
                 />
             )}
 
+            {/* All matches were blocked */}
+            {!isLoading && restaurants.length === 0 && state.results.length === 0 && blockedHiddenCount > 0 && (
+                <View style={styles.emptyContainer} testID="all-blocked-empty">
+                    <Ionicons name="eye-off-outline" size={64} color={supperClub.textMuted}/>
+                    <Text style={styles.emptyTitle}>All results are blocked</Text>
+                    <Text style={styles.emptySubtitle}>
+                        {blockedHiddenCount} {blockedHiddenCount === 1 ? 'result is' : 'results are'} hidden. Unblock from Saved to see {blockedHiddenCount === 1 ? 'it' : 'them'}.
+                    </Text>
+                </View>
+            )}
+
             {/* Empty State */}
-            {!isLoading && restaurants.length === 0 && state.results.length === 0 && (
+            {!isLoading && restaurants.length === 0 && state.results.length === 0 && blockedHiddenCount === 0 && (
                 <View style={styles.emptyContainer}>
                     <Ionicons name="search-outline" size={64} color={supperClub.textMuted}/>
                     <Text style={styles.emptyTitle}>Search for restaurants</Text>

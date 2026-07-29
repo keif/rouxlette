@@ -133,7 +133,9 @@ export function appReducer(state: AppState, action: AppActions): AppState {
 			return {
 				...state,
 				location: newLocation,
-				...(locationChanged && { results: [], lastSearch: null }),
+				// Clear rawResults too, so a later block/unblock/hydrate can't
+				// recompute the visible list from the old city's stale raw search.
+				...(locationChanged && { results: [], rawResults: [], lastSearch: null }),
 			};
 		case ActionType.SetCoords:
 			return {

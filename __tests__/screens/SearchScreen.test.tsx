@@ -160,6 +160,26 @@ describe('SearchScreen', () => {
     expect(getByText('1 blocked hidden')).toBeTruthy();
   });
 
+  it('shows an all-blocked empty state when every match is blocked', () => {
+    mockBlockedIds.add('a');
+    mockBlockedIds.add('b');
+    const state = {
+      ...mockInitialState,
+      results: [] as any, // reducer already excluded the blocked matches
+      rawResults: [
+        { id: 'a', name: 'Alpha Cafe', categories: [] },
+        { id: 'b', name: 'Beta Bistro', categories: [] },
+      ] as any,
+    };
+    const { getByTestId, queryByText } = render(
+      <RootContext.Provider value={{ state, dispatch: mockDispatch }}>
+        <SearchScreen />
+      </RootContext.Provider>
+    );
+    expect(getByTestId('all-blocked-empty')).toBeTruthy();
+    expect(queryByText('Search for restaurants')).toBeNull();
+  });
+
   it('renders a card for each result', () => {
     const state = {
       ...mockInitialState,

@@ -153,6 +153,16 @@ describe('appReducer', () => {
       const next = appReducer(withResults, hydrateBlocked([{ id: 'b' } as any]));
       expect(next.results.map((r: any) => r.id)).toEqual(['a', 'c']);
     });
+
+    it('clears rawResults on a location change so blocking cannot revive stale results', () => {
+      const searched = appReducer({ ...initialAppState, location: 'Columbus, OH' }, setResults([A, B, C]));
+      const moved = appReducer(searched, setLocation('Cleveland, OH'));
+      expect(moved.results).toEqual([]);
+      expect(moved.rawResults).toEqual([]);
+      // A later unblock must not repopulate the old city's results from stale raw.
+      const afterUnblock = appReducer(moved, removeBlocked('b'));
+      expect(afterUnblock.results).toEqual([]);
+    });
   });
 
   describe('action type enums', () => {
