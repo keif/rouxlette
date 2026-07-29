@@ -135,19 +135,19 @@ describe('appReducer', () => {
       expect(newState.lastSearch).toEqual(identity);
     });
 
-    it('clears lastSearch on the first location set (GPS-first flow) but keeps results', () => {
+    it('preserves results AND lastSearch on first-time label population (GPS-first flow)', () => {
       // Searched by GPS before the label resolved: lastSearch committed, location ''.
+      // Reverse-geocode resolving ''→city is the same place — nothing is invalidated.
+      const identity = { term: 'pizza', coords: { latitude: 40, longitude: -83 }, radiusMeters: 1600 };
       const seeded = {
         ...initialAppState,
         location: '',
         results: [{ id: 'a' } as any],
-        lastSearch: { term: 'pizza', coords: { latitude: 40, longitude: -83 }, radiusMeters: 1600 },
+        lastSearch: identity,
       };
       const newState = appReducer(seeded, setLocation('Columbus, OH'));
-      // Committed identity dropped (no stale replay across the location boundary)…
-      expect(newState.lastSearch).toBe(null);
-      // …but the valid GPS results are preserved (not a genuine city change).
       expect(newState.results).toEqual([{ id: 'a' }]);
+      expect(newState.lastSearch).toEqual(identity);
     });
   });
 });
