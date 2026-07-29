@@ -61,6 +61,22 @@ describe('useResults radius wiring (#55)', () => {
     );
   });
 
+  it('sends radius on the location-string path too (no coords)', async () => {
+    const { result } = renderHook(() => useResults());
+    await act(async () => {
+      await result.current[2]('pizza', 'Columbus', null, 8047);
+    });
+    expect(mockedGet).toHaveBeenCalledWith(
+      '/businesses/search',
+      expect.objectContaining({
+        params: expect.objectContaining({ location: 'Columbus', radius: 8047 }),
+      })
+    );
+    // And it did NOT fall back to the coordinate branch.
+    const call = mockedGet.mock.calls[0];
+    expect(call[1].params.latitude).toBeUndefined();
+  });
+
   it('clamps radius to the Yelp maximum of 40000 m', async () => {
     const { result } = renderHook(() => useResults());
     await act(async () => {

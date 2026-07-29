@@ -136,8 +136,10 @@ export default function useResults() {
 				searchParams.radius = radius; // slider-driven, clamped to Yelp max (#55)
 				devLog('Using coordinates for search:', coords);
 			} else if (location.trim() !== '') {
-				// Fallback to location string
+				// Fallback to location string. Yelp supports `radius` with
+				// `location`, so the slider applies on this path too (#55).
 				searchParams.location = location;
+				searchParams.radius = radius;
 				devLog('Using location string for search:', location);
 			} else {
 				devLog('Invalid search parameters');
@@ -280,8 +282,10 @@ export default function useResults() {
 				searchParams.radius = radius; // slider-driven, clamped to Yelp max (#55)
 				devLog('Using coordinates for Yelp search:', resolvedLocation.coords);
 			} else if (resolvedLocation.label) {
-				// FALLBACK: Use canonical location string (e.g., "Powell, OH")
+				// FALLBACK: Use canonical location string (e.g., "Powell, OH").
+				// Yelp supports `radius` with `location`, so apply it here too (#55).
 				searchParams.location = resolvedLocation.label;
+				searchParams.radius = radius;
 				devLog('Using canonical location string for Yelp search:', resolvedLocation.label);
 			} else {
 				devLog('No valid search location available');

@@ -159,10 +159,15 @@ export const SearchScreen: React.FC = () => {
         }
     }, [state.results]);
 
+    // Radius the currently-displayed results were fetched with (null until the
+    // first search). Drives the refetch-on-radius-change effect below (#55).
+    const lastFetchedRadiusRef = useRef<number | null>(null);
+
     const handleSearch = async () => {
         const term = searchQuery.trim();
         if (!term) return;
 
+        lastFetchedRadiusRef.current = state.filters.radiusMeters;
         setIsSearching(true);
         setErrorMessage('');
         try {
@@ -188,22 +193,26 @@ export const SearchScreen: React.FC = () => {
         }
     };
 
-    // Re-fetch when the search radius changes (e.g. the user applies a larger
-    // distance in the filter sheet). Radius changes WHAT Yelp returns, so a
-    // client-side re-filter can't surface farther restaurants — we must refetch
-    // (#55). Other filters (price/category/rating) stay client-side.
-    const prevRadiusRef = useRef(state.filters.radiusMeters);
+    // Re-fetch when the applied radius no longer matches what the displayed
+    // results were fetched with (e.g. the user applies a larger distance in the
+    // filter sheet). Radius changes WHAT Yelp returns, so a client-side
+    // re-filter can't surface farther restaurants — we must refetch (#55). Other
+    // filters (price/category/rating) stay client-side.
+    //
+    // Keyed on `isSearching` too: if the radius changes mid-flight we skip while
+    // busy, then this re-runs when the in-flight search settles so the change is
+    // never dropped. Comparing against the last *fetched* radius (not the last
+    // seen value) makes that reconciliation self-correcting and loop-free —
+    // handleSearch resets the ref to the radius it fetched.
     useEffect(() => {
-        const nextRadius = state.filters.radiusMeters;
-        if (prevRadiusRef.current === nextRadius) return;
-        prevRadiusRef.current = nextRadius;
-        if (searchQuery.trim() && !isSearching) {
-            handleSearch();
-        }
-        // Intentionally keyed only on radiusMeters; handleSearch reads the
-        // current term/coords via closure at fire time.
+        if (isSearching) return;                 // wait for any in-flight search
+        if (!searchQuery.trim()) return;         // nothing to search
+        if (lastFetchedRadiusRef.current === null) return; // no search performed yet
+        if (lastFetchedRadiusRef.current === state.filters.radiusMeters) return; // already current
+        handleSearch();
+        // handleSearch reads the current term/coords via closure at fire time.
         // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, [state.filters.radiusMeters]);
+    }, [state.filters.radiusMeters, isSearching]);
 
     const handleFiltersPress = () => {
         dispatch(setShowFilter(true));
