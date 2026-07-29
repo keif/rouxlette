@@ -1,4 +1,4 @@
-import { appReducer, setSelectedBusiness, showBusinessModal, hideBusinessModal, setLastSearch, setLocation, requestSpin } from '../../context/reducer';
+import { appReducer, setSelectedBusiness, showBusinessModal, hideBusinessModal, setLastSearch, setLocation, requestSpin, setResults, addBlocked, removeBlocked } from '../../context/reducer';
 import { initialAppState } from '../../context/state';
 import { ActionType } from '../../context/actions';
 import { YelpBusiness } from '../../types/yelp';
@@ -114,6 +114,35 @@ describe('appReducer', () => {
       expect(s1.spinRequestId).toBe(initialAppState.spinRequestId + 1);
       const s2 = appReducer(s1, requestSpin());
       expect(s2.spinRequestId).toBe(initialAppState.spinRequestId + 2);
+    });
+  });
+
+  describe('blocked exclusion from visible results', () => {
+    const biz = (id: string) => ({ id, name: id, distance: 100, rating: 4, categories: [] } as any);
+    const [A, B, C] = [biz('a'), biz('b'), biz('c')];
+
+    it('SetResults excludes blocked from results but keeps rawResults intact', () => {
+      const state = { ...initialAppState, blocked: [{ id: 'b' } as any] };
+      const next = appReducer(state, setResults([A, B, C]));
+      expect(next.rawResults.map((r: any) => r.id)).toEqual(['a', 'b', 'c']);
+      expect(next.results.map((r: any) => r.id)).toEqual(['a', 'c']);
+    });
+
+    it('AddBlocked removes the business from the visible list immediately', () => {
+      const withResults = appReducer(initialAppState, setResults([A, B, C]));
+      expect(withResults.results.map((r: any) => r.id)).toEqual(['a', 'b', 'c']);
+
+      const next = appReducer(withResults, addBlocked({ id: 'b' } as any));
+      expect(next.results.map((r: any) => r.id)).toEqual(['a', 'c']);
+      expect(next.rawResults.map((r: any) => r.id)).toEqual(['a', 'b', 'c']); // raw intact
+    });
+
+    it('RemoveBlocked brings the business back into the visible list', () => {
+      const seeded = appReducer({ ...initialAppState, blocked: [{ id: 'b' } as any] }, setResults([A, B, C]));
+      expect(seeded.results.map((r: any) => r.id)).toEqual(['a', 'c']);
+
+      const next = appReducer(seeded, removeBlocked('b'));
+      expect(next.results.map((r: any) => r.id)).toEqual(['a', 'b', 'c']);
     });
   });
 

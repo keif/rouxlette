@@ -44,10 +44,13 @@ jest.mock('../../hooks/useBlocked', () => ({
   useBlocked: () => ({ blocked: [] }),
 }));
 
+// Configurable favorite/blocked sets (prefixed `mock` for the jest factory).
+const mockFavoriteIds = new Set<string>();
+const mockBlockedIds = new Set<string>();
 jest.mock('../../hooks/useBlockFavorite', () => ({
   useBlockFavorite: () => ({
-    isFavorite: () => false,
-    isBlocked: () => false,
+    isFavorite: (id: string) => mockFavoriteIds.has(id),
+    isBlocked: (id: string) => mockBlockedIds.has(id),
     handleFavorite: jest.fn(),
     handleBlock: jest.fn(),
   }),
@@ -106,6 +109,8 @@ describe('SearchScreen', () => {
   beforeEach(() => {
     jest.clearAllMocks();
     mockIsFocused = true;
+    mockFavoriteIds.clear();
+    mockBlockedIds.clear();
   });
 
   it('renders the empty state prompt when there are no results', () => {
@@ -122,6 +127,30 @@ describe('SearchScreen', () => {
     const { getByTestId } = renderSearch();
     fireEvent.press(getByTestId('icon-options-outline'));
     expect(mockDispatch).toHaveBeenCalledWith(setShowFilter(true));
+  });
+
+  it('shows a favorites + blocked-hidden summary above the results', () => {
+    mockFavoriteIds.add('a');   // Alpha is favorited (in the visible list)
+    mockBlockedIds.add('c');    // Gamma is blocked (only in rawResults)
+    const state = {
+      ...mockInitialState,
+      results: [
+        { id: 'a', name: 'Alpha Cafe', categories: [] },
+        { id: 'b', name: 'Beta Bistro', categories: [] },
+      ] as any,
+      rawResults: [
+        { id: 'a', name: 'Alpha Cafe', categories: [] },
+        { id: 'b', name: 'Beta Bistro', categories: [] },
+        { id: 'c', name: 'Gamma Grill', categories: [] },
+      ] as any,
+    };
+    const { getByText } = render(
+      <RootContext.Provider value={{ state, dispatch: mockDispatch }}>
+        <SearchScreen />
+      </RootContext.Provider>
+    );
+    expect(getByText('1 favorite')).toBeTruthy();
+    expect(getByText('1 blocked hidden')).toBeTruthy();
   });
 
   it('renders a card for each result', () => {
