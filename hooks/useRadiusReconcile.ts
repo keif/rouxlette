@@ -29,7 +29,6 @@ export function useRadiusReconcile({ isSearching, runSearch, autoWhenIdle }: Use
 	const radius = state.filters.radiusMeters;
 	const isStale = !!last && last.radiusMeters !== radius;
 
-	const wasSearchingRef = useRef(isSearching);
 	// The radius we last issued a reconcile for. A reconcile that FAILS leaves
 	// `lastSearch` stale (the screen's catch only clears results), so without
 	// this guard the effect would re-fire the instant `isSearching` clears and
@@ -38,9 +37,6 @@ export function useRadiusReconcile({ isSearching, runSearch, autoWhenIdle }: Use
 	// successful reconcile updates `lastSearch` so `isStale` goes false anyway.
 	const attemptedRadiusRef = useRef<number | null>(null);
 	useEffect(() => {
-		const justFinished = wasSearchingRef.current && !isSearching;
-		wasSearchingRef.current = isSearching;
-
 		if (isSearching) return;              // wait for any in-flight search
 		if (!isStale || !last) {
 			// Caught up (or nothing committed): clear the failed-attempt guard so a
@@ -50,10 +46,13 @@ export function useRadiusReconcile({ isSearching, runSearch, autoWhenIdle }: Use
 		}
 		if (attemptedRadiusRef.current === radius) return; // already tried this radius; wait for a change
 
-		// Refetch when browsing (auto) or when a search just settled with a now-stale
-		// radius (mid-flight change) — the latter fires on both screens because a
-		// search was already in progress, so a correcting refetch isn't a surprise.
-		if (autoWhenIdle || justFinished) {
+		// Only the auto (opt-in, focused) path refetches from the effect. This
+		// covers the mid-flight case for a focused browse screen too: the effect
+		// is keyed on `isSearching`, so it re-runs when an in-flight search
+		// settles and reconciles then. Non-auto callers (blurred Search, Home)
+		// stay quiet and reconcile via `reconcile()` on an explicit action —
+		// avoiding background refetches and surprise re-spins.
+		if (autoWhenIdle) {
 			attemptedRadiusRef.current = radius;
 			runSearch(last.term);
 		}
@@ -69,8 +68,8 @@ export function useRadiusReconcile({ isSearching, runSearch, autoWhenIdle }: Use
 	 */
 	const reconcile = (): boolean => {
 		if (isStale && last) {
-			// Record the attempt so the post-settle effect doesn't double-fire if
-			// this refetch fails. Not gated by it — an explicit re-spin may retry.
+			// Mark the attempt (keeps the auto path's loop guard consistent); not
+			// gated by it — an explicit re-spin may always retry.
 			attemptedRadiusRef.current = radius;
 			runSearch(last.term);
 			return true;

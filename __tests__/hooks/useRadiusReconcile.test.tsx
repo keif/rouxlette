@@ -135,18 +135,34 @@ describe('useRadiusReconcile (#58)', () => {
     expect(runSearch).toHaveBeenCalledWith('pizza');
   });
 
-  it('reconciles after an in-flight search settles even when autoWhenIdle is false', () => {
+  it('does NOT auto-reconcile on settle when autoWhenIdle is false (Home / blurred)', () => {
+    // A mid-flight radius change must not trigger a background refetch or a
+    // surprise re-spin when the caller has opted out of idle auto-reconcile.
     const runSearch = jest.fn();
     const { rerender } = renderHarness(stateWith(committed, 8047), {
       isSearching: true,
       autoWhenIdle: false,
       runSearch,
     });
-    expect(runSearch).not.toHaveBeenCalled(); // in flight → wait
-
     rerender(
       <RootContext.Provider value={{ state: stateWith(committed, 8047), dispatch: jest.fn() }}>
         <Harness isSearching={false} autoWhenIdle={false} runSearch={runSearch} />
+      </RootContext.Provider>
+    );
+    expect(runSearch).not.toHaveBeenCalled();
+  });
+
+  it('reconciles on settle when autoWhenIdle is true (focused browse, mid-flight change)', () => {
+    const runSearch = jest.fn();
+    const { rerender } = renderHarness(stateWith(committed, 8047), {
+      isSearching: true,
+      autoWhenIdle: true,
+      runSearch,
+    });
+    expect(runSearch).not.toHaveBeenCalled(); // in flight → wait
+    rerender(
+      <RootContext.Provider value={{ state: stateWith(committed, 8047), dispatch: jest.fn() }}>
+        <Harness isSearching={false} autoWhenIdle={true} runSearch={runSearch} />
       </RootContext.Provider>
     );
     expect(runSearch).toHaveBeenCalledWith('pizza');
