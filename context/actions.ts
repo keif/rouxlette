@@ -1,5 +1,5 @@
 import { CategoryProps, BusinessProps } from "../hooks/useResults";
-import { Filter, Filters, SpinHistory } from "./state";
+import { Filter, Filters, SpinHistory, LastSearch } from "./state";
 import { YelpBusiness } from "../types/yelp";
 import { FavoriteItem, HistoryItem } from "../types/favorites";
 import { LocationObjectCoords } from "expo-location";
@@ -29,6 +29,7 @@ export enum ActionType {
 	ShowBusinessModal,
 	HideBusinessModal,
 	ToggleCategoryFilter,
+	SetLastSearch,
 }
 
 // String constants as requested
@@ -64,6 +65,11 @@ export interface SetCoords {
 export interface SetResults {
 	type: ActionType.SetResults;
 	payload: { results: BusinessProps[] };
+}
+
+export interface SetLastSearch {
+	type: ActionType.SetLastSearch;
+	payload: { lastSearch: LastSearch | null };
 }
 
 export interface SetShowFilter {
@@ -152,4 +158,4 @@ export interface ToggleCategoryFilter {
 	payload: { categoryAlias: string };
 }
 
-export type AppActions = SetCategories | SetDetail | SetFilter | SetFilters | ResetFilters | HydrateFilters | SetLocation | SetCoords | SetResults | SetShowFilter | AddFavorite | RemoveFavorite | HydrateFavorites | AddBlocked | RemoveBlocked | HydrateBlocked | AddHistory | ClearHistory | HydrateHistory | AddSpinHistory | SetSelectedBusiness | ShowBusinessModal | HideBusinessModal | ToggleCategoryFilter;
+export type AppActions = SetCategories | SetDetail | SetFilter | SetFilters | ResetFilters | HydrateFilters | SetLocation | SetCoords | SetResults | SetShowFilter | AddFavorite | RemoveFavorite | HydrateFavorites | AddBlocked | RemoveBlocked | HydrateBlocked | AddHistory | ClearHistory | HydrateHistory | AddSpinHistory | SetSelectedBusiness | ShowBusinessModal | HideBusinessModal | ToggleCategoryFilter | SetLastSearch;

@@ -3,6 +3,7 @@ import { render, fireEvent, waitFor } from '@testing-library/react-native';
 import { HomeScreen } from '../HomeScreen';
 import { RootContext } from '../../context/RootContext';
 import { mockInitialState } from '../../__tests__/mocks/mockState';
+import { setLastSearch } from '../../context/reducer';
 
 jest.mock('@react-navigation/native', () => ({
   useNavigation: () => ({ navigate: jest.fn(), setOptions: jest.fn(), goBack: jest.fn() }),
@@ -58,56 +59,64 @@ jest.mock('../../utils/filterBusinesses', () => ({
 }));
 
 const mockDispatch = jest.fn();
-const withResults = (radiusMeters: number) => ({
+// Committed search identity lives in shared state (#58). Results present so
+// hasResults is true and Spin Again exercises the reconcile path.
+const committedState = (term: string, committedRadius: number, filterRadius: number) => ({
   ...mockInitialState,
   results: [{ id: 'a', name: 'Alpha Cafe', categories: [] }] as any,
-  filters: { ...mockInitialState.filters, radiusMeters },
+  lastSearch: { term, coords: null, radiusMeters: committedRadius },
+  filters: { ...mockInitialState.filters, radiusMeters: filterRadius },
 });
 
-describe('HomeScreen radius refetch on spin (#55)', () => {
+describe('HomeScreen radius refetch on spin (#55/#58)', () => {
   beforeEach(() => jest.clearAllMocks());
 
-  it('re-issues the search on Spin Again when the radius changed since the last fetch', async () => {
-    const { getByPlaceholderText, getByTestId, rerender } = render(
-      <RootContext.Provider value={{ state: withResults(1600), dispatch: mockDispatch }}>
+  it('records the committed identity when a Home search is submitted', async () => {
+    const { getByPlaceholderText } = render(
+      <RootContext.Provider value={{ state: mockInitialState, dispatch: mockDispatch }}>
         <HomeScreen />
       </RootContext.Provider>
     );
-
-    // Perform a real search (records the fetched radius = 1600).
     const input = getByPlaceholderText('What are you craving?');
     fireEvent.changeText(input, 'pizza');
     fireEvent(input, 'submitEditing');
-    await waitFor(() => expect(mockSearchApi).toHaveBeenCalledWith('pizza', expect.anything(), null, 1600));
-    mockSearchApi.mockClear();
+    await waitFor(() =>
+      expect(mockDispatch).toHaveBeenCalledWith(setLastSearch({ term: 'pizza', coords: null, radiusMeters: 1600 }))
+    );
+  });
 
-    // User widens Distance to 3 mi, then taps Spin Again.
-    rerender(
-      <RootContext.Provider value={{ state: withResults(4800), dispatch: mockDispatch }}>
+  it('re-issues the committed search on Spin Again when the radius changed', async () => {
+    // Committed at 1 mi, filter now at 3 mi → stale. Tap the wheel.
+    const { getByTestId } = render(
+      <RootContext.Provider value={{ state: committedState('pizza', 1600, 4800), dispatch: mockDispatch }}>
         <HomeScreen />
       </RootContext.Provider>
     );
     fireEvent.press(getByTestId('roulette-wheel'));
-
     await waitFor(() =>
       expect(mockSearchApi).toHaveBeenCalledWith('pizza', expect.anything(), null, 4800)
     );
   });
 
-  it('does not re-issue the search on spin when the radius is unchanged', async () => {
-    const { getByPlaceholderText, getByTestId } = render(
-      <RootContext.Provider value={{ state: withResults(1600), dispatch: mockDispatch }}>
+  it('does not re-issue the search on spin when the radius is unchanged', () => {
+    const { getByTestId } = render(
+      <RootContext.Provider value={{ state: committedState('pizza', 1600, 1600), dispatch: mockDispatch }}>
         <HomeScreen />
       </RootContext.Provider>
     );
-    const input = getByPlaceholderText('What are you craving?');
-    fireEvent.changeText(input, 'pizza');
-    fireEvent(input, 'submitEditing');
-    await waitFor(() => expect(mockSearchApi).toHaveBeenCalledWith('pizza', expect.anything(), null, 1600));
-    mockSearchApi.mockClear();
-
-    // Spin again without changing the radius → spins the existing set, no refetch.
+    // Spin with matching radius → spins the existing set, no refetch.
     fireEvent.press(getByTestId('roulette-wheel'));
     expect(mockSearchApi).not.toHaveBeenCalled();
+  });
+
+  it('does not auto-refetch on an idle radius change (no surprise spin)', () => {
+    // Stale committed radius but the user has NOT spun — Home must stay put.
+    render(
+      <RootContext.Provider value={{ state: committedState('pizza', 1600, 4800), dispatch: mockDispatch }}>
+        <HomeScreen />
+      </RootContext.Provider>
+    );
+    expect(mockSearchApi).not.toHaveBeenCalled();
+    expect(mockSearchApiWithResolver).not.toHaveBeenCalled();
   });
 });

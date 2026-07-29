@@ -1,4 +1,4 @@
-import { appReducer, setSelectedBusiness, showBusinessModal, hideBusinessModal } from '../../context/reducer';
+import { appReducer, setSelectedBusiness, showBusinessModal, hideBusinessModal, setLastSearch } from '../../context/reducer';
 import { initialAppState } from '../../context/state';
 import { ActionType } from '../../context/actions';
 import { YelpBusiness } from '../../types/yelp';
@@ -96,6 +96,24 @@ describe('appReducer', () => {
       expect(ActionType.SetSelectedBusiness).toBeDefined();
       expect(ActionType.ShowBusinessModal).toBeDefined();
       expect(ActionType.HideBusinessModal).toBeDefined();
+    });
+  });
+
+  describe('setLastSearch (#58)', () => {
+    it('defaults lastSearch to null', () => {
+      expect(initialAppState.lastSearch).toBe(null);
+    });
+
+    it('stores the committed search identity', () => {
+      const identity = { term: 'pizza', coords: { latitude: 39.96, longitude: -82.99 }, radiusMeters: 8047 };
+      const newState = appReducer(initialAppState, setLastSearch(identity));
+      expect(newState.lastSearch).toEqual(identity);
+    });
+
+    it('can clear the committed identity', () => {
+      const seeded = appReducer(initialAppState, setLastSearch({ term: 'x', coords: null, radiusMeters: 1600 }));
+      const cleared = appReducer(seeded, setLastSearch(null));
+      expect(cleared.lastSearch).toBe(null);
     });
   });
 });

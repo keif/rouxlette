@@ -1,4 +1,4 @@
-import { AppState, Filter, Filters, SpinHistory, initialFilters } from "./state";
+import { AppState, Filter, Filters, SpinHistory, LastSearch, initialFilters } from "./state";
 import { logSafe } from "../utils/log";
 import { deepEqual } from "../utils/deepEqual";
 import { applyFilters } from "../utils/filterBusinesses";
@@ -29,6 +29,7 @@ import {
 	ShowBusinessModal,
 	HideBusinessModal,
 	ToggleCategoryFilter,
+	SetLastSearch,
 } from "./actions";
 import { CategoryProps, BusinessProps } from "../hooks/useResults";
 import { YelpBusiness } from "../types/yelp";
@@ -128,6 +129,11 @@ export function appReducer(state: AppState, action: AppActions): AppState {
 				...state,
 				rawResults,
 				results: filteredResults,
+			};
+		case ActionType.SetLastSearch:
+			return {
+				...state,
+				lastSearch: action.payload.lastSearch,
 			};
 		case ActionType.SetShowFilter:
 			return {
@@ -309,6 +315,11 @@ export const setCoords = (coords: LocationObjectCoords | null): SetCoords => ({
 export const setResults = (results: BusinessProps[]): SetResults => ({
 	type: ActionType.SetResults,
 	payload: { results },
+});
+
+export const setLastSearch = (lastSearch: LastSearch | null): SetLastSearch => ({
+	type: ActionType.SetLastSearch,
+	payload: { lastSearch },
 });
 
 export const setShowFilter = (showFilter: boolean): SetShowFilter => ({
