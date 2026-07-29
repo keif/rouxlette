@@ -45,6 +45,17 @@ jest.mock('expo-linear-gradient', () => {
   };
 });
 
+// Mock @react-native-community/slider (native module) as a plain View that
+// forwards props (testID, onValueChange) so tests can fire value changes.
+jest.mock('@react-native-community/slider', () => {
+  const React = require('react');
+  const { View } = require('react-native');
+  return {
+    __esModule: true,
+    default: (props) => React.createElement(View, props),
+  };
+});
+
 // Mock expo-location to prevent native module errors
 jest.mock('expo-location', () => ({
   requestForegroundPermissionsAsync: jest.fn(() => Promise.resolve({ status: 'granted' })),

@@ -10,6 +10,7 @@ import {
   Switch,
 } from 'react-native';
 import { MaterialIcons as Icon } from '@expo/vector-icons';
+import Slider from '@react-native-community/slider';
 import Config from '../../Config';
 import { RootContext } from '../../context/RootContext';
 import { setFilters, resetFilters } from '../../context/reducer';
@@ -18,10 +19,15 @@ import { supperClub } from '../../theme/supperClub';
 import { Text } from '../Themed';
 import Divider from '../shared/Divider';
 import { Filters } from '../../context/state';
-import { DISTANCE_OPTIONS, getDistanceLabel } from '../../utils/filterBusinesses';
+import { getDistanceLabel } from '../../utils/filterBusinesses';
 
 // Number of categories to show initially
 const INITIAL_CATEGORY_COUNT = 12;
+
+// Distance slider bounds (meters). Yelp caps its search radius at 40,000 m (~25 mi).
+const MIN_RADIUS_METERS = 804;    // 0.5 mi
+const MAX_RADIUS_METERS = 40000;  // ~25 mi (Yelp maximum)
+const RADIUS_STEP_METERS = 804;   // ~0.5 mi increments
 
 interface FiltersSheetProps {
   visible: boolean;
@@ -54,6 +60,12 @@ const FiltersSheet: React.FC<FiltersSheetProps> = ({ visible, onClose, testID })
 
   const updateLocalFilters = (updates: Partial<Filters>) => {
     setLocalFilters(prev => ({ ...prev, ...updates }));
+  };
+
+  // Distance handler — clamp defensively to the Yelp-supported range.
+  const handleRadiusChange = (value: number) => {
+    const clamped = Math.min(MAX_RADIUS_METERS, Math.max(MIN_RADIUS_METERS, value));
+    updateLocalFilters({ radiusMeters: Math.round(clamped) });
   };
 
   // Price level handlers
@@ -324,25 +336,24 @@ const FiltersSheet: React.FC<FiltersSheetProps> = ({ visible, onClose, testID })
               </Text>
             </View>
             <View style={styles.distanceContainer}>
-              {DISTANCE_OPTIONS.map(option => (
-                <Pressable
-                  key={option.meters}
-                  onPress={() => updateLocalFilters({ radiusMeters: option.meters })}
-                  style={({ pressed }) => [
-                    styles.distanceOption,
-                    localFilters.radiusMeters === option.meters && styles.distanceOptionSelected,
-                    { opacity: !Config.isAndroid && pressed ? 0.6 : 1 }
-                  ]}
-                  android_ripple={{ color: 'lightgrey' }}
-                >
-                  <Text style={[
-                    styles.distanceOptionText,
-                    localFilters.radiusMeters === option.meters && styles.distanceOptionTextSelected
-                  ]}>
-                    {option.label}
-                  </Text>
-                </Pressable>
-              ))}
+              <Slider
+                testID="distance-slider"
+                style={styles.distanceSlider}
+                minimumValue={MIN_RADIUS_METERS}
+                maximumValue={MAX_RADIUS_METERS}
+                step={RADIUS_STEP_METERS}
+                value={localFilters.radiusMeters}
+                onValueChange={handleRadiusChange}
+                minimumTrackTintColor={supperClub.gold}
+                maximumTrackTintColor={supperClub.borderSoft}
+                thumbTintColor={supperClub.gold}
+                accessibilityLabel="Search distance"
+                accessibilityHint="Adjusts how far to search for restaurants"
+              />
+              <View style={styles.distanceScaleRow}>
+                <Text style={styles.distanceScaleLabel}>0.5 mi</Text>
+                <Text style={styles.distanceScaleLabel}>25 mi</Text>
+              </View>
             </View>
           </View>
 
@@ -572,31 +583,23 @@ const styles = StyleSheet.create({
     marginRight: 16,
   },
   distanceContainer: {
-    flexDirection: 'row',
     paddingHorizontal: 16,
     paddingBottom: 16,
   },
-  distanceOption: {
-    flex: 1,
-    borderColor: supperClub.borderSoft,
-    borderWidth: 1,
-    borderRadius: 8,
-    paddingVertical: 8,
-    marginHorizontal: 2,
-    backgroundColor: 'rgba(255, 255, 255, 0.05)',
+  distanceSlider: {
+    width: '100%',
+    height: 44,
   },
-  distanceOptionSelected: {
-    backgroundColor: supperClub.primary,
-    borderColor: supperClub.primary,
+  distanceScaleRow: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    paddingHorizontal: 4,
+    marginTop: 2,
   },
-  distanceOptionText: {
-    textAlign: 'center',
-    fontSize: 14,
+  distanceScaleLabel: {
+    fontSize: 12,
     fontFamily: AppStyles.fonts.regular,
-    color: supperClub.text,
-  },
-  distanceOptionTextSelected: {
-    color: '#FFFFFF',
+    color: supperClub.textMuted,
   },
   ratingContainer: {
     flexDirection: 'row',
