@@ -199,6 +199,9 @@ export function appReducer(state: AppState, action: AppActions): AppState {
 			return {
 				...state,
 				blocked: action.payload.blocked,
+				// Persisted blocks may hydrate after results are already set — re-filter
+				// so those businesses don't linger visible until the next action.
+				results: computeVisibleResults(state.rawResults, state.filters, action.payload.blocked),
 			};
 		case ActionType.AddHistory:
 			// Dedupe by id, then normalize with stable sorting and cap

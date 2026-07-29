@@ -1,4 +1,4 @@
-import { appReducer, setSelectedBusiness, showBusinessModal, hideBusinessModal, setLastSearch, setLocation, requestSpin, setResults, addBlocked, removeBlocked } from '../../context/reducer';
+import { appReducer, setSelectedBusiness, showBusinessModal, hideBusinessModal, setLastSearch, setLocation, requestSpin, setResults, addBlocked, removeBlocked, hydrateBlocked } from '../../context/reducer';
 import { initialAppState } from '../../context/state';
 import { ActionType } from '../../context/actions';
 import { YelpBusiness } from '../../types/yelp';
@@ -143,6 +143,15 @@ describe('appReducer', () => {
 
       const next = appReducer(seeded, removeBlocked('b'));
       expect(next.results.map((r: any) => r.id)).toEqual(['a', 'b', 'c']);
+    });
+
+    it('HydrateBlocked re-filters results set before hydration completed', () => {
+      // Results arrive first with an empty blocked list...
+      const withResults = appReducer(initialAppState, setResults([A, B, C]));
+      expect(withResults.results.map((r: any) => r.id)).toEqual(['a', 'b', 'c']);
+      // ...then persisted blocks hydrate and must remove the matching business.
+      const next = appReducer(withResults, hydrateBlocked([{ id: 'b' } as any]));
+      expect(next.results.map((r: any) => r.id)).toEqual(['a', 'c']);
     });
   });
 
