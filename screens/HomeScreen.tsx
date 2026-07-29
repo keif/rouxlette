@@ -211,7 +211,10 @@ export const HomeScreen: React.FC = () => {
         business: selectedResult,
         source: 'spin',
         context: {
-          searchTerm: searchQuery,
+          // The committed term the displayed results were fetched with — correct
+          // even when the spin replayed a committed search (from another screen)
+          // while Home's input box was blank or holding an unsubmitted draft (#58).
+          searchTerm: state.lastSearch?.term ?? searchQuery,
           locationText: displayLocation,
           coords: coords,
           filters: {

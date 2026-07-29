@@ -24,17 +24,23 @@ jest.mock('../../hooks/useLocation', () => ({
   default: () => ['', 'Columbus, OH', 'Columbus, OH', null, jest.fn(), jest.fn(), jest.fn(), false, jest.fn(), jest.fn()],
 }));
 
-jest.mock('../../hooks/useHistory', () => ({ useHistory: () => ({ addHistoryEntry: jest.fn() }) }));
+const mockAddHistoryEntry = jest.fn();
+jest.mock('../../hooks/useHistory', () => ({ useHistory: () => ({ addHistoryEntry: mockAddHistoryEntry }) }));
 jest.mock('../../hooks/useBlocked', () => ({ useBlocked: () => ({ blocked: [] }) }));
 jest.mock('../../hooks/useCategories', () => ({ __esModule: true, default: () => ({ loadCategories: () => [] }) }));
 
 jest.mock('../../components/RouletteWheel', () => {
-  const { Pressable, Text } = require('react-native');
+  const { View, Pressable, Text } = require('react-native');
   return {
-    RouletteWheel: ({ onSpin }: any) => (
-      <Pressable testID="roulette-wheel" onPress={onSpin}>
-        <Text>Wheel</Text>
-      </Pressable>
+    RouletteWheel: ({ onSpin, onAutoSpinComplete }: any) => (
+      <View>
+        <Pressable testID="roulette-wheel" onPress={onSpin}>
+          <Text>Wheel</Text>
+        </Pressable>
+        <Pressable testID="wheel-complete" onPress={onAutoSpinComplete}>
+          <Text>Done</Text>
+        </Pressable>
+      </View>
     ),
   };
 });
@@ -107,6 +113,24 @@ describe('HomeScreen radius refetch on spin (#55/#58)', () => {
     // Spin with matching radius → spins the existing set, no refetch.
     fireEvent.press(getByTestId('roulette-wheel'));
     expect(mockSearchApi).not.toHaveBeenCalled();
+  });
+
+  it('records the committed term in spin history, not a blank/draft input box (#58)', () => {
+    // Committed 'pizza' (e.g. from another screen), Home's input box left blank,
+    // radius not stale so the spin uses the existing results.
+    const { getByTestId } = render(
+      <RootContext.Provider value={{ state: committedState('pizza', 1600, 1600), dispatch: mockDispatch }}>
+        <HomeScreen />
+      </RootContext.Provider>
+    );
+    fireEvent.press(getByTestId('roulette-wheel'));   // spin → selectedResult set
+    fireEvent.press(getByTestId('wheel-complete'));   // completion → history recorded
+
+    expect(mockAddHistoryEntry).toHaveBeenCalledWith(
+      expect.objectContaining({
+        context: expect.objectContaining({ searchTerm: 'pizza' }),
+      })
+    );
   });
 
   it('does not auto-refetch on an idle radius change (no surprise spin)', () => {
