@@ -148,9 +148,9 @@ export const HomeScreen: React.FC = () => {
       const resolvedLocation = await resolveSearchArea(state.location || canonicalLocation);
 
       if (resolvedLocation) {
-        businesses = await searchApiWithResolver(term, resolvedLocation);
+        businesses = await searchApiWithResolver(term, resolvedLocation, state.filters.radiusMeters);
       } else {
-        businesses = await searchApi(term, state.location || 'Current Location', coords);
+        businesses = await searchApi(term, state.location || 'Current Location', coords, state.filters.radiusMeters);
       }
 
       // Filter out blocked restaurants

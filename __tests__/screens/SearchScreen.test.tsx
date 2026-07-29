@@ -1,5 +1,5 @@
 import React from 'react';
-import { render, fireEvent, within } from '@testing-library/react-native';
+import { render, fireEvent, waitFor, within } from '@testing-library/react-native';
 import { SearchScreen } from '../../screens/SearchScreen';
 import { RootContext } from '../../context/RootContext';
 import { mockInitialState } from '../mocks/mockState';
@@ -12,9 +12,13 @@ jest.mock('@react-navigation/native', () => ({
 
 // Data hooks. SearchScreen destructures 5 values from useResults and 10 from
 // useLocation; return correctly-shaped tuples so nothing resolves to undefined.
+// Stable spies (prefixed `mock` so the jest.mock factory may reference them)
+// let us assert searchApi calls across re-renders (#55 re-search on radius).
+const mockSearchApi = jest.fn(async () => []);
+const mockSearchApiWithResolver = jest.fn(async () => []);
 jest.mock('../../hooks/useResults', () => ({
   __esModule: true,
-  default: () => ['', { id: '', businesses: [] }, jest.fn(), jest.fn(), false],
+  default: () => ['', { id: '', businesses: [] }, mockSearchApi, mockSearchApiWithResolver, false],
   INIT_RESULTS: { id: '', businesses: [] },
 }));
 
@@ -180,5 +184,56 @@ describe('SearchScreen', () => {
     expect(queryByText(/The wheel picked/)).toBeNull();
     expect(getByText('Top result')).toBeTruthy();
     expect(within(getByTestId('restaurant-card-a')).getByText(/Spin again/)).toBeTruthy();
+  });
+
+  it('re-fetches with the new radius when the distance filter changes (#55)', async () => {
+    const { getByPlaceholderText, rerender } = render(
+      <RootContext.Provider value={{ state: mockInitialState, dispatch: mockDispatch }}>
+        <SearchScreen />
+      </RootContext.Provider>
+    );
+    // Commit a search term (no coords/resolver in the mocks → searchApi path).
+    fireEvent.changeText(getByPlaceholderText('What are you craving?'), 'pizza');
+    mockSearchApi.mockClear();
+
+    // User applies a larger distance in the filter sheet.
+    const newState = {
+      ...mockInitialState,
+      filters: { ...mockInitialState.filters, radiusMeters: 8047 },
+    };
+    rerender(
+      <RootContext.Provider value={{ state: newState, dispatch: mockDispatch }}>
+        <SearchScreen />
+      </RootContext.Provider>
+    );
+
+    await waitFor(() => {
+      expect(mockSearchApi).toHaveBeenCalledWith('pizza', expect.anything(), null, 8047);
+    });
+  });
+
+  it('does not re-fetch on a radius change when there is no active term (#55)', async () => {
+    const { rerender } = render(
+      <RootContext.Provider value={{ state: mockInitialState, dispatch: mockDispatch }}>
+        <SearchScreen />
+      </RootContext.Provider>
+    );
+    mockSearchApi.mockClear();
+    mockSearchApiWithResolver.mockClear();
+
+    const newState = {
+      ...mockInitialState,
+      filters: { ...mockInitialState.filters, radiusMeters: 8047 },
+    };
+    rerender(
+      <RootContext.Provider value={{ state: newState, dispatch: mockDispatch }}>
+        <SearchScreen />
+      </RootContext.Provider>
+    );
+
+    // Give any effect a tick to (not) fire.
+    await waitFor(() => expect(mockDispatch).not.toHaveBeenCalledWith(expect.objectContaining({ type: 'unused' })));
+    expect(mockSearchApi).not.toHaveBeenCalled();
+    expect(mockSearchApiWithResolver).not.toHaveBeenCalled();
   });
 });

@@ -1,4 +1,4 @@
-import React, {useContext, useEffect, useState} from 'react';
+import React, {useContext, useEffect, useRef, useState} from 'react';
 import {ActivityIndicator, FlatList, Linking, Platform, Pressable, StyleSheet, Text, TextInput, View,} from 'react-native';
 import {SafeAreaView} from 'react-native-safe-area-context';
 import {Ionicons} from '@expo/vector-icons';
@@ -170,9 +170,9 @@ export const SearchScreen: React.FC = () => {
             const resolvedLocation = await resolveSearchArea(state.location || canonicalLocation);
 
             if (resolvedLocation) {
-                businesses = await searchApiWithResolver(term, resolvedLocation);
+                businesses = await searchApiWithResolver(term, resolvedLocation, state.filters.radiusMeters);
             } else {
-                businesses = await searchApi(term, state.location || 'Current Location', coords);
+                businesses = await searchApi(term, state.location || 'Current Location', coords, state.filters.radiusMeters);
             }
 
             // Filter out blocked restaurants
@@ -187,6 +187,23 @@ export const SearchScreen: React.FC = () => {
             setIsSearching(false);
         }
     };
+
+    // Re-fetch when the search radius changes (e.g. the user applies a larger
+    // distance in the filter sheet). Radius changes WHAT Yelp returns, so a
+    // client-side re-filter can't surface farther restaurants — we must refetch
+    // (#55). Other filters (price/category/rating) stay client-side.
+    const prevRadiusRef = useRef(state.filters.radiusMeters);
+    useEffect(() => {
+        const nextRadius = state.filters.radiusMeters;
+        if (prevRadiusRef.current === nextRadius) return;
+        prevRadiusRef.current = nextRadius;
+        if (searchQuery.trim() && !isSearching) {
+            handleSearch();
+        }
+        // Intentionally keyed only on radiusMeters; handleSearch reads the
+        // current term/coords via closure at fire time.
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [state.filters.radiusMeters]);
 
     const handleFiltersPress = () => {
         dispatch(setShowFilter(true));

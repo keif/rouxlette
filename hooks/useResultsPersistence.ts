@@ -41,30 +41,35 @@ export default function useResultsPersistence() {
   /**
    * Generate a versioned cache key from search parameters
    */
-  const generateCacheKey = useCallback((location: string, term: string, coords?: any): string => {
+  const generateCacheKey = useCallback((location: string, term: string, coords?: any, radiusMeters?: number): string => {
     const normalizedTerm = term.trim().toLowerCase();
-    
+    // Radius is part of the cache identity: a 1-mile fetch must not satisfy a
+    // 25-mile request (#55). Omitted when undefined so callers that don't pass
+    // a radius keep their legacy keys.
+    const radiusSuffix = radiusMeters != null ? `:r${Math.round(radiusMeters)}` : '';
+
     if (coords?.latitude && coords?.longitude) {
       // Use coordinates for more precise caching
       const lat = coords.latitude.toFixed(4);
       const lng = coords.longitude.toFixed(4);
-      return `${CACHE_VERSION}:search:${lat},${lng}:${normalizedTerm}`;
+      return `${CACHE_VERSION}:search:${lat},${lng}:${normalizedTerm}${radiusSuffix}`;
     }
-    
+
     // Fallback to location string
     const normalizedLocation = location.trim().toLowerCase();
-    return `${CACHE_VERSION}:search:${normalizedLocation}:${normalizedTerm}`;
+    return `${CACHE_VERSION}:search:${normalizedLocation}:${normalizedTerm}${radiusSuffix}`;
   }, []);
 
   /**
    * Load cached results for a search with corruption detection
    */
   const getCachedResults = useCallback(async (
-    location: string, 
-    term: string, 
-    coords?: any
+    location: string,
+    term: string,
+    coords?: any,
+    radiusMeters?: number
   ): Promise<BusinessProps[] | null> => {
-    const cacheKey = generateCacheKey(location, term, coords);
+    const cacheKey = generateCacheKey(location, term, coords, radiusMeters);
     
     try {
       const cached = await storage.getItem<BusinessProps[]>(cacheKey);
@@ -95,9 +100,10 @@ export default function useResultsPersistence() {
     location: string,
     term: string,
     results: BusinessProps[],
-    coords?: any
+    coords?: any,
+    radiusMeters?: number
   ): Promise<void> => {
-    const cacheKey = generateCacheKey(location, term, coords);
+    const cacheKey = generateCacheKey(location, term, coords, radiusMeters);
     
     // Prevent duplicate cache operations for the same key
     if (activeCacheKeys.current.has(cacheKey)) {
