@@ -2,7 +2,7 @@ import React, {useContext, useEffect, useState} from 'react';
 import {ActivityIndicator, FlatList, Linking, Platform, Pressable, StyleSheet, Text, TextInput, View,} from 'react-native';
 import {SafeAreaView} from 'react-native-safe-area-context';
 import {Ionicons} from '@expo/vector-icons';
-import {useNavigation} from '@react-navigation/native';
+import {useNavigation, useIsFocused} from '@react-navigation/native';
 import {Restaurant} from '../components/RestaurantCardSimple';
 import {RestaurantTopPick} from '../components/RestaurantTopPick';
 import {RestaurantRow} from '../components/RestaurantRow';
@@ -201,9 +201,15 @@ export const SearchScreen: React.FC = () => {
     // Browse screen: refetch as soon as the applied radius diverges from the
     // displayed results' radius. The committed term/radius live in shared state,
     // so this reconciles even when results arrived from another screen (#55/#58).
+    //
+    // Gated on focus: a tab navigator keeps this screen mounted after blur, so
+    // without the gate a distance change made on Home would trigger a background
+    // refetch here and silently replace Home's results. Regaining focus flips
+    // autoWhenIdle back on and reconciles any radius changed while away.
+    const isSearchFocused = useIsFocused();
     useRadiusReconcile({
         isSearching,
-        autoWhenIdle: true,
+        autoWhenIdle: isSearchFocused,
         runSearch: (term) => handleSearch(term),
     });
 

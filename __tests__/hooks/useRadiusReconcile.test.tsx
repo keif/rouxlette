@@ -89,6 +89,25 @@ describe('useRadiusReconcile (#58)', () => {
     expect(runSearch).toHaveBeenCalledTimes(2);
   });
 
+  it('reconciles a pending radius when autoWhenIdle flips to true (regaining focus)', () => {
+    const runSearch = jest.fn();
+    // Blurred (autoWhenIdle false) with a stale radius → no background refetch.
+    const { rerender } = renderHarness(stateWith(committed, 8047), {
+      isSearching: false,
+      autoWhenIdle: false,
+      runSearch,
+    });
+    expect(runSearch).not.toHaveBeenCalled();
+
+    // Regain focus (autoWhenIdle true) → reconcile the change made while away.
+    rerender(
+      <RootContext.Provider value={{ state: stateWith(committed, 8047), dispatch: jest.fn() }}>
+        <Harness isSearching={false} autoWhenIdle={true} runSearch={runSearch} />
+      </RootContext.Provider>
+    );
+    expect(runSearch).toHaveBeenCalledWith('pizza');
+  });
+
   it('reconciles after an in-flight search settles even when autoWhenIdle is false', () => {
     const runSearch = jest.fn();
     const { rerender } = renderHarness(stateWith(committed, 8047), {

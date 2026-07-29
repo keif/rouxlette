@@ -52,9 +52,11 @@ export function useRadiusReconcile({ isSearching, runSearch, autoWhenIdle }: Use
 			attemptedRadiusRef.current = radius;
 			runSearch(last.term);
 		}
-		// runSearch reads the current coords via closure; keyed on radius + isSearching.
+		// runSearch reads the current coords via closure; keyed on radius,
+		// isSearching, and autoWhenIdle (so regaining focus — see SearchScreen's
+		// useIsFocused gating — reconciles a radius changed while blurred).
 		// eslint-disable-next-line react-hooks/exhaustive-deps
-	}, [radius, isSearching]);
+	}, [radius, isSearching, autoWhenIdle]);
 
 	/**
 	 * Imperative reconcile for screens that refetch on an explicit action (Home's

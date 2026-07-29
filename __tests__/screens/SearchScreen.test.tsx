@@ -6,8 +6,10 @@ import { mockInitialState } from '../mocks/mockState';
 import { setShowFilter, setLastSearch } from '../../context/reducer';
 
 // Navigation
+let mockIsFocused = true; // prefixed `mock` so the jest.mock factory may use it
 jest.mock('@react-navigation/native', () => ({
   useNavigation: () => ({ navigate: jest.fn(), setOptions: jest.fn(), goBack: jest.fn() }),
+  useIsFocused: () => mockIsFocused,
 }));
 
 // Data hooks. SearchScreen destructures 5 values from useResults and 10 from
@@ -103,6 +105,7 @@ const renderSearch = (state = mockInitialState) =>
 describe('SearchScreen', () => {
   beforeEach(() => {
     jest.clearAllMocks();
+    mockIsFocused = true;
   });
 
   it('renders the empty state prompt when there are no results', () => {
@@ -221,6 +224,21 @@ describe('SearchScreen', () => {
     await waitFor(() =>
       expect(mockSearchApi).toHaveBeenCalledWith('pizza', expect.anything(), null, 8047)
     );
+  });
+
+  it('does not auto-refetch in the background when the Search tab is blurred (#58)', async () => {
+    // Tab navigators keep Search mounted after blur; a distance change made on
+    // Home must not trigger a background refetch here.
+    mockIsFocused = false;
+    render(
+      <RootContext.Provider value={{ state: committedState('pizza', 1600, 8047), dispatch: mockDispatch }}>
+        <SearchScreen />
+      </RootContext.Provider>
+    );
+    // Let any effect settle, then assert no refetch happened.
+    await waitFor(() => expect(mockDispatch).not.toHaveBeenCalledWith(expect.objectContaining({ type: 'unused' })));
+    expect(mockSearchApi).not.toHaveBeenCalled();
+    expect(mockSearchApiWithResolver).not.toHaveBeenCalled();
   });
 
   it('replays the committed term on a radius refetch, not the draft input (#55/#58)', async () => {
