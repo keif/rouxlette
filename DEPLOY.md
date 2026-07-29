@@ -53,10 +53,25 @@ releases.
 `com.fullybakedlabs.rouxlette` (iOS + Android). It transfers with the app if you
 later move from a personal to an organization Apple account.
 
-## Follow-ups (not blocking a first build)
+## Over-the-air (OTA) updates
 
-- **Splash/icon background** is still `#1B5E20` (old green) in `app.json`; update to
-  the Supper Club espresso `#1A1013` (and regenerate the splash asset) to match the app.
-- **OTA updates:** add `expo-updates` + a `runtimeVersion` to ship JS-only changes via
-  `eas update` without a store review.
+`expo-updates` is configured: `updates.url` + `runtimeVersion: { policy: appVersion }`
+in `app.json`, and a per-profile `channel` in `eas.json`. Once you ship **one build
+that includes `expo-updates`**, JS-only changes ship over-the-air — no rebuild, no
+store review:
+
+```
+eas update --branch production --message "fix: ..."
+```
+
+Builds on the matching runtime/channel pull the update on next launch. **Note:** a
+build made *before* `expo-updates` was added has no updater, so it can't receive OTA
+— the next `eas build` activates it. Native changes (new native deps, config plugins,
+runtime bumps) still require a fresh `eas build`.
+
+## Follow-ups (not blocking a build)
+
+- **Splash/icon art:** the background colors are espresso `#1A1013`, but the
+  `splash.png` / `adaptive-icon.png` image art still carries the old green — regenerate
+  the assets to fully match.
 - **Android:** the same profiles build a `.aab`; add a Play Console account + `eas submit -p android` when ready.
