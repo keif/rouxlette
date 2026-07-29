@@ -41,13 +41,18 @@ jest.mock('../../hooks/useLocation', () => ({
 }));
 
 jest.mock('../../hooks/useBlocked', () => ({
-  useBlocked: () => ({ blocked: [] }),
+  useBlocked: jest.fn(() => ({ blocked: [] })),
 }));
+// Spy so we can assert Search hydrates the blocked list on its own (deep-link entry).
+const { useBlocked: mockUseBlocked } = require('../../hooks/useBlocked');
 
+// Configurable favorite/blocked sets (prefixed `mock` for the jest factory).
+const mockFavoriteIds = new Set<string>();
+const mockBlockedIds = new Set<string>();
 jest.mock('../../hooks/useBlockFavorite', () => ({
   useBlockFavorite: () => ({
-    isFavorite: () => false,
-    isBlocked: () => false,
+    isFavorite: (id: string) => mockFavoriteIds.has(id),
+    isBlocked: (id: string) => mockBlockedIds.has(id),
     handleFavorite: jest.fn(),
     handleBlock: jest.fn(),
   }),
@@ -106,6 +111,13 @@ describe('SearchScreen', () => {
   beforeEach(() => {
     jest.clearAllMocks();
     mockIsFocused = true;
+    mockFavoriteIds.clear();
+    mockBlockedIds.clear();
+  });
+
+  it('hydrates the blocked list on mount (deep-link entry safety)', () => {
+    renderSearch();
+    expect(mockUseBlocked).toHaveBeenCalled();
   });
 
   it('renders the empty state prompt when there are no results', () => {
@@ -122,6 +134,50 @@ describe('SearchScreen', () => {
     const { getByTestId } = renderSearch();
     fireEvent.press(getByTestId('icon-options-outline'));
     expect(mockDispatch).toHaveBeenCalledWith(setShowFilter(true));
+  });
+
+  it('shows a favorites + blocked-hidden summary above the results', () => {
+    mockFavoriteIds.add('a');   // Alpha is favorited (in the visible list)
+    mockBlockedIds.add('c');    // Gamma is blocked (only in rawResults)
+    const state = {
+      ...mockInitialState,
+      results: [
+        { id: 'a', name: 'Alpha Cafe', categories: [] },
+        { id: 'b', name: 'Beta Bistro', categories: [] },
+      ] as any,
+      rawResults: [
+        { id: 'a', name: 'Alpha Cafe', categories: [] },
+        { id: 'b', name: 'Beta Bistro', categories: [] },
+        { id: 'c', name: 'Gamma Grill', categories: [] },
+      ] as any,
+    };
+    const { getByText } = render(
+      <RootContext.Provider value={{ state, dispatch: mockDispatch }}>
+        <SearchScreen />
+      </RootContext.Provider>
+    );
+    expect(getByText('1 favorite')).toBeTruthy();
+    expect(getByText('1 blocked hidden')).toBeTruthy();
+  });
+
+  it('shows an all-blocked empty state when every match is blocked', () => {
+    mockBlockedIds.add('a');
+    mockBlockedIds.add('b');
+    const state = {
+      ...mockInitialState,
+      results: [] as any, // reducer already excluded the blocked matches
+      rawResults: [
+        { id: 'a', name: 'Alpha Cafe', categories: [] },
+        { id: 'b', name: 'Beta Bistro', categories: [] },
+      ] as any,
+    };
+    const { getByTestId, queryByText } = render(
+      <RootContext.Provider value={{ state, dispatch: mockDispatch }}>
+        <SearchScreen />
+      </RootContext.Provider>
+    );
+    expect(getByTestId('all-blocked-empty')).toBeTruthy();
+    expect(queryByText('Search for restaurants')).toBeNull();
   });
 
   it('renders a card for each result', () => {

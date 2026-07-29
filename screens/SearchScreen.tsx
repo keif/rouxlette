@@ -24,8 +24,8 @@ import {
 import useResults, {BusinessProps} from '../hooks/useResults';
 import {useRadiusReconcile} from '../hooks/useRadiusReconcile';
 import useLocation from '../hooks/useLocation';
-import {useBlocked} from '../hooks/useBlocked';
 import {useBlockFavorite} from '../hooks/useBlockFavorite';
+import {useBlocked} from '../hooks/useBlocked';
 import FiltersSheet from '../components/filter/FiltersSheet';
 import {applyFilters, countActiveFilters} from '../utils/filterBusinesses';
 import {RootTabScreenProps} from '../types';
@@ -41,8 +41,11 @@ export const SearchScreen: React.FC = () => {
     const [locationInput, setLocationInput] = useState('');
     const [resultsErrorMessage, searchResults, searchApi, searchApiWithResolver, resultsLoading] = useResults();
     const [, city, canonicalLocation, coords, , searchLocation, resolveSearchArea, isLocationLoading, , stopLocationWatcher] = useLocation();
-    const {blocked} = useBlocked();
     const {isFavorite, isBlocked, handleFavorite, handleBlock} = useBlockFavorite();
+    // Called for its side effect: hydrate the persisted blocked list from storage
+    // even when Search is the entry route (e.g. the /search deep link) and Home
+    // never mounts. Blocked exclusion now happens in the reducer off state.blocked.
+    useBlocked();
 
     const isLoading = resultsLoading || isSearching;
     const displayLocation = state.location || city || 'Current Location';
@@ -67,6 +70,14 @@ export const SearchScreen: React.FC = () => {
     });
 
     const restaurants = filteredBusinesses.map(businessToRestaurant);
+
+    // Counts for the results summary line: favorites currently in view, and how
+    // many blocked places this search would have shown (they're hidden).
+    const favoritesCount = restaurants.filter(r => r.isFavorite).length;
+    const rawResults = state.rawResults ?? [];
+    const blockedHiddenCount = rawResults.length > 0
+        ? applyFilters(rawResults, state.filters).filter(b => isBlocked(b.id)).length
+        : 0;
 
     // The results hero is the wheel's ACTUAL pick (most recent spin), not just
     // the first result — otherwise the "The wheel picked" badge lands on the
@@ -178,11 +189,9 @@ export const SearchScreen: React.FC = () => {
                 businesses = await searchApi(term, state.location || 'Current Location', coords, radiusMeters);
             }
 
-            // Filter out blocked restaurants
-            const blockedIds = new Set(blocked.map(b => b.id));
-            const filteredBusinesses = businesses.filter(b => !blockedIds.has(b.id));
-
-            dispatch(setResults(filteredBusinesses));
+            // Dispatch the raw set; the reducer excludes blocked from the visible
+            // results (and keeps rawResults for the "blocked hidden" count).
+            dispatch(setResults(businesses));
             // Record the committed search identity so radius reconciliation has a
             // shared source of truth across screens (#58).
             dispatch(setLastSearch({
@@ -441,6 +450,26 @@ export const SearchScreen: React.FC = () => {
                                 <Text style={styles.resultsCount}>
                                     {restaurants.length} Result{restaurants.length !== 1 ? 's' : ''}
                                 </Text>
+                                {(favoritesCount > 0 || blockedHiddenCount > 0) && (
+                                    <View style={styles.resultsMetaRow} testID="results-meta">
+                                        {favoritesCount > 0 && (
+                                            <View style={styles.metaChip}>
+                                                <Ionicons name="heart" size={12} color={supperClub.gold}/>
+                                                <Text style={styles.metaText}>
+                                                    {favoritesCount} favorite{favoritesCount !== 1 ? 's' : ''}
+                                                </Text>
+                                            </View>
+                                        )}
+                                        {blockedHiddenCount > 0 && (
+                                            <View style={styles.metaChip}>
+                                                <Ionicons name="eye-off-outline" size={12} color={supperClub.textMuted}/>
+                                                <Text style={styles.metaTextMuted}>
+                                                    {blockedHiddenCount} blocked hidden
+                                                </Text>
+                                            </View>
+                                        )}
+                                    </View>
+                                )}
                             </View>
                             <RestaurantTopPick
                                 restaurant={heroRestaurant}
@@ -459,6 +488,7 @@ export const SearchScreen: React.FC = () => {
                         <RestaurantRow
                             restaurant={item}
                             onPress={() => handleRestaurantPress(item)}
+                            onFavoriteToggle={() => handleFavoriteToggle(item.id)}
                         />
                     )}
                     contentContainerStyle={styles.listContent}
@@ -466,8 +496,19 @@ export const SearchScreen: React.FC = () => {
                 />
             )}
 
+            {/* All matches were blocked */}
+            {!isLoading && restaurants.length === 0 && state.results.length === 0 && blockedHiddenCount > 0 && (
+                <View style={styles.emptyContainer} testID="all-blocked-empty">
+                    <Ionicons name="eye-off-outline" size={64} color={supperClub.textMuted}/>
+                    <Text style={styles.emptyTitle}>All results are blocked</Text>
+                    <Text style={styles.emptySubtitle}>
+                        {blockedHiddenCount} {blockedHiddenCount === 1 ? 'result is' : 'results are'} hidden. Unblock from Saved to see {blockedHiddenCount === 1 ? 'it' : 'them'}.
+                    </Text>
+                </View>
+            )}
+
             {/* Empty State */}
-            {!isLoading && restaurants.length === 0 && state.results.length === 0 && (
+            {!isLoading && restaurants.length === 0 && state.results.length === 0 && blockedHiddenCount === 0 && (
                 <View style={styles.emptyContainer}>
                     <Ionicons name="search-outline" size={64} color={supperClub.textMuted}/>
                     <Text style={styles.emptyTitle}>Search for restaurants</Text>
@@ -654,6 +695,26 @@ const styles = StyleSheet.create({
     resultsCount: {
         ...typography.headline,
         color: supperClub.textPrimary,
+    },
+    resultsMetaRow: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        flexWrap: 'wrap',
+        gap: 12,
+        marginTop: 4,
+    },
+    metaChip: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        gap: 4,
+    },
+    metaText: {
+        fontSize: 12,
+        color: supperClub.gold,
+    },
+    metaTextMuted: {
+        fontSize: 12,
+        color: supperClub.textMuted,
     },
     subhead: {
         fontSize: 11,

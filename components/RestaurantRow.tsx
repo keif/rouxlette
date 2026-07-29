@@ -8,6 +8,7 @@ import { spacing, radius } from '../theme';
 interface RestaurantRowProps {
   restaurant: Restaurant;
   onPress: () => void;
+  onFavoriteToggle?: () => void;
 }
 
 /**
@@ -15,12 +16,12 @@ interface RestaurantRowProps {
  * row opens the detail modal via the parent's onPress. Photos are real Yelp
  * images; no gradients — flat warm fills only.
  */
-export const RestaurantRow: React.FC<RestaurantRowProps> = ({ restaurant, onPress }) => (
+export const RestaurantRow: React.FC<RestaurantRowProps> = ({ restaurant, onPress, onFavoriteToggle }) => (
   <Pressable
     onPress={onPress}
     testID={`restaurant-card-${restaurant.id}`}
     accessibilityRole="button"
-    accessibilityLabel={`${restaurant.name}, ${restaurant.rating.toFixed(1)} stars`}
+    accessibilityLabel={`${restaurant.name}, ${restaurant.rating.toFixed(1)} stars${restaurant.isFavorite ? ', favorite' : ''}`}
     style={({ pressed }) => [styles.row, pressed && styles.pressed]}
   >
     <Image source={{ uri: restaurant.imageUrl }} style={styles.thumb} />
@@ -39,6 +40,22 @@ export const RestaurantRow: React.FC<RestaurantRowProps> = ({ restaurant, onPres
         {restaurant.distance.toFixed(1)} mi{restaurant.price ? ` · ${restaurant.price}` : ''}
       </Text>
     </View>
+    {onFavoriteToggle && (
+      <Pressable
+        onPress={onFavoriteToggle}
+        hitSlop={8}
+        testID={`restaurant-favorite-${restaurant.id}`}
+        accessibilityRole="button"
+        accessibilityLabel={restaurant.isFavorite ? 'Remove favorite' : 'Add favorite'}
+        style={styles.heart}
+      >
+        <Ionicons
+          name={restaurant.isFavorite ? 'heart' : 'heart-outline'}
+          size={18}
+          color={supperClub.gold}
+        />
+      </Pressable>
+    )}
   </Pressable>
 );
 
@@ -62,6 +79,7 @@ const styles = StyleSheet.create({
   name: { fontFamily: 'Georgia', fontSize: 15, color: '#FFFFFF' },
   cat: { fontSize: 11, color: supperClub.textMuted, marginTop: 1 },
   right: { alignItems: 'flex-end' },
+  heart: { paddingLeft: spacing.xs, paddingVertical: spacing.xs },
   ratingRow: { flexDirection: 'row', alignItems: 'center', gap: 3 },
   rt: { fontSize: 13, fontWeight: '700', color: supperClub.gold },
   sub: { fontSize: 11, color: supperClub.textMuted, marginTop: 1 },

@@ -85,6 +85,19 @@ function normalizeHistory(items: HistoryItem[]): HistoryItem[] {
   return deduped.slice(0, HISTORY_MAX_ITEMS);
 }
 
+// The results shown to the user = filters applied, then blocked businesses
+// removed. Blocked lives in state, so the reducer is the single place that
+// excludes it — rawResults stays intact (for the "N blocked hidden" count and
+// for re-filtering live when a business is blocked/unblocked).
+function computeVisibleResults(
+	rawResults: BusinessProps[],
+	filters: Filters,
+	blocked: FavoriteItem[],
+): BusinessProps[] {
+	const blockedIds = new Set(blocked.map(b => b.id));
+	return applyFilters(rawResults, filters).filter(b => !blockedIds.has(b.id));
+}
+
 export function appReducer(state: AppState, action: AppActions): AppState {
 	switch (action.type) {
 		case ActionType.SetCategories:
@@ -120,7 +133,9 @@ export function appReducer(state: AppState, action: AppActions): AppState {
 			return {
 				...state,
 				location: newLocation,
-				...(locationChanged && { results: [], lastSearch: null }),
+				// Clear rawResults too, so a later block/unblock/hydrate can't
+				// recompute the visible list from the old city's stale raw search.
+				...(locationChanged && { results: [], rawResults: [], lastSearch: null }),
 			};
 		case ActionType.SetCoords:
 			return {
@@ -128,13 +143,12 @@ export function appReducer(state: AppState, action: AppActions): AppState {
 				currentCoords: action.payload.coords,
 			};
 		case ActionType.SetResults:
-			// Store raw results and apply filters
+			// Store the raw set (incl. blocked, for counts) and the visible set.
 			const rawResults = action.payload.results;
-			const filteredResults = applyFilters(rawResults, state.filters);
 			return {
 				...state,
 				rawResults,
-				results: filteredResults,
+				results: computeVisibleResults(rawResults, state.filters, state.blocked),
 			};
 		case ActionType.SetLastSearch:
 			return {
@@ -163,22 +177,33 @@ export function appReducer(state: AppState, action: AppActions): AppState {
 				...state,
 				favorites: action.payload.favorites,
 			};
-		case ActionType.AddBlocked:
+		case ActionType.AddBlocked: {
 			// De-dupe by businessId, upsert and refresh addedAt
 			const existingBlocked = state.blocked.filter(b => b.id !== action.payload.blocked.id);
+			const newBlocked = [...existingBlocked, action.payload.blocked];
 			return {
 				...state,
-				blocked: [...existingBlocked, action.payload.blocked],
+				blocked: newBlocked,
+				// Re-filter so a newly blocked business disappears from the list now.
+				results: computeVisibleResults(state.rawResults, state.filters, newBlocked),
 			};
-		case ActionType.RemoveBlocked:
+		}
+		case ActionType.RemoveBlocked: {
+			const newBlocked = state.blocked.filter(b => b.id !== action.payload.businessId);
 			return {
 				...state,
-				blocked: state.blocked.filter(b => b.id !== action.payload.businessId),
+				blocked: newBlocked,
+				// Unblocking brings it back into the visible list.
+				results: computeVisibleResults(state.rawResults, state.filters, newBlocked),
 			};
+		}
 		case ActionType.HydrateBlocked:
 			return {
 				...state,
 				blocked: action.payload.blocked,
+				// Persisted blocks may hydrate after results are already set — re-filter
+				// so those businesses don't linger visible until the next action.
+				results: computeVisibleResults(state.rawResults, state.filters, action.payload.blocked),
 			};
 		case ActionType.AddHistory:
 			// Dedupe by id, then normalize with stable sorting and cap
@@ -236,8 +261,8 @@ export function appReducer(state: AppState, action: AppActions): AppState {
 				...state.filters,
 				...action.payload.filters,
 			};
-			// Re-apply filters to raw results
-			const refiltered = applyFilters(state.rawResults, newFilters);
+			// Re-apply filters (and blocked exclusion) to raw results
+			const refiltered = computeVisibleResults(state.rawResults, newFilters, state.blocked);
 			return {
 				...state,
 				filters: newFilters,
@@ -245,8 +270,8 @@ export function appReducer(state: AppState, action: AppActions): AppState {
 			};
 		}
 		case ActionType.ResetFilters: {
-			// Re-apply filters to raw results
-			const refiltered = applyFilters(state.rawResults, initialFilters);
+			// Re-apply filters (and blocked exclusion) to raw results
+			const refiltered = computeVisibleResults(state.rawResults, initialFilters, state.blocked);
 			return {
 				...state,
 				filters: initialFilters,
@@ -285,8 +310,8 @@ export function appReducer(state: AppState, action: AppActions): AppState {
 				excludedCategoryIds: newExcludedIds,
 			};
 
-			// Re-apply filters to raw results immediately
-			const refiltered = applyFilters(state.rawResults, newFilters);
+			// Re-apply filters (and blocked exclusion) to raw results immediately
+			const refiltered = computeVisibleResults(state.rawResults, newFilters, state.blocked);
 
 			return {
 				...state,

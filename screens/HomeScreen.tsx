@@ -164,11 +164,13 @@ export const HomeScreen: React.FC = () => {
         businesses = await searchApi(term, state.location || 'Current Location', coords, radiusMeters);
       }
 
-      // Filter out blocked restaurants
+      // Dispatch the raw set; the reducer excludes blocked from the visible
+      // results. Keep a blocked-excluded set locally so the wheel never lands on
+      // a blocked restaurant.
       const blockedIds = new Set(blocked.map(b => b.id));
-      const filteredBusinesses = businesses.filter(b => !blockedIds.has(b.id));
+      const spinnable = businesses.filter(b => !blockedIds.has(b.id));
 
-      dispatch(setResults(filteredBusinesses));
+      dispatch(setResults(businesses));
       // Record the committed search identity for cross-screen radius
       // reconciliation (#58).
       dispatch(setLastSearch({
@@ -178,9 +180,9 @@ export const HomeScreen: React.FC = () => {
       }));
 
       // Pick random result after successful search
-      if (filteredBusinesses.length > 0) {
-        const randomIndex = Math.floor(Math.random() * filteredBusinesses.length);
-        const selectedRestaurant = filteredBusinesses[randomIndex];
+      if (spinnable.length > 0) {
+        const randomIndex = Math.floor(Math.random() * spinnable.length);
+        const selectedRestaurant = spinnable[randomIndex];
         setSelectedResult(selectedRestaurant);
         // Start spinning NOW that we have a result
         setIsAutoSpinning(true);
