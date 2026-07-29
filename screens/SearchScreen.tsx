@@ -25,6 +25,7 @@ import useResults, {BusinessProps} from '../hooks/useResults';
 import {useRadiusReconcile} from '../hooks/useRadiusReconcile';
 import useLocation from '../hooks/useLocation';
 import {useBlockFavorite} from '../hooks/useBlockFavorite';
+import {useBlocked} from '../hooks/useBlocked';
 import FiltersSheet from '../components/filter/FiltersSheet';
 import {applyFilters, countActiveFilters} from '../utils/filterBusinesses';
 import {RootTabScreenProps} from '../types';
@@ -41,6 +42,10 @@ export const SearchScreen: React.FC = () => {
     const [resultsErrorMessage, searchResults, searchApi, searchApiWithResolver, resultsLoading] = useResults();
     const [, city, canonicalLocation, coords, , searchLocation, resolveSearchArea, isLocationLoading, , stopLocationWatcher] = useLocation();
     const {isFavorite, isBlocked, handleFavorite, handleBlock} = useBlockFavorite();
+    // Called for its side effect: hydrate the persisted blocked list from storage
+    // even when Search is the entry route (e.g. the /search deep link) and Home
+    // never mounts. Blocked exclusion now happens in the reducer off state.blocked.
+    useBlocked();
 
     const isLoading = resultsLoading || isSearching;
     const displayLocation = state.location || city || 'Current Location';

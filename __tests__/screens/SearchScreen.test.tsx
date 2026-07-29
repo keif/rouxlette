@@ -41,8 +41,10 @@ jest.mock('../../hooks/useLocation', () => ({
 }));
 
 jest.mock('../../hooks/useBlocked', () => ({
-  useBlocked: () => ({ blocked: [] }),
+  useBlocked: jest.fn(() => ({ blocked: [] })),
 }));
+// Spy so we can assert Search hydrates the blocked list on its own (deep-link entry).
+const { useBlocked: mockUseBlocked } = require('../../hooks/useBlocked');
 
 // Configurable favorite/blocked sets (prefixed `mock` for the jest factory).
 const mockFavoriteIds = new Set<string>();
@@ -111,6 +113,11 @@ describe('SearchScreen', () => {
     mockIsFocused = true;
     mockFavoriteIds.clear();
     mockBlockedIds.clear();
+  });
+
+  it('hydrates the blocked list on mount (deep-link entry safety)', () => {
+    renderSearch();
+    expect(mockUseBlocked).toHaveBeenCalled();
   });
 
   it('renders the empty state prompt when there are no results', () => {
