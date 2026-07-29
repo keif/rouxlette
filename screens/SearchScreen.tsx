@@ -68,14 +68,16 @@ export const SearchScreen: React.FC = () => {
 
     // The results hero is the wheel's ACTUAL pick (most recent spin), not just
     // the first result — otherwise the "The wheel picked" badge lands on the
-    // wrong restaurant (#48). Prefer the winner from the current list (so
-    // favorite/block state matches); surface it even if filters would hide it.
-    // With no spin this session, fall back to the top result with a neutral badge.
+    // wrong restaurant (#48). Gate it on the pick being present in the CURRENT
+    // filtered results: this keeps the hero's actions resolvable (it's a real
+    // item from `restaurants`) and avoids a STALE badge after a fresh search,
+    // since spinHistory persists across sessions. Otherwise: neutral top result.
     const lastSpinWinner = state.spinHistory?.[0]?.restaurant;
-    const heroRestaurant = lastSpinWinner
-        ? (restaurants.find(r => r.id === lastSpinWinner.id) ?? businessToRestaurant(lastSpinWinner))
-        : restaurants[0];
-    const heroIsWheelPick = !!lastSpinWinner;
+    const winnerInResults = lastSpinWinner
+        ? restaurants.find(r => r.id === lastSpinWinner.id)
+        : undefined;
+    const heroRestaurant = winnerInResults ?? restaurants[0];
+    const heroIsWheelPick = !!winnerInResults;
     const rowRestaurants = restaurants.filter(r => r.id !== heroRestaurant?.id);
 
     // Build active filters array for display

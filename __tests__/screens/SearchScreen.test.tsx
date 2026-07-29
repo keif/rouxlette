@@ -162,4 +162,23 @@ describe('SearchScreen', () => {
     expect(queryByText(/The wheel picked/)).toBeNull();
     expect(getByText('Top result')).toBeTruthy();
   });
+
+  it('ignores a stale spin winner not present in the current results', () => {
+    const state = {
+      ...mockInitialState,
+      results: [
+        { id: 'a', name: 'Alpha Cafe', categories: [] },
+        { id: 'b', name: 'Beta Bistro', categories: [] },
+      ] as any,
+      // A prior spin from a different result set — its winner isn't in these results.
+      spinHistory: [
+        { restaurant: { id: 'z', name: 'Zeta Diner', categories: [] }, timestamp: 1 },
+      ] as any,
+    };
+    const { queryByText, getByText, getByTestId } = renderSearch(state);
+    // No stale "wheel picked" badge; hero falls back to the top result (A).
+    expect(queryByText(/The wheel picked/)).toBeNull();
+    expect(getByText('Top result')).toBeTruthy();
+    expect(within(getByTestId('restaurant-card-a')).getByText(/Spin again/)).toBeTruthy();
+  });
 });
