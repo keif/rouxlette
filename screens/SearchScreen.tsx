@@ -159,14 +159,18 @@ export const SearchScreen: React.FC = () => {
         }
     }, [state.results]);
 
-    // Radius the currently-displayed results were fetched with (null until the
-    // first search). Drives the refetch-on-radius-change effect below (#55).
+    // The last *submitted* term and the radius its results were fetched with
+    // (both empty/null until the first search). The radius-refetch effect below
+    // replays the submitted term — never the current draft input — so editing
+    // the box without submitting can't hijack a refetch (#55).
+    const lastSubmittedTermRef = useRef<string>('');
     const lastFetchedRadiusRef = useRef<number | null>(null);
 
-    const handleSearch = async () => {
-        const term = searchQuery.trim();
+    const handleSearch = async (termOverride?: string) => {
+        const term = (termOverride ?? searchQuery).trim();
         if (!term) return;
 
+        lastSubmittedTermRef.current = term;
         lastFetchedRadiusRef.current = state.filters.radiusMeters;
         setIsSearching(true);
         setErrorMessage('');
@@ -205,12 +209,11 @@ export const SearchScreen: React.FC = () => {
     // seen value) makes that reconciliation self-correcting and loop-free —
     // handleSearch resets the ref to the radius it fetched.
     useEffect(() => {
-        if (isSearching) return;                 // wait for any in-flight search
-        if (!searchQuery.trim()) return;         // nothing to search
-        if (lastFetchedRadiusRef.current === null) return; // no search performed yet
+        if (isSearching) return;                          // wait for any in-flight search
+        if (!lastSubmittedTermRef.current) return;        // no search submitted yet
         if (lastFetchedRadiusRef.current === state.filters.radiusMeters) return; // already current
-        handleSearch();
-        // handleSearch reads the current term/coords via closure at fire time.
+        handleSearch(lastSubmittedTermRef.current);       // replay the submitted term, not the draft
+        // handleSearch reads the current coords via closure at fire time.
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [state.filters.radiusMeters, isSearching]);
 
@@ -339,7 +342,7 @@ export const SearchScreen: React.FC = () => {
                         value={searchQuery}
                         onChangeText={setSearchQuery}
                         returnKeyType="search"
-                        onSubmitEditing={handleSearch}
+                        onSubmitEditing={() => handleSearch()}
                         editable={!isLoading}
                     />
                     {searchQuery.length > 0 && (

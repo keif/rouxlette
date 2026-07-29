@@ -253,6 +253,38 @@ describe('SearchScreen', () => {
     });
   });
 
+  it('replays the submitted term on a radius refetch, not the draft input (#55)', async () => {
+    const { getByPlaceholderText, rerender } = render(
+      <RootContext.Provider value={{ state: mockInitialState, dispatch: mockDispatch }}>
+        <SearchScreen />
+      </RootContext.Provider>
+    );
+    const input = getByPlaceholderText('What are you craving?');
+    // Submit "pizza"...
+    fireEvent.changeText(input, 'pizza');
+    fireEvent(input, 'submitEditing');
+    await waitFor(() => expect(mockSearchApi).toHaveBeenCalledWith('pizza', expect.anything(), null, 1600));
+    // ...then edit the box to an UNsubmitted draft.
+    fireEvent.changeText(input, 'sushi');
+    mockSearchApi.mockClear();
+
+    // Radius change: the refetch must use the submitted "pizza", not "sushi".
+    const newState = {
+      ...mockInitialState,
+      filters: { ...mockInitialState.filters, radiusMeters: 8047 },
+    };
+    rerender(
+      <RootContext.Provider value={{ state: newState, dispatch: mockDispatch }}>
+        <SearchScreen />
+      </RootContext.Provider>
+    );
+
+    await waitFor(() =>
+      expect(mockSearchApi).toHaveBeenCalledWith('pizza', expect.anything(), null, 8047)
+    );
+    expect(mockSearchApi).not.toHaveBeenCalledWith('sushi', expect.anything(), null, 8047);
+  });
+
   it('does not re-fetch on a radius change when there is no active term (#55)', async () => {
     const { rerender } = render(
       <RootContext.Provider value={{ state: mockInitialState, dispatch: mockDispatch }}>
