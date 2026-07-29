@@ -66,6 +66,18 @@ export const SearchScreen: React.FC = () => {
 
     const restaurants = filteredBusinesses.map(businessToRestaurant);
 
+    // The results hero is the wheel's ACTUAL pick (most recent spin), not just
+    // the first result — otherwise the "The wheel picked" badge lands on the
+    // wrong restaurant (#48). Prefer the winner from the current list (so
+    // favorite/block state matches); surface it even if filters would hide it.
+    // With no spin this session, fall back to the top result with a neutral badge.
+    const lastSpinWinner = state.spinHistory?.[0]?.restaurant;
+    const heroRestaurant = lastSpinWinner
+        ? (restaurants.find(r => r.id === lastSpinWinner.id) ?? businessToRestaurant(lastSpinWinner))
+        : restaurants[0];
+    const heroIsWheelPick = !!lastSpinWinner;
+    const rowRestaurants = restaurants.filter(r => r.id !== heroRestaurant?.id);
+
     // Build active filters array for display
     const activeFilters: ActiveFilter[] = [];
 
@@ -391,7 +403,7 @@ export const SearchScreen: React.FC = () => {
             {/* Results — hero top pick + compact rows (Supper Club) */}
             {!isLoading && restaurants.length > 0 && (
                 <FlatList
-                    data={restaurants.slice(1)}
+                    data={rowRestaurants}
                     keyExtractor={(item) => item.id}
                     ListHeaderComponent={
                         <>
@@ -401,13 +413,14 @@ export const SearchScreen: React.FC = () => {
                                 </Text>
                             </View>
                             <RestaurantTopPick
-                                restaurant={restaurants[0]}
-                                onPress={() => handleRestaurantPress(restaurants[0])}
-                                onFavoriteToggle={() => handleFavoriteToggle(restaurants[0].id)}
-                                onDirections={() => handleDirections(restaurants[0])}
+                                restaurant={heroRestaurant}
+                                badgeLabel={heroIsWheelPick ? undefined : 'Top result'}
+                                onPress={() => handleRestaurantPress(heroRestaurant)}
+                                onFavoriteToggle={() => handleFavoriteToggle(heroRestaurant.id)}
+                                onDirections={() => handleDirections(heroRestaurant)}
                                 onSpinAgain={handleSpinAgain}
                             />
-                            {restaurants.length > 1 && (
+                            {rowRestaurants.length > 0 && (
                                 <Text style={styles.subhead}>More nearby</Text>
                             )}
                         </>
