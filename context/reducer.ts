@@ -1,4 +1,4 @@
-import { AppState, Filter, Filters, SpinHistory, initialFilters } from "./state";
+import { AppState, Filter, Filters, SpinHistory, LastSearch, initialFilters } from "./state";
 import { logSafe } from "../utils/log";
 import { deepEqual } from "../utils/deepEqual";
 import { applyFilters } from "../utils/filterBusinesses";
@@ -29,6 +29,7 @@ import {
 	ShowBusinessModal,
 	HideBusinessModal,
 	ToggleCategoryFilter,
+	SetLastSearch,
 } from "./actions";
 import { CategoryProps, BusinessProps } from "../hooks/useResults";
 import { YelpBusiness } from "../types/yelp";
@@ -106,14 +107,19 @@ export function appReducer(state: AppState, action: AppActions): AppState {
 			};
 		case ActionType.SetLocation:
 			const newLocation = action.payload.location;
+			// A genuine city change (an existing, different location) wipes results
+			// to prevent wrong-city roulette picks — and drops the committed search
+			// identity with them, since there are no displayed results to reconcile.
+			// First-time label population (''→city, e.g. a GPS search's reverse
+			// geocode resolving) is NOT a change: results and the committed identity
+			// both stay valid (same place, same coords), so radius reconciliation
+			// keeps working (#58).
 			const locationChanged = state.location && state.location !== newLocation;
 
-			// Clear results if location has changed significantly to prevent wrong-city roulette picks
 			return {
 				...state,
 				location: newLocation,
-				// Clear results when location changes to prevent stale results from wrong cities
-				...(locationChanged && { results: [] })
+				...(locationChanged && { results: [], lastSearch: null }),
 			};
 		case ActionType.SetCoords:
 			return {
@@ -128,6 +134,11 @@ export function appReducer(state: AppState, action: AppActions): AppState {
 				...state,
 				rawResults,
 				results: filteredResults,
+			};
+		case ActionType.SetLastSearch:
+			return {
+				...state,
+				lastSearch: action.payload.lastSearch,
 			};
 		case ActionType.SetShowFilter:
 			return {
@@ -309,6 +320,11 @@ export const setCoords = (coords: LocationObjectCoords | null): SetCoords => ({
 export const setResults = (results: BusinessProps[]): SetResults => ({
 	type: ActionType.SetResults,
 	payload: { results },
+});
+
+export const setLastSearch = (lastSearch: LastSearch | null): SetLastSearch => ({
+	type: ActionType.SetLastSearch,
+	payload: { lastSearch },
 });
 
 export const setShowFilter = (showFilter: boolean): SetShowFilter => ({

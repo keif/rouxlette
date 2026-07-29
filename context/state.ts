@@ -8,6 +8,16 @@ export interface SpinHistory {
 	timestamp: number;
 }
 
+// The committed search identity for the currently-displayed results: the term,
+// coordinates, and radius the results were actually fetched with. Shared across
+// screens (Home ⇄ Search) so radius reconciliation has one source of truth
+// instead of per-screen refs (#58).
+export interface LastSearch {
+	term: string;
+	coords: { latitude: number; longitude: number } | null;
+	radiusMeters: number;
+}
+
 export interface AppState {
 	categories: CategoryProps[],
 	detail: BusinessProps | null;
@@ -24,6 +34,7 @@ export interface AppState {
 	spinHistory: SpinHistory[];
 	selectedBusiness: YelpBusiness | null;
 	isBusinessModalOpen: boolean;
+	lastSearch: LastSearch | null;
 }
 
 export interface Filter {
@@ -66,4 +77,5 @@ export const initialAppState: AppState = {
 	spinHistory: [],
 	selectedBusiness: null,
 	isBusinessModalOpen: false,
+	lastSearch: null,
 }

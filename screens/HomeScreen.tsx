@@ -1,4 +1,4 @@
-import React, { useState, useContext, useEffect, useRef } from 'react';
+import React, { useState, useContext, useEffect } from 'react';
 import {
   View,
   Text,
@@ -17,8 +17,9 @@ import { LinearGradient } from 'expo-linear-gradient';
 import { spacing, radius, typography } from '../theme';
 import { supperClub, supperClubPalette, supperClubGlow } from '../theme/supperClub';
 import { RootContext } from '../context/RootContext';
-import { setResults, setShowFilter, addSpinHistory, setSelectedBusiness, showBusinessModal, setFilters, setCategories, setLocation, setCoords } from '../context/reducer';
+import { setResults, setLastSearch, setShowFilter, addSpinHistory, setSelectedBusiness, showBusinessModal, setFilters, setCategories, setLocation, setCoords } from '../context/reducer';
 import useResults, { BusinessProps } from '../hooks/useResults';
+import { useRadiusReconcile } from '../hooks/useRadiusReconcile';
 import useLocation from '../hooks/useLocation';
 import { useHistory } from '../hooks/useHistory';
 import { useBlocked } from '../hooks/useBlocked';
@@ -118,9 +119,6 @@ export const HomeScreen: React.FC = () => {
     });
   });
 
-  // Radius the current results were fetched with (null until the first search).
-  const lastFetchedRadiusRef = useRef<number | null>(null);
-
   const handleSpin = () => {
     // If no results yet but have valid query, trigger search first
     if (!hasResults && hasValidSearchQuery) {
@@ -135,13 +133,10 @@ export const HomeScreen: React.FC = () => {
 
     // Radius changed since the current results were fetched (e.g. the user
     // widened Distance in the filter sheet). Yelp returns a different set for a
-    // new radius, so re-search before spinning instead of spinning the stale,
-    // narrower result set (#55). The refetch auto-spins on completion.
-    if (
-      lastFetchedRadiusRef.current !== null &&
-      lastFetchedRadiusRef.current !== state.filters.radiusMeters
-    ) {
-      handleSearch();
+    // new radius, so re-search the committed term before spinning instead of
+    // spinning the stale, narrower result set (#55/#58). The refetch auto-spins
+    // on completion.
+    if (reconcile()) {
       return;
     }
 
@@ -152,11 +147,11 @@ export const HomeScreen: React.FC = () => {
     setIsAutoSpinning(true);
   };
 
-  const handleSearch = async () => {
-    const term = searchQuery.trim();
+  const handleSearch = async (termOverride?: string) => {
+    const term = (termOverride ?? searchQuery).trim();
     if (!term) return;
 
-    lastFetchedRadiusRef.current = state.filters.radiusMeters;
+    const radiusMeters = state.filters.radiusMeters;
     setIsSearching(true);
     setErrorMessage('');
     try {
@@ -164,9 +159,9 @@ export const HomeScreen: React.FC = () => {
       const resolvedLocation = await resolveSearchArea(state.location || canonicalLocation);
 
       if (resolvedLocation) {
-        businesses = await searchApiWithResolver(term, resolvedLocation, state.filters.radiusMeters);
+        businesses = await searchApiWithResolver(term, resolvedLocation, radiusMeters);
       } else {
-        businesses = await searchApi(term, state.location || 'Current Location', coords, state.filters.radiusMeters);
+        businesses = await searchApi(term, state.location || 'Current Location', coords, radiusMeters);
       }
 
       // Filter out blocked restaurants
@@ -174,6 +169,13 @@ export const HomeScreen: React.FC = () => {
       const filteredBusinesses = businesses.filter(b => !blockedIds.has(b.id));
 
       dispatch(setResults(filteredBusinesses));
+      // Record the committed search identity for cross-screen radius
+      // reconciliation (#58).
+      dispatch(setLastSearch({
+        term,
+        coords: coords ? { latitude: coords.latitude, longitude: coords.longitude } : null,
+        radiusMeters,
+      }));
 
       // Pick random result after successful search
       if (filteredBusinesses.length > 0) {
@@ -186,10 +188,22 @@ export const HomeScreen: React.FC = () => {
     } catch (error) {
       setErrorMessage('Failed to search restaurants. Please try again.');
       dispatch(setResults([]));
+      // Results were cleared — drop the committed identity so a later radius
+      // change doesn't replay this (failed) query over empty state (#58).
+      dispatch(setLastSearch(null));
     } finally {
       setIsSearching(false);
     }
   };
+
+  // Spin screen: don't auto-refetch on an idle radius change (that would spin
+  // the wheel unprompted). `reconcile()` is invoked explicitly from handleSpin,
+  // and the hook still refetches if the radius changed mid-search (#55/#58).
+  const { reconcile } = useRadiusReconcile({
+    isSearching,
+    autoWhenIdle: false,
+    runSearch: (term) => handleSearch(term),
+  });
 
   // Called when wheel finishes spinning animation
   const handleAutoSpinComplete = () => {
@@ -200,7 +214,10 @@ export const HomeScreen: React.FC = () => {
         business: selectedResult,
         source: 'spin',
         context: {
-          searchTerm: searchQuery,
+          // The committed term the displayed results were fetched with — correct
+          // even when the spin replayed a committed search (from another screen)
+          // while Home's input box was blank or holding an unsubmitted draft (#58).
+          searchTerm: state.lastSearch?.term ?? searchQuery,
           locationText: displayLocation,
           coords: coords,
           filters: {
@@ -369,7 +386,7 @@ export const HomeScreen: React.FC = () => {
               value={searchQuery}
               onChangeText={setSearchQuery}
               returnKeyType="search"
-              onSubmitEditing={handleSearch}
+              onSubmitEditing={() => handleSearch()}
               editable={!isLoading}
             />
             {searchQuery.length > 0 && (

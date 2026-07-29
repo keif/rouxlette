@@ -1,13 +1,15 @@
 import React from 'react';
-import { render, fireEvent, waitFor, within, act } from '@testing-library/react-native';
+import { render, fireEvent, waitFor, within } from '@testing-library/react-native';
 import { SearchScreen } from '../../screens/SearchScreen';
 import { RootContext } from '../../context/RootContext';
 import { mockInitialState } from '../mocks/mockState';
-import { setShowFilter } from '../../context/reducer';
+import { setShowFilter, setLastSearch } from '../../context/reducer';
 
 // Navigation
+let mockIsFocused = true; // prefixed `mock` so the jest.mock factory may use it
 jest.mock('@react-navigation/native', () => ({
   useNavigation: () => ({ navigate: jest.fn(), setOptions: jest.fn(), goBack: jest.fn() }),
+  useIsFocused: () => mockIsFocused,
 }));
 
 // Data hooks. SearchScreen destructures 5 values from useResults and 10 from
@@ -103,6 +105,7 @@ const renderSearch = (state = mockInitialState) =>
 describe('SearchScreen', () => {
   beforeEach(() => {
     jest.clearAllMocks();
+    mockIsFocused = true;
   });
 
   it('renders the empty state prompt when there are no results', () => {
@@ -186,44 +189,16 @@ describe('SearchScreen', () => {
     expect(within(getByTestId('restaurant-card-a')).getByText(/Spin again/)).toBeTruthy();
   });
 
-  it('re-fetches with the new radius when the distance filter changes (#55)', async () => {
-    const { getByPlaceholderText, rerender } = render(
-      <RootContext.Provider value={{ state: mockInitialState, dispatch: mockDispatch }}>
-        <SearchScreen />
-      </RootContext.Provider>
-    );
-    // Perform a real search first (no coords/resolver in the mocks → searchApi
-    // path). This records the radius the results were fetched with.
-    const input = getByPlaceholderText('What are you craving?');
-    fireEvent.changeText(input, 'pizza');
-    fireEvent(input, 'submitEditing');
-    await waitFor(() => expect(mockSearchApi).toHaveBeenCalledWith('pizza', expect.anything(), null, 1600));
-    mockSearchApi.mockClear();
-
-    // User applies a larger distance in the filter sheet.
-    const newState = {
-      ...mockInitialState,
-      filters: { ...mockInitialState.filters, radiusMeters: 8047 },
-    };
-    rerender(
-      <RootContext.Provider value={{ state: newState, dispatch: mockDispatch }}>
-        <SearchScreen />
-      </RootContext.Provider>
-    );
-
-    await waitFor(() => {
-      expect(mockSearchApi).toHaveBeenCalledWith('pizza', expect.anything(), null, 8047);
-    });
+  // Committed search identity lives in shared state (state.lastSearch); the
+  // reconciliation reads it so radius changes reconcile across screens (#58).
+  const committedState = (term: string, committedRadius: number, filterRadius: number) => ({
+    ...mockInitialState,
+    lastSearch: { term, coords: null, radiusMeters: committedRadius },
+    filters: { ...mockInitialState.filters, radiusMeters: filterRadius },
   });
 
-  it('does not drop a radius change applied during an in-flight search (#55)', async () => {
-    // Hold the first search open so isSearching stays true when radius changes.
-    let releaseFirstSearch: (v: any) => void = () => {};
-    mockSearchApi.mockImplementationOnce(
-      () => new Promise((resolve) => { releaseFirstSearch = resolve; })
-    );
-
-    const { getByPlaceholderText, rerender } = render(
+  it('records the committed search identity when a search is submitted (#58)', async () => {
+    const { getByPlaceholderText } = render(
       <RootContext.Provider value={{ state: mockInitialState, dispatch: mockDispatch }}>
         <SearchScreen />
       </RootContext.Provider>
@@ -231,82 +206,90 @@ describe('SearchScreen', () => {
     const input = getByPlaceholderText('What are you craving?');
     fireEvent.changeText(input, 'pizza');
     fireEvent(input, 'submitEditing');
-    await waitFor(() => expect(mockSearchApi).toHaveBeenCalledWith('pizza', expect.anything(), null, 1600));
-
-    // Radius changes WHILE the first search is still in flight.
-    const newState = {
-      ...mockInitialState,
-      filters: { ...mockInitialState.filters, radiusMeters: 8047 },
-    };
-    rerender(
-      <RootContext.Provider value={{ state: newState, dispatch: mockDispatch }}>
-        <SearchScreen />
-      </RootContext.Provider>
+    await waitFor(() =>
+      expect(mockDispatch).toHaveBeenCalledWith(
+        setLastSearch({ term: 'pizza', coords: null, radiusMeters: 1600 })
+      )
     );
-    // No refetch yet — still busy.
-    expect(mockSearchApi).not.toHaveBeenCalledWith('pizza', expect.anything(), null, 8047);
-
-    // Complete the in-flight search; the deferred radius change must now refetch.
-    await act(async () => { releaseFirstSearch([]); });
-    await waitFor(() => {
-      expect(mockSearchApi).toHaveBeenCalledWith('pizza', expect.anything(), null, 8047);
-    });
   });
 
-  it('replays the submitted term on a radius refetch, not the draft input (#55)', async () => {
-    const { getByPlaceholderText, rerender } = render(
+  it('clears the committed search when a search fails (#58)', async () => {
+    mockSearchApi.mockRejectedValueOnce(new Error('network'));
+    const { getByPlaceholderText } = render(
       <RootContext.Provider value={{ state: mockInitialState, dispatch: mockDispatch }}>
         <SearchScreen />
       </RootContext.Provider>
     );
     const input = getByPlaceholderText('What are you craving?');
-    // Submit "pizza"...
     fireEvent.changeText(input, 'pizza');
     fireEvent(input, 'submitEditing');
-    await waitFor(() => expect(mockSearchApi).toHaveBeenCalledWith('pizza', expect.anything(), null, 1600));
-    // ...then edit the box to an UNsubmitted draft.
-    fireEvent.changeText(input, 'sushi');
-    mockSearchApi.mockClear();
+    await waitFor(() => expect(mockDispatch).toHaveBeenCalledWith(setLastSearch(null)));
+  });
 
-    // Radius change: the refetch must use the submitted "pizza", not "sushi".
-    const newState = {
-      ...mockInitialState,
-      filters: { ...mockInitialState.filters, radiusMeters: 8047 },
-    };
-    rerender(
-      <RootContext.Provider value={{ state: newState, dispatch: mockDispatch }}>
+  it('auto-refetches the committed term when the applied radius diverges — even from another screen (#55/#58)', async () => {
+    // Mounts already stale: results committed at 1600 m, filter now at 8047 m
+    // (e.g. arriving from Home's "View all" with a wider distance applied).
+    render(
+      <RootContext.Provider value={{ state: committedState('pizza', 1600, 8047), dispatch: mockDispatch }}>
         <SearchScreen />
       </RootContext.Provider>
     );
+    await waitFor(() =>
+      expect(mockSearchApi).toHaveBeenCalledWith('pizza', expect.anything(), null, 8047)
+    );
+  });
 
+  it('does not auto-refetch in the background when the Search tab is blurred (#58)', async () => {
+    // Tab navigators keep Search mounted after blur; a distance change made on
+    // Home must not trigger a background refetch here.
+    mockIsFocused = false;
+    render(
+      <RootContext.Provider value={{ state: committedState('pizza', 1600, 8047), dispatch: mockDispatch }}>
+        <SearchScreen />
+      </RootContext.Provider>
+    );
+    // Let any effect settle, then assert no refetch happened.
+    await waitFor(() => expect(mockDispatch).not.toHaveBeenCalledWith(expect.objectContaining({ type: 'unused' })));
+    expect(mockSearchApi).not.toHaveBeenCalled();
+    expect(mockSearchApiWithResolver).not.toHaveBeenCalled();
+  });
+
+  it('replays the committed term on a radius refetch, not the draft input (#55/#58)', async () => {
+    const { getByPlaceholderText, rerender } = render(
+      <RootContext.Provider value={{ state: committedState('pizza', 1600, 1600), dispatch: mockDispatch }}>
+        <SearchScreen />
+      </RootContext.Provider>
+    );
+    // Edit the box to an UNsubmitted draft, then change the radius.
+    fireEvent.changeText(getByPlaceholderText('What are you craving?'), 'sushi');
+    mockSearchApi.mockClear();
+    rerender(
+      <RootContext.Provider value={{ state: committedState('pizza', 1600, 8047), dispatch: mockDispatch }}>
+        <SearchScreen />
+      </RootContext.Provider>
+    );
     await waitFor(() =>
       expect(mockSearchApi).toHaveBeenCalledWith('pizza', expect.anything(), null, 8047)
     );
     expect(mockSearchApi).not.toHaveBeenCalledWith('sushi', expect.anything(), null, 8047);
   });
 
-  it('does not re-fetch on a radius change when there is no active term (#55)', async () => {
+  it('does not refetch when there is no committed search or the radius matches (#58)', async () => {
+    // No committed search yet.
     const { rerender } = render(
-      <RootContext.Provider value={{ state: mockInitialState, dispatch: mockDispatch }}>
+      <RootContext.Provider value={{ state: { ...mockInitialState, filters: { ...mockInitialState.filters, radiusMeters: 8047 } }, dispatch: mockDispatch }}>
         <SearchScreen />
       </RootContext.Provider>
     );
-    mockSearchApi.mockClear();
-    mockSearchApiWithResolver.mockClear();
-
-    const newState = {
-      ...mockInitialState,
-      filters: { ...mockInitialState.filters, radiusMeters: 8047 },
-    };
-    rerender(
-      <RootContext.Provider value={{ state: newState, dispatch: mockDispatch }}>
-        <SearchScreen />
-      </RootContext.Provider>
-    );
-
-    // Give any effect a tick to (not) fire.
-    await waitFor(() => expect(mockDispatch).not.toHaveBeenCalledWith(expect.objectContaining({ type: 'unused' })));
     expect(mockSearchApi).not.toHaveBeenCalled();
     expect(mockSearchApiWithResolver).not.toHaveBeenCalled();
+
+    // Committed, but radius already matches → still no refetch.
+    rerender(
+      <RootContext.Provider value={{ state: committedState('pizza', 8047, 8047), dispatch: mockDispatch }}>
+        <SearchScreen />
+      </RootContext.Provider>
+    );
+    expect(mockSearchApi).not.toHaveBeenCalled();
   });
 });

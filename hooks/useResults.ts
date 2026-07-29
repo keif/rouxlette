@@ -195,12 +195,12 @@ export default function useResults() {
 				return [];
 			}
 		} catch (err: any) {
-			logSafe(`[useResults] searchApi error`, { 
-				message: err?.message, 
+			logSafe(`[useResults] searchApi error`, {
+				message: err?.message,
 				status: err?.response?.status,
-				code: err?.code 
+				code: err?.code
 			});
-			
+
 			// Set user-friendly error message
 			if (err.response?.status === 429) {
 				setErrorMessage('Too many requests. Please wait a moment and try again.');
@@ -211,9 +211,12 @@ export default function useResults() {
 			} else {
 				setErrorMessage('Search failed. Please try again.');
 			}
-			
+
 			setResults(INIT_RESULTS);
-			return [];
+			// Propagate the failure so callers can distinguish it from a genuine
+			// empty result set (an empty [] is a valid, committable search) — the
+			// screens clear the committed search identity on the thrown error (#58).
+			throw err;
 		} finally {
 			setIsLoading(false);
 		}
@@ -339,13 +342,13 @@ export default function useResults() {
 				return [];
 			}
 		} catch (err: any) {
-			logSafe(`[useResults] searchApiWithResolver error`, { 
-				message: err?.message, 
+			logSafe(`[useResults] searchApiWithResolver error`, {
+				message: err?.message,
 				status: err?.response?.status,
 				code: err?.code,
 				location: resolvedLocation.label
 			});
-			
+
 			// Set user-friendly error message
 			if (err.response?.status === 429) {
 				setErrorMessage('Too many requests. Please wait a moment and try again.');
@@ -356,9 +359,11 @@ export default function useResults() {
 			} else {
 				setErrorMessage('Search failed. Please try again.');
 			}
-			
+
 			setResults(INIT_RESULTS);
-			return [];
+			// Propagate the failure so callers can distinguish it from an empty
+			// (but valid) result set and clear the committed search identity (#58).
+			throw err;
 		} finally {
 			setIsLoading(false);
 		}

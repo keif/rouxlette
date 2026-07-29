@@ -96,6 +96,9 @@ const SearchInput = ({
 			setIsLoading?.(false);
 		} catch (error) {
 			console.error('[SearchInput] Error in handleDoneEditing:', error);
+			// useResults now throws on failure (rather than resolving []), so clear
+			// any previously-shown results instead of leaving them stale (#58).
+			setResults({ id: `search-error-${Date.now()}`, businesses: [] });
 			setErrorMessage('Search failed. Please try again.');
 			setIsLoading?.(false);
 		}
