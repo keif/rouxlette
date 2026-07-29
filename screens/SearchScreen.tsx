@@ -193,6 +193,9 @@ export const SearchScreen: React.FC = () => {
         } catch (error) {
             setErrorMessage('Failed to search restaurants. Please try again.');
             dispatch(setResults([]));
+            // Results were cleared — drop the committed identity so a later
+            // radius change doesn't replay this (failed) query over empty state (#58).
+            dispatch(setLastSearch(null));
         } finally {
             setIsSearching(false);
         }

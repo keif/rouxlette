@@ -91,6 +91,19 @@ describe('HomeScreen radius refetch on spin (#55/#58)', () => {
     );
   });
 
+  it('clears the committed search when a Home search fails (#58)', async () => {
+    mockSearchApi.mockRejectedValueOnce(new Error('network'));
+    const { getByPlaceholderText } = render(
+      <RootContext.Provider value={{ state: mockInitialState, dispatch: mockDispatch }}>
+        <HomeScreen />
+      </RootContext.Provider>
+    );
+    const input = getByPlaceholderText('What are you craving?');
+    fireEvent.changeText(input, 'pizza');
+    fireEvent(input, 'submitEditing');
+    await waitFor(() => expect(mockDispatch).toHaveBeenCalledWith(setLastSearch(null)));
+  });
+
   it('re-issues the committed search on Spin Again when the radius changed', async () => {
     // Committed at 1 mi, filter now at 3 mi → stale. Tap the wheel.
     const { getByTestId } = render(

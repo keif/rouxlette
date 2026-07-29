@@ -213,6 +213,19 @@ describe('SearchScreen', () => {
     );
   });
 
+  it('clears the committed search when a search fails (#58)', async () => {
+    mockSearchApi.mockRejectedValueOnce(new Error('network'));
+    const { getByPlaceholderText } = render(
+      <RootContext.Provider value={{ state: mockInitialState, dispatch: mockDispatch }}>
+        <SearchScreen />
+      </RootContext.Provider>
+    );
+    const input = getByPlaceholderText('What are you craving?');
+    fireEvent.changeText(input, 'pizza');
+    fireEvent(input, 'submitEditing');
+    await waitFor(() => expect(mockDispatch).toHaveBeenCalledWith(setLastSearch(null)));
+  });
+
   it('auto-refetches the committed term when the applied radius diverges — even from another screen (#55/#58)', async () => {
     // Mounts already stale: results committed at 1600 m, filter now at 8047 m
     // (e.g. arriving from Home's "View all" with a wider distance applied).
