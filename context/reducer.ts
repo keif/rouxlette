@@ -30,6 +30,7 @@ import {
 	HideBusinessModal,
 	ToggleCategoryFilter,
 	SetLastSearch,
+	RequestSpin,
 } from "./actions";
 import { CategoryProps, BusinessProps } from "../hooks/useResults";
 import { YelpBusiness } from "../types/yelp";
@@ -217,11 +218,18 @@ export function appReducer(state: AppState, action: AppActions): AppState {
 			return {
 				...state,
 				isBusinessModalOpen: true,
+				businessModalSource: action.payload.source,
 			};
 		case ActionType.HideBusinessModal:
 			return {
 				...state,
 				isBusinessModalOpen: false,
+				businessModalSource: null,
+			};
+		case ActionType.RequestSpin:
+			return {
+				...state,
+				spinRequestId: state.spinRequestId + 1,
 			};
 		case ActionType.SetFilters: {
 			const newFilters = {
@@ -386,12 +394,17 @@ export const setSelectedBusiness = (business: YelpBusiness | null): SetSelectedB
 	payload: { business },
 });
 
-export const showBusinessModal = (): ShowBusinessModal => ({
+export const showBusinessModal = (source: 'spin' | null = null): ShowBusinessModal => ({
 	type: ActionType.ShowBusinessModal,
+	payload: { source },
 });
 
 export const hideBusinessModal = (): HideBusinessModal => ({
 	type: ActionType.HideBusinessModal,
+});
+
+export const requestSpin = (): RequestSpin => ({
+	type: ActionType.RequestSpin,
 });
 
 export const setFilters = (filters: Partial<Filters>): SetFilters => ({

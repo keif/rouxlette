@@ -146,6 +146,23 @@ describe('HomeScreen radius refetch on spin (#55/#58)', () => {
     );
   });
 
+  it('re-spins the wheel when the winner modal requests a spin (spinRequestId bump)', () => {
+    const base = committedState('pizza', 1600, 1600); // has results, radius matches
+    const { queryAllByText, getAllByText, rerender } = render(
+      <RootContext.Provider value={{ state: base, dispatch: mockDispatch }}>
+        <HomeScreen />
+      </RootContext.Provider>
+    );
+    expect(queryAllByText('Spinning...').length).toBe(0); // idle before the request
+    // The modal's Spin Again bumps spinRequestId; Home should start the wheel.
+    rerender(
+      <RootContext.Provider value={{ state: { ...base, spinRequestId: base.spinRequestId + 1 }, dispatch: mockDispatch }}>
+        <HomeScreen />
+      </RootContext.Provider>
+    );
+    expect(getAllByText('Spinning...').length).toBeGreaterThan(0);
+  });
+
   it('does not auto-refetch on an idle radius change (no surprise spin)', () => {
     // Stale committed radius but the user has NOT spun — Home must stay put.
     render(

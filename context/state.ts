@@ -34,6 +34,11 @@ export interface AppState {
 	spinHistory: SpinHistory[];
 	selectedBusiness: YelpBusiness | null;
 	isBusinessModalOpen: boolean;
+	// 'spin' when the business modal is showing a roulette winner (enables the
+	// in-modal Spin Again / View All action bar); null for plain detail views.
+	businessModalSource: 'spin' | null;
+	// Bumped by the modal's Spin Again to ask Home to re-spin the wheel.
+	spinRequestId: number;
 	lastSearch: LastSearch | null;
 }
 
@@ -77,5 +82,7 @@ export const initialAppState: AppState = {
 	spinHistory: [],
 	selectedBusiness: null,
 	isBusinessModalOpen: false,
+	businessModalSource: null,
+	spinRequestId: 0,
 	lastSearch: null,
 }

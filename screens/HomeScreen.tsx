@@ -1,4 +1,4 @@
-import React, { useState, useContext, useEffect } from 'react';
+import React, { useState, useContext, useEffect, useRef } from 'react';
 import {
   View,
   Text,
@@ -205,6 +205,17 @@ export const HomeScreen: React.FC = () => {
     runSearch: (term) => handleSearch(term),
   });
 
+  // The winner modal's "Spin Again" bumps spinRequestId; re-run the spin so the
+  // wheel animates (visible behind the translucent modal) and the modal reveals
+  // the new winner when it settles.
+  const prevSpinRequestId = useRef(state.spinRequestId);
+  useEffect(() => {
+    if (state.spinRequestId === prevSpinRequestId.current) return;
+    prevSpinRequestId.current = state.spinRequestId;
+    handleSpin();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [state.spinRequestId]);
+
   // Called when wheel finishes spinning animation
   const handleAutoSpinComplete = () => {
     setIsAutoSpinning(false);
@@ -236,7 +247,7 @@ export const HomeScreen: React.FC = () => {
       };
       dispatch(addSpinHistory(spinEntry));
       dispatch(setSelectedBusiness(selectedResult));
-      dispatch(showBusinessModal());
+      dispatch(showBusinessModal('spin'));
 
       // Clear selected result
       setSelectedResult(null);

@@ -13,7 +13,8 @@ import {
 } from 'react-native';
 import {useSafeAreaInsets} from 'react-native-safe-area-context';
 import {RootContext} from '../../context/RootContext';
-import {hideBusinessModal} from '../../context/reducer';
+import {hideBusinessModal, requestSpin} from '../../context/reducer';
+import {navigate} from '../../navigation';
 import AppStyles from '../../AppStyles';
 import {supperClub} from '../../theme/supperClub';
 import FlipCard from './FlipCard';
@@ -42,8 +43,23 @@ export function BusinessCardModal() {
     const [isFlipped, setIsFlipped] = useState(false);
     const [imageViewerVisible, setImageViewerVisible] = useState(false);
     const [selectedImageIndex, setSelectedImageIndex] = useState(0);
+    const [respinning, setRespinning] = useState(false);
 
-    const {isBusinessModalOpen, selectedBusiness} = state;
+    const {isBusinessModalOpen, selectedBusiness, businessModalSource, spinHistory} = state;
+    // The action bar (Spin Again / View All) only belongs on the roulette-winner
+    // modal — not on plain detail views opened from Search / History / Favorites.
+    const isSpinWinner = businessModalSource === 'spin';
+
+    // Detect when a requested re-spin has landed: handleAutoSpinComplete on Home
+    // prepends a new spinHistory entry (a fresh object) and updates the winner.
+    // Comparing the head reference is cap-safe (spinHistory is capped at 10).
+    const respinBaselineRef = React.useRef<unknown>(undefined);
+    useEffect(() => {
+        if (respinning && spinHistory[0] !== respinBaselineRef.current) {
+            setRespinning(false);
+            setIsFlipped(false);
+        }
+    }, [spinHistory, respinning]);
 
     // Convert to BusinessProps for hooks
     const businessForHook: BusinessProps | null = selectedBusiness ? {
@@ -103,8 +119,26 @@ export function BusinessCardModal() {
     const is_open_now = business.hours?.[0]?.is_open_now ?? isOpen ?? null;
 
     const handleBackdropPress = () => {
+        // Don't let a stray backdrop tap dismiss mid-spin.
+        if (respinning) return;
         setIsFlipped(false);
         dispatch(hideBusinessModal());
+    };
+
+    // "Spin Again": fade the card out to a translucent backdrop, ask Home to
+    // re-spin the wheel (visible behind), and reveal the new winner on landing.
+    const handleSpinAgain = () => {
+        respinBaselineRef.current = spinHistory[0];
+        setIsFlipped(false);
+        setRespinning(true);
+        dispatch(requestSpin());
+    };
+
+    // "View All": close the winner modal and jump to the results list.
+    const handleViewAll = () => {
+        setIsFlipped(false);
+        dispatch(hideBusinessModal());
+        navigate('Search');
     };
 
     const handleClosePress = () => {
@@ -413,12 +447,19 @@ export function BusinessCardModal() {
                 onRequestClose={handleBackdropPress}
             >
                 <Pressable
-                    style={styles.backdrop}
+                    style={[styles.backdrop, respinning && styles.backdropRespinning]}
                     onPress={handleBackdropPress}
                     testID="modal-backdrop"
                 >
                     <View style={styles.modalContainer}>
-                        <Pressable onPress={(e) => e.stopPropagation()}>
+                        {respinning ? (
+                            // Card fades to a translucent backdrop so Home's wheel
+                            // is visible spinning behind; a hint sits at the bottom.
+                            <View style={styles.respinningHintWrap} pointerEvents="none">
+                                <Text style={styles.respinningHint}>Spinning the wheel…</Text>
+                            </View>
+                        ) : (
+                        <Pressable onPress={(e) => e.stopPropagation()} style={styles.contentColumn}>
                             <View style={{maxWidth: modalMaxWidth, width: modalMaxWidth}}>
                                 <FlipCard
                                     front={frontContent}
@@ -430,7 +471,32 @@ export function BusinessCardModal() {
                                     disableSwipeToFlip={true}
                                 />
                             </View>
+                            {isSpinWinner && (
+                                <View style={[styles.actionBar, {maxWidth: modalMaxWidth, width: modalMaxWidth}]}>
+                                    <Pressable
+                                        style={({pressed}) => [styles.winnerActionButton, styles.winnerActionPrimary, pressed && styles.winnerActionPressed]}
+                                        onPress={handleSpinAgain}
+                                        testID="modal-spin-again"
+                                        accessibilityRole="button"
+                                        accessibilityLabel="Spin again"
+                                    >
+                                        <Ionicons name="refresh" size={18} color="#FFFFFF"/>
+                                        <Text style={styles.winnerActionPrimaryText}>Spin Again</Text>
+                                    </Pressable>
+                                    <Pressable
+                                        style={({pressed}) => [styles.winnerActionButton, styles.winnerActionSecondary, pressed && styles.winnerActionPressed]}
+                                        onPress={handleViewAll}
+                                        testID="modal-view-all"
+                                        accessibilityRole="button"
+                                        accessibilityLabel="View all results"
+                                    >
+                                        <Ionicons name="list" size={18} color={supperClub.gold}/>
+                                        <Text style={styles.winnerActionSecondaryText}>View All</Text>
+                                    </Pressable>
+                                </View>
+                            )}
                         </Pressable>
+                        )}
                     </View>
                 </Pressable>
             </Modal>
@@ -464,6 +530,62 @@ const styles = StyleSheet.create({
     },
     flipCard: {
         // Empty - let content handle its own styling for 3D flip effect
+    },
+    backdropRespinning: {
+        // Translucent so Home's roulette wheel is visible spinning behind.
+        backgroundColor: 'rgba(6,3,4,0.28)',
+    },
+    respinningHintWrap: {
+        flex: 1,
+        justifyContent: 'flex-end',
+        alignItems: 'center',
+        paddingBottom: 96,
+    },
+    respinningHint: {
+        color: supperClub.text,
+        fontFamily: AppStyles.fonts.medium,
+        fontSize: 15,
+        letterSpacing: 0.3,
+        opacity: 0.92,
+    },
+    contentColumn: {
+        alignItems: 'center',
+    },
+    actionBar: {
+        flexDirection: 'row',
+        gap: 10,
+        marginTop: 14,
+    },
+    winnerActionButton: {
+        flex: 1,
+        flexDirection: 'row',
+        alignItems: 'center',
+        justifyContent: 'center',
+        gap: 8,
+        paddingVertical: 14,
+        borderRadius: 12,
+        minHeight: 48,
+    },
+    winnerActionPrimary: {
+        backgroundColor: supperClub.primary,
+    },
+    winnerActionSecondary: {
+        backgroundColor: supperClub.surfaceElevated,
+        borderWidth: 1,
+        borderColor: supperClub.borderSoft,
+    },
+    winnerActionPressed: {
+        opacity: 0.85,
+    },
+    winnerActionPrimaryText: {
+        color: '#FFFFFF',
+        fontFamily: AppStyles.fonts.medium,
+        fontSize: 15,
+    },
+    winnerActionSecondaryText: {
+        color: supperClub.gold,
+        fontFamily: AppStyles.fonts.medium,
+        fontSize: 15,
     },
     cardContent: {
         borderRadius: 16,
