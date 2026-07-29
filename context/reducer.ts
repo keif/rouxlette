@@ -107,16 +107,21 @@ export function appReducer(state: AppState, action: AppActions): AppState {
 			};
 		case ActionType.SetLocation:
 			const newLocation = action.payload.location;
+			// Results are only wiped on a genuine city change (an existing, different
+			// location) — never on first-time label population, which would drop valid
+			// GPS-fetched results.
 			const locationChanged = state.location && state.location !== newLocation;
+			// The committed search identity, however, is dropped on ANY location
+			// change (including the first ''→city set) so radius reconciliation can't
+			// replay the old term across a location boundary where no results were
+			// committed. Clearing only the identity (not results) is safe (#58).
+			const committedSearchStale = state.lastSearch !== null && state.location !== newLocation;
 
-			// Clear results if location has changed significantly to prevent wrong-city roulette picks
 			return {
 				...state,
 				location: newLocation,
-				// Clear results — and the committed search identity — when the
-				// location changes, so radius reconciliation can't replay the old
-				// term for a city that has no committed results (#58).
-				...(locationChanged && { results: [], lastSearch: null })
+				...(locationChanged && { results: [] }),
+				...(committedSearchStale && { lastSearch: null }),
 			};
 		case ActionType.SetCoords:
 			return {
