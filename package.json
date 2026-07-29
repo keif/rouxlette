@@ -18,6 +18,7 @@
     "@miblanchard/react-native-slider": "^2.1.0",
     "@ptomasroos/react-native-multi-slider": "^2.2.2",
     "@react-native-async-storage/async-storage": "2.2.0",
+    "@react-native-community/slider": "5.0.1",
     "@react-navigation/bottom-tabs": "^7.0.0",
     "@react-navigation/material-bottom-tabs": "^6.2.4",
     "@react-navigation/material-top-tabs": "^7.0.0",

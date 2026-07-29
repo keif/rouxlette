@@ -191,15 +191,49 @@ describe('FiltersSheet', () => {
   });
 
   describe('Distance Filter', () => {
-    it('should display distance options', () => {
-      const { getAllByText } = renderFiltersSheet();
-      
+    it('should render a distance slider with scale labels', () => {
+      const { getByTestId, getAllByText } = renderFiltersSheet();
+
       expect(getAllByText('Distance')[0]).toBeTruthy();
+      expect(getByTestId('distance-slider')).toBeTruthy();
+      // Scale endpoints for orientation
       expect(getAllByText('0.5 mi').length).toBeGreaterThan(0);
-      expect(getAllByText('1 mi').length).toBeGreaterThan(0);
-      expect(getAllByText('2 mi')[0]).toBeTruthy();
-      expect(getAllByText('5 mi')[0]).toBeTruthy();
-      expect(getAllByText('10 mi')[0]).toBeTruthy();
+      expect(getAllByText('25 mi').length).toBeGreaterThan(0);
+    });
+
+    it('updates the distance label as the slider moves', () => {
+      const { getByTestId, getAllByText } = renderFiltersSheet();
+
+      // 24000 m ≈ 14.9 mi
+      fireEvent(getByTestId('distance-slider'), 'valueChange', 24000);
+
+      expect(getAllByText('14.9 mi').length).toBeGreaterThan(0);
+    });
+
+    it('applies the slider distance on Apply Filters', () => {
+      const { getByTestId, getByText, mockDispatch } = renderFiltersSheet();
+
+      fireEvent(getByTestId('distance-slider'), 'valueChange', 12070); // ~7.5 mi
+      fireEvent.press(getByText('Apply Filters'));
+
+      expect(mockDispatch).toHaveBeenCalledWith(
+        expect.objectContaining({
+          payload: { filters: expect.objectContaining({ radiusMeters: 12070 }) },
+        })
+      );
+    });
+
+    it('clamps distance to the Yelp maximum (40000 m)', () => {
+      const { getByTestId, getByText, mockDispatch } = renderFiltersSheet();
+
+      fireEvent(getByTestId('distance-slider'), 'valueChange', 99999);
+      fireEvent.press(getByText('Apply Filters'));
+
+      const applyCall = mockDispatch.mock.calls.find(
+        (c: any[]) => c[0]?.payload?.filters?.radiusMeters !== undefined
+      );
+      expect(applyCall).toBeTruthy();
+      expect(applyCall![0].payload.filters.radiusMeters).toBeLessThanOrEqual(40000);
     });
 
     it('should show current distance selection', () => {
