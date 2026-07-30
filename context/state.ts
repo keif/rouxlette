@@ -30,6 +30,7 @@ export interface AppState {
 	showFilter: boolean;
 	favorites: FavoriteItem[];
 	blocked: FavoriteItem[];
+	dealbreakerCategoryIds: string[]; // persistent "never want" cuisine aliases
 	history: HistoryItem[];
 	spinHistory: SpinHistory[];
 	selectedBusiness: YelpBusiness | null;
@@ -78,6 +79,7 @@ export const initialAppState: AppState = {
 	showFilter: false,
 	favorites: [],
 	blocked: [],
+	dealbreakerCategoryIds: [],
 	history: [],
 	spinHistory: [],
 	selectedBusiness: null,

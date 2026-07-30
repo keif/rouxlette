@@ -29,6 +29,8 @@ import {
 	ShowBusinessModal,
 	HideBusinessModal,
 	ToggleCategoryFilter,
+	ToggleDealbreaker,
+	HydrateDealbreakers,
 	SetLastSearch,
 	RequestSpin,
 } from "./actions";
@@ -89,13 +91,22 @@ function normalizeHistory(items: HistoryItem[]): HistoryItem[] {
 // removed. Blocked lives in state, so the reducer is the single place that
 // excludes it — rawResults stays intact (for the "N blocked hidden" count and
 // for re-filtering live when a business is blocked/unblocked).
-function computeVisibleResults(
+// Effective excluded cuisines = (persistent dealbreakers ∪ this-search excludes)
+// − this-search includes. A per-search include always wins over a dealbreaker so
+// a user can deliberately search a cuisine they normally never want. Blocked
+// places (by id) are removed on top. Provider-agnostic: reads only
+// business.categories[].alias via applyFilters.
+export function computeVisibleResults(
 	rawResults: BusinessProps[],
 	filters: Filters,
 	blocked: FavoriteItem[],
+	dealbreakers: string[],
 ): BusinessProps[] {
 	const blockedIds = new Set(blocked.map(b => b.id));
-	return applyFilters(rawResults, filters).filter(b => !blockedIds.has(b.id));
+	const effectiveExcluded = [...new Set([...dealbreakers, ...filters.excludedCategoryIds])]
+		.filter(alias => !filters.categoryIds.includes(alias));
+	const effectiveFilters = { ...filters, excludedCategoryIds: effectiveExcluded };
+	return applyFilters(rawResults, effectiveFilters).filter(b => !blockedIds.has(b.id));
 }
 
 export function appReducer(state: AppState, action: AppActions): AppState {
@@ -148,7 +159,7 @@ export function appReducer(state: AppState, action: AppActions): AppState {
 			return {
 				...state,
 				rawResults,
-				results: computeVisibleResults(rawResults, state.filters, state.blocked),
+				results: computeVisibleResults(rawResults, state.filters, state.blocked, state.dealbreakerCategoryIds),
 			};
 		case ActionType.SetLastSearch:
 			return {
@@ -185,7 +196,7 @@ export function appReducer(state: AppState, action: AppActions): AppState {
 				...state,
 				blocked: newBlocked,
 				// Re-filter so a newly blocked business disappears from the list now.
-				results: computeVisibleResults(state.rawResults, state.filters, newBlocked),
+				results: computeVisibleResults(state.rawResults, state.filters, newBlocked, state.dealbreakerCategoryIds),
 			};
 		}
 		case ActionType.RemoveBlocked: {
@@ -194,7 +205,7 @@ export function appReducer(state: AppState, action: AppActions): AppState {
 				...state,
 				blocked: newBlocked,
 				// Unblocking brings it back into the visible list.
-				results: computeVisibleResults(state.rawResults, state.filters, newBlocked),
+				results: computeVisibleResults(state.rawResults, state.filters, newBlocked, state.dealbreakerCategoryIds),
 			};
 		}
 		case ActionType.HydrateBlocked:
@@ -203,7 +214,7 @@ export function appReducer(state: AppState, action: AppActions): AppState {
 				blocked: action.payload.blocked,
 				// Persisted blocks may hydrate after results are already set — re-filter
 				// so those businesses don't linger visible until the next action.
-				results: computeVisibleResults(state.rawResults, state.filters, action.payload.blocked),
+				results: computeVisibleResults(state.rawResults, state.filters, action.payload.blocked, state.dealbreakerCategoryIds),
 			};
 		case ActionType.AddHistory:
 			// Dedupe by id, then normalize with stable sorting and cap
@@ -262,7 +273,7 @@ export function appReducer(state: AppState, action: AppActions): AppState {
 				...action.payload.filters,
 			};
 			// Re-apply filters (and blocked exclusion) to raw results
-			const refiltered = computeVisibleResults(state.rawResults, newFilters, state.blocked);
+			const refiltered = computeVisibleResults(state.rawResults, newFilters, state.blocked, state.dealbreakerCategoryIds);
 			return {
 				...state,
 				filters: newFilters,
@@ -271,7 +282,7 @@ export function appReducer(state: AppState, action: AppActions): AppState {
 		}
 		case ActionType.ResetFilters: {
 			// Re-apply filters (and blocked exclusion) to raw results
-			const refiltered = computeVisibleResults(state.rawResults, initialFilters, state.blocked);
+			const refiltered = computeVisibleResults(state.rawResults, initialFilters, state.blocked, state.dealbreakerCategoryIds);
 			return {
 				...state,
 				filters: initialFilters,
@@ -311,7 +322,7 @@ export function appReducer(state: AppState, action: AppActions): AppState {
 			};
 
 			// Re-apply filters (and blocked exclusion) to raw results immediately
-			const refiltered = computeVisibleResults(state.rawResults, newFilters, state.blocked);
+			const refiltered = computeVisibleResults(state.rawResults, newFilters, state.blocked, state.dealbreakerCategoryIds);
 
 			return {
 				...state,
@@ -319,6 +330,23 @@ export function appReducer(state: AppState, action: AppActions): AppState {
 				results: refiltered,
 			};
 		}
+		case ActionType.ToggleDealbreaker: {
+			const { alias } = action.payload;
+			const newDealbreakers = state.dealbreakerCategoryIds.includes(alias)
+				? state.dealbreakerCategoryIds.filter(a => a !== alias)
+				: [...state.dealbreakerCategoryIds, alias];
+			return {
+				...state,
+				dealbreakerCategoryIds: newDealbreakers,
+				results: computeVisibleResults(state.rawResults, state.filters, state.blocked, newDealbreakers),
+			};
+		}
+		case ActionType.HydrateDealbreakers:
+			return {
+				...state,
+				dealbreakerCategoryIds: action.payload.aliases,
+				results: computeVisibleResults(state.rawResults, state.filters, state.blocked, action.payload.aliases),
+			};
 		default:
 			return state;
 	}
@@ -449,4 +477,14 @@ export const hydrateFilters = (filters: Filters): HydrateFilters => ({
 export const toggleCategoryFilter = (categoryAlias: string): ToggleCategoryFilter => ({
 	type: ActionType.ToggleCategoryFilter,
 	payload: { categoryAlias },
+});
+
+export const toggleDealbreaker = (alias: string): ToggleDealbreaker => ({
+	type: ActionType.ToggleDealbreaker,
+	payload: { alias },
+});
+
+export const hydrateDealbreakers = (aliases: string[]): HydrateDealbreakers => ({
+	type: ActionType.HydrateDealbreakers,
+	payload: { aliases },
 });

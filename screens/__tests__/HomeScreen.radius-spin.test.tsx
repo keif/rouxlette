@@ -3,7 +3,7 @@ import { render, fireEvent, waitFor } from '@testing-library/react-native';
 import { HomeScreen } from '../HomeScreen';
 import { RootContext } from '../../context/RootContext';
 import { mockInitialState } from '../../__tests__/mocks/mockState';
-import { setLastSearch } from '../../context/reducer';
+import { setLastSearch, setSelectedBusiness } from '../../context/reducer';
 
 jest.mock('@react-navigation/native', () => ({
   useNavigation: () => ({ navigate: jest.fn(), setOptions: jest.fn(), goBack: jest.fn() }),
@@ -27,6 +27,8 @@ jest.mock('../../hooks/useLocation', () => ({
 const mockAddHistoryEntry = jest.fn();
 jest.mock('../../hooks/useHistory', () => ({ useHistory: () => ({ addHistoryEntry: mockAddHistoryEntry }) }));
 jest.mock('../../hooks/useBlocked', () => ({ useBlocked: () => ({ blocked: [] }) }));
+// useDealbreakers touches persistent storage; stub it (mounted for its side effect).
+jest.mock('../../hooks/useDealbreakers', () => ({ useDealbreakers: () => ({ dealbreakers: [] }) }));
 jest.mock('../../hooks/useCategories', () => ({ __esModule: true, default: () => ({ loadCategories: () => [] }) }));
 
 jest.mock('../../components/RouletteWheel', () => {
@@ -57,12 +59,17 @@ jest.mock('@expo/vector-icons', () => {
   const Icon = ({ name }: any) => <Text testID={`icon-${name}`}>{name}</Text>;
   return { Ionicons: Icon, MaterialIcons: Icon, FontAwesome: Icon };
 });
-jest.mock('../../utils/filterBusinesses', () => ({
-  countActiveFilters: jest.fn(() => 0),
-  applyFilters: (results: any[]) => results,
-  DISTANCE_OPTIONS: [{ label: '1 mi', meters: 1600 }],
-  getDistanceLabel: jest.fn(() => '1 mi'),
-}));
+// Use the REAL applyFilters so computeVisibleResults (which the Home first-spin
+// pool now routes through) actually honors category exclusions/dealbreakers.
+jest.mock('../../utils/filterBusinesses', () => {
+  const actual = jest.requireActual('../../utils/filterBusinesses');
+  return {
+    ...actual,
+    countActiveFilters: jest.fn(() => 0),
+    DISTANCE_OPTIONS: [{ label: '1 mi', meters: 1600 }],
+    getDistanceLabel: jest.fn(() => '1 mi'),
+  };
+});
 
 const mockDispatch = jest.fn();
 // Committed search identity lives in shared state (#58). Results present so
@@ -161,6 +168,46 @@ describe('HomeScreen radius refetch on spin (#55/#58)', () => {
       </RootContext.Provider>
     );
     expect(getAllByText('Spinning...').length).toBeGreaterThan(0);
+  });
+
+  it('never auto-spins onto a dealbreakered cuisine after a Home search', async () => {
+    // Regression: the Home first-spin pool was blocked-only, so the wheel could
+    // land on a "Never show me" cuisine. It must now route through the same
+    // filtering as the visible results (dealbreakers + filters + blocked).
+    const sushi = { id: 'sushi-1', name: 'Sushi Spot', categories: [{ alias: 'sushi', title: 'Sushi' }] };
+    const pizza = { id: 'pizza-1', name: 'Pizza Place', categories: [{ alias: 'pizza', title: 'Pizza' }] };
+    // The useLocation mock's resolveSearchArea returns undefined → HomeScreen
+    // falls back to the plain searchApi path.
+    mockSearchApi.mockResolvedValueOnce([sushi, pizza] as any);
+
+    // Force the random pick to index 0. Pre-fix the pool is [sushi, pizza] so
+    // this selects sushi (bug); post-fix the pool is [pizza] so index 0 is pizza.
+    const randomSpy = jest.spyOn(Math, 'random').mockReturnValue(0);
+
+    const state = { ...mockInitialState, dealbreakerCategoryIds: ['sushi'] };
+    const { getByPlaceholderText, getByTestId } = render(
+      <RootContext.Provider value={{ state, dispatch: mockDispatch }}>
+        <HomeScreen />
+      </RootContext.Provider>
+    );
+
+    const input = getByPlaceholderText('What are you craving?');
+    fireEvent.changeText(input, 'food');
+    fireEvent(input, 'submitEditing');
+
+    // Wait for the auto-spin selection to settle, then finish the wheel so the
+    // selected business is dispatched to the modal.
+    await waitFor(() => expect(mockSearchApi).toHaveBeenCalled());
+    fireEvent.press(getByTestId('wheel-complete'));
+
+    // Only the pizza place survives dealbreaker filtering → the pick is
+    // deterministic. The wheel must NEVER select the sushi place.
+    await waitFor(() =>
+      expect(mockDispatch).toHaveBeenCalledWith(setSelectedBusiness(pizza as any))
+    );
+    expect(mockDispatch).not.toHaveBeenCalledWith(setSelectedBusiness(sushi as any));
+
+    randomSpy.mockRestore();
   });
 
   it('does not auto-refetch on an idle radius change (no surprise spin)', () => {

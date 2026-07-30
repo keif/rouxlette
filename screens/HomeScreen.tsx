@@ -17,13 +17,15 @@ import { LinearGradient } from 'expo-linear-gradient';
 import { spacing, radius, typography } from '../theme';
 import { supperClub, supperClubPalette, supperClubGlow } from '../theme/supperClub';
 import { RootContext } from '../context/RootContext';
-import { setResults, setLastSearch, setShowFilter, addSpinHistory, setSelectedBusiness, showBusinessModal, setFilters, setCategories, setLocation, setCoords } from '../context/reducer';
+import { setResults, setLastSearch, setShowFilter, addSpinHistory, setSelectedBusiness, showBusinessModal, setFilters, setCategories, setLocation, setCoords, computeVisibleResults } from '../context/reducer';
 import useResults, { BusinessProps } from '../hooks/useResults';
 import { useRadiusReconcile } from '../hooks/useRadiusReconcile';
 import useLocation from '../hooks/useLocation';
 import { useHistory } from '../hooks/useHistory';
 import { useBlocked } from '../hooks/useBlocked';
+import { useDealbreakers } from '../hooks/useDealbreakers';
 import useCategories from '../hooks/useCategories';
+import { AvoidingBar } from '../components/AvoidingBar';
 import FiltersSheet from '../components/filter/FiltersSheet';
 import { countActiveFilters } from '../utils/filterBusinesses';
 import { RootTabScreenProps } from '../types';
@@ -43,6 +45,8 @@ export const HomeScreen: React.FC = () => {
   const [, city, canonicalLocation, coords, , searchLocation, resolveSearchArea, isLocationLoading, , stopLocationWatcher] = useLocation();
   const { addHistoryEntry } = useHistory();
   const { blocked } = useBlocked();
+  // Hydrate/persist dealbreakers regardless of entry route (mirrors useBlocked).
+  useDealbreakers();
   const { loadCategories } = useCategories();
 
   const isLoading = resultsLoading || isSearching;
@@ -164,11 +168,17 @@ export const HomeScreen: React.FC = () => {
         businesses = await searchApi(term, state.location || 'Current Location', coords, radiusMeters);
       }
 
-      // Dispatch the raw set; the reducer excludes blocked from the visible
-      // results. Keep a blocked-excluded set locally so the wheel never lands on
-      // a blocked restaurant.
-      const blockedIds = new Set(blocked.map(b => b.id));
-      const spinnable = businesses.filter(b => !blockedIds.has(b.id));
+      // Dispatch the RAW set; the reducer filters it for the visible results.
+      // The local spin pool must use the SAME filtering authority as the visible
+      // results (dealbreakers + per-search excludes/price/rating + blocked) so
+      // the wheel's first spin after a search can never land on an excluded
+      // restaurant (e.g. a "Never show me" cuisine).
+      const spinnable = computeVisibleResults(
+        businesses,
+        state.filters,
+        blocked,
+        state.dealbreakerCategoryIds,
+      );
 
       dispatch(setResults(businesses));
       // Record the committed search identity for cross-screen radius
@@ -376,6 +386,18 @@ export const HomeScreen: React.FC = () => {
               ? 'Tap to spin'
               : 'Enter search term'}
           </Text>
+        </View>
+
+        {/* Avoiding bar — summarizes dealbreakers + per-search excludes and opens
+            the Filters sheet. Home has no blocked-hidden count of its own. */}
+        <View style={styles.avoidingBarWrap}>
+          <AvoidingBar
+            dealbreakers={state.dealbreakerCategoryIds}
+            perSearchExcludes={state.filters.excludedCategoryIds}
+            includes={state.filters.categoryIds}
+            blockedCount={0}
+            onPress={handleFiltersPress}
+          />
         </View>
 
         {/* Active Filters */}
@@ -610,6 +632,10 @@ const styles = StyleSheet.create({
     ...typography.callout,
     color: supperClub.textMuted,
     marginTop: spacing.md,
+  },
+  avoidingBarWrap: {
+    paddingHorizontal: spacing.md,
+    marginBottom: spacing.md,
   },
   searchContainer: {
     paddingHorizontal: spacing.md,

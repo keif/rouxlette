@@ -3,6 +3,9 @@ import { render, fireEvent } from '@testing-library/react-native';
 import FiltersSheet from '../FiltersSheet';
 import { RootContext } from '../../../context/RootContext';
 import { AppState, initialAppState } from '../../../context/state';
+import { StyleSheet } from 'react-native';
+import { toggleDealbreaker } from '../../../context/reducer';
+import { supperClub } from '../../../theme/supperClub';
 
 // Mock the vector icons
 jest.mock('react-native-vector-icons/MaterialIcons', () => 'Icon');
@@ -300,6 +303,46 @@ describe('FiltersSheet', () => {
       
       expect(mockDispatch).toHaveBeenCalled();
       expect(mockOnClose).toHaveBeenCalled();
+    });
+  });
+
+  describe('Dealbreakers ("Never show me")', () => {
+    it('shows the "Never show me" section and toggles a dealbreaker immediately', () => {
+      const { getByText, getByTestId, mockDispatch } = renderFiltersSheet();
+
+      // Section header + subtitle are always present, even with an empty list.
+      expect(getByText('Never show me')).toBeTruthy();
+
+      // Inactive chips still render and are pressable for the default empty list.
+      const chip = getByTestId('dealbreaker-sushi');
+      expect(chip).toBeTruthy();
+
+      fireEvent.press(chip);
+
+      // Dispatches immediately — not gated behind the local Apply flow.
+      expect(mockDispatch).toHaveBeenCalledWith(toggleDealbreaker('sushi'));
+    });
+
+    it('reflects the active dealbreaker state from context', () => {
+      const { getByTestId } = renderFiltersSheet({
+        dealbreakerCategoryIds: ['pizza'],
+      });
+
+      // Prove the active branch actually fired: an active chip carries the
+      // error-tinted background. Pressable's style may be a function of press
+      // state or an already-resolved array on the host node, so normalize both
+      // then flatten before asserting. This must FAIL if isActive were hardcoded
+      // to a constant.
+      const bgFor = (testID: string): string | undefined => {
+        const raw = getByTestId(testID).props.style;
+        const resolved = typeof raw === 'function' ? raw({ pressed: false }) : raw;
+        return (StyleSheet.flatten(resolved) as { backgroundColor?: string })
+          .backgroundColor;
+      };
+
+      expect(bgFor('dealbreaker-pizza')).toBe(supperClub.error);
+      // An inactive chip must NOT carry the error tint.
+      expect(bgFor('dealbreaker-sushi')).not.toBe(supperClub.error);
     });
   });
 

@@ -26,6 +26,8 @@ import {useRadiusReconcile} from '../hooks/useRadiusReconcile';
 import useLocation from '../hooks/useLocation';
 import {useBlockFavorite} from '../hooks/useBlockFavorite';
 import {useBlocked} from '../hooks/useBlocked';
+import {useDealbreakers} from '../hooks/useDealbreakers';
+import {AvoidingBar} from '../components/AvoidingBar';
 import FiltersSheet from '../components/filter/FiltersSheet';
 import {applyFilters, countActiveFilters} from '../utils/filterBusinesses';
 import {RootTabScreenProps} from '../types';
@@ -46,6 +48,9 @@ export const SearchScreen: React.FC = () => {
     // even when Search is the entry route (e.g. the /search deep link) and Home
     // never mounts. Blocked exclusion now happens in the reducer off state.blocked.
     useBlocked();
+    // Hydrate/persist dealbreakers regardless of entry route (mirrors useBlocked)
+    // so the persisted avoid-list survives even when Home never mounts.
+    useDealbreakers();
 
     const isLoading = resultsLoading || isSearching;
     const displayLocation = state.location || city || 'Current Location';
@@ -78,6 +83,22 @@ export const SearchScreen: React.FC = () => {
     const blockedHiddenCount = rawResults.length > 0
         ? applyFilters(rawResults, state.filters).filter(b => isBlocked(b.id)).length
         : 0;
+
+    // "All avoided" empty state: the search returned raw matches, but the user's
+    // exclusions (dealbreakers or per-search excludes) hid every visible result.
+    // Distinct from the blocked-only empty state (handled separately) and from
+    // the truly-no-results case (rawResults empty → keep the generic prompt).
+    const isAvoidingSomething =
+        state.dealbreakerCategoryIds.length > 0 || state.filters.excludedCategoryIds.length > 0;
+    const showAllAvoidedEmpty =
+        restaurants.length === 0 &&
+        state.results.length === 0 &&
+        blockedHiddenCount === 0 &&
+        rawResults.length > 0 &&
+        isAvoidingSomething;
+    // How many raw matches the avoidance settings hid (raw minus anything still
+    // visible). Clamped so the copy always reads sensibly in this branch.
+    const avoidedHiddenCount = Math.max(rawResults.length - state.results.length, 1);
 
     // The results hero is the wheel's ACTUAL pick (most recent spin), not just
     // the first result — otherwise the "The wheel picked" badge lands on the
@@ -450,26 +471,28 @@ export const SearchScreen: React.FC = () => {
                                 <Text style={styles.resultsCount}>
                                     {restaurants.length} Result{restaurants.length !== 1 ? 's' : ''}
                                 </Text>
-                                {(favoritesCount > 0 || blockedHiddenCount > 0) && (
+                                {favoritesCount > 0 && (
                                     <View style={styles.resultsMetaRow} testID="results-meta">
-                                        {favoritesCount > 0 && (
-                                            <View style={styles.metaChip}>
-                                                <Ionicons name="heart" size={12} color={supperClub.gold}/>
-                                                <Text style={styles.metaText}>
-                                                    {favoritesCount} favorite{favoritesCount !== 1 ? 's' : ''}
-                                                </Text>
-                                            </View>
-                                        )}
-                                        {blockedHiddenCount > 0 && (
-                                            <View style={styles.metaChip}>
-                                                <Ionicons name="eye-off-outline" size={12} color={supperClub.textMuted}/>
-                                                <Text style={styles.metaTextMuted}>
-                                                    {blockedHiddenCount} blocked hidden
-                                                </Text>
-                                            </View>
-                                        )}
+                                        <View style={styles.metaChip}>
+                                            <Ionicons name="heart" size={12} color={supperClub.gold}/>
+                                            <Text style={styles.metaText}>
+                                                {favoritesCount} favorite{favoritesCount !== 1 ? 's' : ''}
+                                            </Text>
+                                        </View>
                                     </View>
                                 )}
+                                {/* The Avoiding bar folds in the blocked-hidden count
+                                    (was a standalone summary) alongside avoided cuisines,
+                                    and opens the Filters sheet to edit them. */}
+                                <View style={styles.avoidingBarWrap}>
+                                    <AvoidingBar
+                                        dealbreakers={state.dealbreakerCategoryIds}
+                                        perSearchExcludes={state.filters.excludedCategoryIds}
+                                        includes={state.filters.categoryIds}
+                                        blockedCount={blockedHiddenCount}
+                                        onPress={handleFiltersPress}
+                                    />
+                                </View>
                             </View>
                             <RestaurantTopPick
                                 restaurant={heroRestaurant}
@@ -507,8 +530,29 @@ export const SearchScreen: React.FC = () => {
                 </View>
             )}
 
+            {/* All matches hidden by the user's "Never show me" / exclusion settings.
+                The Avoiding bar is tappable so they can open Filters and adjust. */}
+            {!isLoading && showAllAvoidedEmpty && (
+                <View style={styles.emptyContainer} testID="all-avoided-empty">
+                    <Ionicons name="eye-off-outline" size={64} color={supperClub.textMuted}/>
+                    <Text style={styles.emptyTitle}>Everything was filtered out</Text>
+                    <Text style={styles.emptySubtitle}>
+                        Your "Never show me" settings hid {avoidedHiddenCount} {avoidedHiddenCount === 1 ? 'match' : 'matches'}. Tap below to adjust.
+                    </Text>
+                    <View style={styles.avoidedBarWrap}>
+                        <AvoidingBar
+                            dealbreakers={state.dealbreakerCategoryIds}
+                            perSearchExcludes={state.filters.excludedCategoryIds}
+                            includes={state.filters.categoryIds}
+                            blockedCount={0}
+                            onPress={handleFiltersPress}
+                        />
+                    </View>
+                </View>
+            )}
+
             {/* Empty State */}
-            {!isLoading && restaurants.length === 0 && state.results.length === 0 && blockedHiddenCount === 0 && (
+            {!isLoading && restaurants.length === 0 && state.results.length === 0 && blockedHiddenCount === 0 && !showAllAvoidedEmpty && (
                 <View style={styles.emptyContainer}>
                     <Ionicons name="search-outline" size={64} color={supperClub.textMuted}/>
                     <Text style={styles.emptyTitle}>Search for restaurants</Text>
@@ -712,9 +756,8 @@ const styles = StyleSheet.create({
         fontSize: 12,
         color: supperClub.gold,
     },
-    metaTextMuted: {
-        fontSize: 12,
-        color: supperClub.textMuted,
+    avoidingBarWrap: {
+        marginTop: spacing.sm,
     },
     subhead: {
         fontSize: 11,
@@ -746,5 +789,9 @@ const styles = StyleSheet.create({
         color: supperClub.textMuted,
         marginTop: spacing.sm,
         textAlign: 'center',
+    },
+    avoidedBarWrap: {
+        marginTop: spacing.lg,
+        alignSelf: 'stretch',
     },
 });

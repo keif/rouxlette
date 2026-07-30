@@ -202,3 +202,21 @@ export function getPopularCategories(limit: number = 12): CategoryProps[] {
 export function getCategoryByAlias(alias: string): CategoryProps | undefined {
   return FOOD_CATEGORIES.find(cat => cat.alias === alias);
 }
+
+// Curated common cuisines offered as "Dealbreaker" chips. Aliases are Yelp
+// category aliases (the de-facto taxonomy); a future provider adapter maps its
+// categories into this same alias space.
+export const COMMON_CUISINES: { alias: string; label: string }[] = [
+  { alias: 'hotdogs', label: 'Fast Food' },
+  { alias: 'sushi', label: 'Sushi' },
+  { alias: 'buffets', label: 'Buffet' },
+  { alias: 'pizza', label: 'Pizza' },
+  { alias: 'mexican', label: 'Mexican' },
+  { alias: 'chinese', label: 'Chinese' },
+  { alias: 'indpak', label: 'Indian' },
+  { alias: 'thai', label: 'Thai' },
+  { alias: 'italian', label: 'Italian' },
+  { alias: 'burgers', label: 'Burgers' },
+  { alias: 'seafood', label: 'Seafood' },
+  { alias: 'vegan', label: 'Vegan' },
+];

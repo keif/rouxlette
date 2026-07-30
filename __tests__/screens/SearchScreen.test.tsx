@@ -46,6 +46,12 @@ jest.mock('../../hooks/useBlocked', () => ({
 // Spy so we can assert Search hydrates the blocked list on its own (deep-link entry).
 const { useBlocked: mockUseBlocked } = require('../../hooks/useBlocked');
 
+// useDealbreakers hits persistent storage; stub it so screen tests don't touch
+// AsyncStorage. It's mounted purely for its hydrate/persist side effect here.
+jest.mock('../../hooks/useDealbreakers', () => ({
+  useDealbreakers: () => ({ dealbreakers: [] }),
+}));
+
 // Configurable favorite/blocked sets (prefixed `mock` for the jest factory).
 const mockFavoriteIds = new Set<string>();
 const mockBlockedIds = new Set<string>();
@@ -136,7 +142,7 @@ describe('SearchScreen', () => {
     expect(mockDispatch).toHaveBeenCalledWith(setShowFilter(true));
   });
 
-  it('shows a favorites + blocked-hidden summary above the results', () => {
+  it('shows the favorites chip and folds the blocked count into the Avoiding bar', () => {
     mockFavoriteIds.add('a');   // Alpha is favorited (in the visible list)
     mockBlockedIds.add('c');    // Gamma is blocked (only in rawResults)
     const state = {
@@ -151,13 +157,51 @@ describe('SearchScreen', () => {
         { id: 'c', name: 'Gamma Grill', categories: [] },
       ] as any,
     };
-    const { getByText } = render(
+    const { getByText, getByTestId } = render(
       <RootContext.Provider value={{ state, dispatch: mockDispatch }}>
         <SearchScreen />
       </RootContext.Provider>
     );
     expect(getByText('1 favorite')).toBeTruthy();
-    expect(getByText('1 blocked hidden')).toBeTruthy();
+    // The standalone "N blocked hidden" summary is gone; the count now lives in
+    // the Avoiding bar (rendered because blockedCount > 0).
+    const bar = getByTestId('avoiding-bar');
+    expect(within(bar).getByText(/1 blocked/)).toBeTruthy();
+  });
+
+  it('shows the Avoiding bar when there are dealbreakers', () => {
+    const state = {
+      ...mockInitialState,
+      dealbreakerCategoryIds: ['sushi'],
+      results: [{ id: 'a', name: 'Alpha', categories: [] }] as any,
+      rawResults: [{ id: 'a', name: 'Alpha', categories: [] }] as any,
+    };
+    const { getByTestId } = render(
+      <RootContext.Provider value={{ state, dispatch: mockDispatch }}>
+        <SearchScreen />
+      </RootContext.Provider>
+    );
+    expect(getByTestId('avoiding-bar')).toBeTruthy();
+  });
+
+  it('surfaces an all-avoided empty state (with a tappable Avoiding bar) when dealbreakers hide every match', () => {
+    // The reducer already dropped the sushi place from results (dealbreaker),
+    // but rawResults still holds it — the user searched and got matches, then
+    // their "Never show me" settings hid them all.
+    const state = {
+      ...mockInitialState,
+      dealbreakerCategoryIds: ['sushi'],
+      results: [] as any,
+      rawResults: [{ id: 's', name: 'Sushi Spot', categories: [{ alias: 'sushi', title: 'Sushi' }] }] as any,
+    };
+    const { getByTestId } = render(
+      <RootContext.Provider value={{ state, dispatch: mockDispatch }}>
+        <SearchScreen />
+      </RootContext.Provider>
+    );
+    expect(getByTestId('all-avoided-empty')).toBeTruthy();
+    // The bar is present so the user can tap to adjust their exclusions.
+    expect(getByTestId('avoiding-bar')).toBeTruthy();
   });
 
   it('shows an all-blocked empty state when every match is blocked', () => {
