@@ -61,6 +61,16 @@ export function BusinessCardModal() {
         }
     }, [spinHistory, respinning]);
 
+    // Failsafe: never trap the user on the "Spinning…" overlay. If a requested
+    // spin doesn't land within a few seconds (Home couldn't spin, no handler,
+    // etc.), restore the card so it stays dismissable. Must stay above the
+    // early return below — all hooks run on every render (Rules of Hooks).
+    useEffect(() => {
+        if (!respinning) return;
+        const timeout = setTimeout(() => setRespinning(false), 5000);
+        return () => clearTimeout(timeout);
+    }, [respinning]);
+
     // Convert to BusinessProps for hooks
     const businessForHook: BusinessProps | null = selectedBusiness ? {
         id: selectedBusiness.id,
@@ -136,15 +146,6 @@ export function BusinessCardModal() {
         setRespinning(true);
         dispatch(requestSpin());
     };
-
-    // Failsafe: never trap the user on the "Spinning…" overlay. If a requested
-    // spin doesn't land within a few seconds (Home couldn't spin, no handler,
-    // etc.), restore the card so it stays dismissable.
-    useEffect(() => {
-        if (!respinning) return;
-        const timeout = setTimeout(() => setRespinning(false), 5000);
-        return () => clearTimeout(timeout);
-    }, [respinning]);
 
     // "View All": close the winner modal and jump to the results list.
     const handleViewAll = () => {
