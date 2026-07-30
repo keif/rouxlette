@@ -26,6 +26,8 @@ import {useRadiusReconcile} from '../hooks/useRadiusReconcile';
 import useLocation from '../hooks/useLocation';
 import {useBlockFavorite} from '../hooks/useBlockFavorite';
 import {useBlocked} from '../hooks/useBlocked';
+import {useDealbreakers} from '../hooks/useDealbreakers';
+import {AvoidingBar} from '../components/AvoidingBar';
 import FiltersSheet from '../components/filter/FiltersSheet';
 import {applyFilters, countActiveFilters} from '../utils/filterBusinesses';
 import {RootTabScreenProps} from '../types';
@@ -46,6 +48,9 @@ export const SearchScreen: React.FC = () => {
     // even when Search is the entry route (e.g. the /search deep link) and Home
     // never mounts. Blocked exclusion now happens in the reducer off state.blocked.
     useBlocked();
+    // Hydrate/persist dealbreakers regardless of entry route (mirrors useBlocked)
+    // so the persisted avoid-list survives even when Home never mounts.
+    useDealbreakers();
 
     const isLoading = resultsLoading || isSearching;
     const displayLocation = state.location || city || 'Current Location';
@@ -450,26 +455,27 @@ export const SearchScreen: React.FC = () => {
                                 <Text style={styles.resultsCount}>
                                     {restaurants.length} Result{restaurants.length !== 1 ? 's' : ''}
                                 </Text>
-                                {(favoritesCount > 0 || blockedHiddenCount > 0) && (
+                                {favoritesCount > 0 && (
                                     <View style={styles.resultsMetaRow} testID="results-meta">
-                                        {favoritesCount > 0 && (
-                                            <View style={styles.metaChip}>
-                                                <Ionicons name="heart" size={12} color={supperClub.gold}/>
-                                                <Text style={styles.metaText}>
-                                                    {favoritesCount} favorite{favoritesCount !== 1 ? 's' : ''}
-                                                </Text>
-                                            </View>
-                                        )}
-                                        {blockedHiddenCount > 0 && (
-                                            <View style={styles.metaChip}>
-                                                <Ionicons name="eye-off-outline" size={12} color={supperClub.textMuted}/>
-                                                <Text style={styles.metaTextMuted}>
-                                                    {blockedHiddenCount} blocked hidden
-                                                </Text>
-                                            </View>
-                                        )}
+                                        <View style={styles.metaChip}>
+                                            <Ionicons name="heart" size={12} color={supperClub.gold}/>
+                                            <Text style={styles.metaText}>
+                                                {favoritesCount} favorite{favoritesCount !== 1 ? 's' : ''}
+                                            </Text>
+                                        </View>
                                     </View>
                                 )}
+                                {/* The Avoiding bar folds in the blocked-hidden count
+                                    (was a standalone summary) alongside avoided cuisines,
+                                    and opens the Filters sheet to edit them. */}
+                                <View style={styles.avoidingBarWrap}>
+                                    <AvoidingBar
+                                        dealbreakers={state.dealbreakerCategoryIds}
+                                        perSearchExcludes={state.filters.excludedCategoryIds}
+                                        blockedCount={blockedHiddenCount}
+                                        onPress={handleFiltersPress}
+                                    />
+                                </View>
                             </View>
                             <RestaurantTopPick
                                 restaurant={heroRestaurant}
@@ -712,9 +718,8 @@ const styles = StyleSheet.create({
         fontSize: 12,
         color: supperClub.gold,
     },
-    metaTextMuted: {
-        fontSize: 12,
-        color: supperClub.textMuted,
+    avoidingBarWrap: {
+        marginTop: spacing.sm,
     },
     subhead: {
         fontSize: 11,

@@ -41,6 +41,11 @@ jest.mock('../../hooks/useBlocked', () => ({
   useBlocked: () => ({ blocked: [] }),
 }));
 
+// useDealbreakers touches persistent storage; stub it (mounted for its side effect).
+jest.mock('../../hooks/useDealbreakers', () => ({
+  useDealbreakers: () => ({ dealbreakers: [] }),
+}));
+
 jest.mock('../../hooks/useCategories', () => ({
   __esModule: true,
   default: () => ({ loadCategories: () => [] }),

@@ -23,7 +23,9 @@ import { useRadiusReconcile } from '../hooks/useRadiusReconcile';
 import useLocation from '../hooks/useLocation';
 import { useHistory } from '../hooks/useHistory';
 import { useBlocked } from '../hooks/useBlocked';
+import { useDealbreakers } from '../hooks/useDealbreakers';
 import useCategories from '../hooks/useCategories';
+import { AvoidingBar } from '../components/AvoidingBar';
 import FiltersSheet from '../components/filter/FiltersSheet';
 import { countActiveFilters } from '../utils/filterBusinesses';
 import { RootTabScreenProps } from '../types';
@@ -43,6 +45,8 @@ export const HomeScreen: React.FC = () => {
   const [, city, canonicalLocation, coords, , searchLocation, resolveSearchArea, isLocationLoading, , stopLocationWatcher] = useLocation();
   const { addHistoryEntry } = useHistory();
   const { blocked } = useBlocked();
+  // Hydrate/persist dealbreakers regardless of entry route (mirrors useBlocked).
+  useDealbreakers();
   const { loadCategories } = useCategories();
 
   const isLoading = resultsLoading || isSearching;
@@ -378,6 +382,17 @@ export const HomeScreen: React.FC = () => {
           </Text>
         </View>
 
+        {/* Avoiding bar — summarizes dealbreakers + per-search excludes and opens
+            the Filters sheet. Home has no blocked-hidden count of its own. */}
+        <View style={styles.avoidingBarWrap}>
+          <AvoidingBar
+            dealbreakers={state.dealbreakerCategoryIds}
+            perSearchExcludes={state.filters.excludedCategoryIds}
+            blockedCount={0}
+            onPress={handleFiltersPress}
+          />
+        </View>
+
         {/* Active Filters */}
         {activeFilters.length > 0 && (
           <ActiveFilterBar filters={activeFilters} />
@@ -610,6 +625,10 @@ const styles = StyleSheet.create({
     ...typography.callout,
     color: supperClub.textMuted,
     marginTop: spacing.md,
+  },
+  avoidingBarWrap: {
+    paddingHorizontal: spacing.md,
+    marginBottom: spacing.md,
   },
   searchContainer: {
     paddingHorizontal: spacing.md,
