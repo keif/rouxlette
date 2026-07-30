@@ -12,6 +12,7 @@ import {SearchScreen} from "../screens/SearchScreen";
 import {HomeScreen} from "../screens/HomeScreen";
 import {SavedTabNavigator} from "./SavedTabNavigator";
 import AppStyles from "../AppStyles";
+import { supperClub } from "../theme/supperClub";
 
 // Ref so components rendered OUTSIDE the NavigationContainer (e.g. the global
 // BusinessCardModal in App.tsx) can navigate — used by the winner modal's
@@ -62,18 +63,18 @@ function BottomTabNavigator() {
         <BottomTabs.Navigator
             initialRouteName="Home"
             screenOptions={{
-                tabBarActiveTintColor: AppStyles.color.primary,
-                tabBarInactiveTintColor: AppStyles.color.gray500,
+                tabBarActiveTintColor: supperClub.gold,
+                tabBarInactiveTintColor: supperClub.textMuted,
                 tabBarStyle: {
-                    backgroundColor: AppStyles.color.white,
+                    backgroundColor: supperClub.background,
                     borderTopWidth: 1,
-                    borderTopColor: AppStyles.color.border,
+                    borderTopColor: supperClub.borderSoft,
                     height: Platform.OS === 'ios' ? 88 : 60, // Extra height for iOS safe area
                     paddingTop: 8,
                     paddingBottom: Platform.OS === 'ios' ? 28 : 8,
                     ...Platform.select({
                         ios: {
-                            shadowColor: AppStyles.color.shadow,
+                            shadowColor: '#000',
                             shadowOffset: {width: 0, height: -2},
                             shadowRadius: 8,
                             shadowOpacity: 0.1,
