@@ -61,12 +61,15 @@ exports[`BusinessCardModal snapshots should match snapshot for QuickInfo view 1`
     >
       <View
         style={
-          {
-            "alignItems": "center",
-            "flex": 1,
-            "justifyContent": "center",
-            "paddingHorizontal": 12,
-          }
+          [
+            {
+              "alignItems": "center",
+              "flex": 1,
+              "justifyContent": "center",
+              "paddingHorizontal": 12,
+            },
+            false,
+          ]
         }
       >
         <View
