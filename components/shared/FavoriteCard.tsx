@@ -3,6 +3,7 @@ import { View, Text, Image, StyleSheet, Pressable, Linking, Platform, Alert } fr
 import { MaterialIcons, FontAwesome, Ionicons } from '@expo/vector-icons';
 import { FavoriteItem } from '../../types/favorites';
 import AppStyles from '../../AppStyles';
+import { supperClub } from '../../theme/supperClub';
 import StarRating from './StarRating';
 import Config from '../../Config';
 import { logSafe } from '../../utils/log';
@@ -120,7 +121,7 @@ export const FavoriteCard: React.FC<FavoriteCardProps> = ({ favorite, onPress, i
       ]}
       onPress={handleCardPress}
       android_ripple={{
-        color: AppStyles.color.background,
+        color: supperClub.surfaceElevated,
         radius: 200,
       }}
       testID="favorite-card"
@@ -137,7 +138,7 @@ export const FavoriteCard: React.FC<FavoriteCardProps> = ({ favorite, onPress, i
             />
           ) : (
             <View style={[styles.image, styles.noImage]}>
-              <MaterialIcons name="restaurant" size={32} color={AppStyles.color.greylight} />
+              <MaterialIcons name="restaurant" size={32} color={supperClub.textMuted} />
             </View>
           )}
           
@@ -156,13 +157,13 @@ export const FavoriteCard: React.FC<FavoriteCardProps> = ({ favorite, onPress, i
               <MaterialIcons
                 name="block"
                 size={20}
-                color={AppStyles.color.error}
+                color={supperClub.error}
               />
             ) : (
               <Ionicons
                 name="heart"
                 size={20}
-                color={AppStyles.color.yelp}
+                color={supperClub.gold}
               />
             )}
           </Pressable>
@@ -210,13 +211,13 @@ export const FavoriteCard: React.FC<FavoriteCardProps> = ({ favorite, onPress, i
               ]}
               onPress={handleMapsPress}
               android_ripple={{
-                color: AppStyles.color.background,
+                color: supperClub.surfaceElevated,
                 radius: 20,
                 borderless: true,
               }}
               testID="maps-button"
             >
-              <MaterialIcons name="map" size={16} color={AppStyles.color.primary} />
+              <MaterialIcons name="map" size={16} color={supperClub.gold} />
             </Pressable>
 
             <Pressable
@@ -226,7 +227,7 @@ export const FavoriteCard: React.FC<FavoriteCardProps> = ({ favorite, onPress, i
               ]}
               onPress={handleYelpPress}
               android_ripple={{
-                color: AppStyles.color.background,
+                color: supperClub.surfaceElevated,
                 radius: 20,
                 borderless: true,
               }}
@@ -243,10 +244,12 @@ export const FavoriteCard: React.FC<FavoriteCardProps> = ({ favorite, onPress, i
 
 const styles = StyleSheet.create({
   container: {
-    backgroundColor: AppStyles.color.white,
+    backgroundColor: supperClub.surface,
     borderRadius: 12,
     marginBottom: 12,
-    shadowColor: AppStyles.color.shadow,
+    borderWidth: 1,
+    borderColor: supperClub.borderSoft,
+    shadowColor: '#000',
     shadowOffset: {
       width: 0,
       height: 2,
@@ -269,7 +272,7 @@ const styles = StyleSheet.create({
     borderRadius: 8,
   },
   noImage: {
-    backgroundColor: AppStyles.color.background,
+    backgroundColor: supperClub.surfaceElevated,
     justifyContent: 'center',
     alignItems: 'center',
   },
@@ -277,7 +280,7 @@ const styles = StyleSheet.create({
     position: 'absolute',
     top: 4,
     right: 4,
-    backgroundColor: 'rgba(255,255,255,0.9)',
+    backgroundColor: 'rgba(0,0,0,0.45)',
     borderRadius: 12,
     width: 24,
     height: 24,
@@ -288,13 +291,13 @@ const styles = StyleSheet.create({
     position: 'absolute',
     bottom: 4,
     left: 4,
-    backgroundColor: AppStyles.color.error,
+    backgroundColor: supperClub.error,
     paddingHorizontal: 4,
     paddingVertical: 2,
     borderRadius: 4,
   },
   closedText: {
-    color: AppStyles.color.white,
+    color: '#FFFFFF',
     fontSize: 8,
     fontFamily: AppStyles.fonts.bold,
     fontWeight: 'bold',
@@ -312,14 +315,14 @@ const styles = StyleSheet.create({
   name: {
     fontSize: 16,
     fontFamily: AppStyles.fonts.semiBold,
-    color: AppStyles.color.black,
+    color: '#FFFFFF',
     flex: 1,
     marginRight: 8,
   },
   price: {
     fontSize: 16,
     fontFamily: AppStyles.fonts.semiBold,
-    color: AppStyles.color.greydark,
+    color: supperClub.text,
   },
   meta: {
     flexDirection: 'row',
@@ -329,13 +332,13 @@ const styles = StyleSheet.create({
   categories: {
     fontSize: 14,
     fontFamily: AppStyles.fonts.medium,
-    color: AppStyles.color.greylight,
+    color: supperClub.textMuted,
     flex: 1,
   },
   location: {
     fontSize: 14,
     fontFamily: AppStyles.fonts.medium,
-    color: AppStyles.color.greylight,
+    color: supperClub.textMuted,
   },
   rating: {
     marginBottom: 6,
@@ -343,7 +346,7 @@ const styles = StyleSheet.create({
   addedDate: {
     fontSize: 12,
     fontFamily: AppStyles.fonts.regular,
-    color: AppStyles.color.greylight,
+    color: supperClub.textMuted,
     marginBottom: 8,
   },
   actions: {
@@ -352,7 +355,7 @@ const styles = StyleSheet.create({
     gap: 8,
   },
   actionButton: {
-    backgroundColor: AppStyles.color.background,
+    backgroundColor: supperClub.surfaceElevated,
     borderRadius: 16,
     width: 32,
     height: 32,
