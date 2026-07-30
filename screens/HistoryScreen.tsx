@@ -38,6 +38,10 @@ const HistoryScreen: React.FC = () => {
   };
 
   const handleHistoryItemPress = (item: HistoryItem) => {
+    // Persisted history is untrusted — older/corrupt entries may store
+    // filters.categories as a non-array, which crashed .map() on tap.
+    const rawCategories = item.context?.filters?.categories;
+    const categoryList = Array.isArray(rawCategories) ? rawCategories : [];
     // Convert HistoryItem to YelpBusiness format for the modal
     const business = {
       id: item.businessId,
@@ -49,7 +53,7 @@ const HistoryScreen: React.FC = () => {
         city: item.context?.locationText || '',
         display_address: [item.context?.locationText || ''].filter(Boolean),
       },
-      categories: (item.context?.filters?.categories || []).map(cat => ({ title: cat, alias: cat })),
+      categories: categoryList.map(cat => ({ title: cat, alias: cat })),
       is_closed: false,
       url: `https://www.yelp.com/biz/${item.businessId}`,
       phone: '',
