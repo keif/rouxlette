@@ -29,6 +29,8 @@ export enum ActionType {
 	ShowBusinessModal,
 	HideBusinessModal,
 	ToggleCategoryFilter,
+	ToggleDealbreaker,
+	HydrateDealbreakers,
 	SetLastSearch,
 	RequestSpin,
 }
@@ -164,4 +166,14 @@ export interface ToggleCategoryFilter {
 	payload: { categoryAlias: string };
 }
 
-export type AppActions = SetCategories | SetDetail | SetFilter | SetFilters | ResetFilters | HydrateFilters | SetLocation | SetCoords | SetResults | SetShowFilter | AddFavorite | RemoveFavorite | HydrateFavorites | AddBlocked | RemoveBlocked | HydrateBlocked | AddHistory | ClearHistory | HydrateHistory | AddSpinHistory | SetSelectedBusiness | ShowBusinessModal | HideBusinessModal | ToggleCategoryFilter | SetLastSearch | RequestSpin;
+export interface ToggleDealbreaker {
+	type: ActionType.ToggleDealbreaker;
+	payload: { alias: string };
+}
+
+export interface HydrateDealbreakers {
+	type: ActionType.HydrateDealbreakers;
+	payload: { aliases: string[] };
+}
+
+export type AppActions = SetCategories | SetDetail | SetFilter | SetFilters | ResetFilters | HydrateFilters | SetLocation | SetCoords | SetResults | SetShowFilter | AddFavorite | RemoveFavorite | HydrateFavorites | AddBlocked | RemoveBlocked | HydrateBlocked | AddHistory | ClearHistory | HydrateHistory | AddSpinHistory | SetSelectedBusiness | ShowBusinessModal | HideBusinessModal | ToggleCategoryFilter | ToggleDealbreaker | HydrateDealbreakers | SetLastSearch | RequestSpin;

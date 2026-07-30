@@ -1,4 +1,4 @@
-import { appReducer, setSelectedBusiness, showBusinessModal, hideBusinessModal, setLastSearch, setLocation, requestSpin, setResults, addBlocked, removeBlocked, hydrateBlocked } from '../../context/reducer';
+import { appReducer, setSelectedBusiness, showBusinessModal, hideBusinessModal, setLastSearch, setLocation, requestSpin, setResults, addBlocked, removeBlocked, hydrateBlocked, toggleDealbreaker, hydrateDealbreakers } from '../../context/reducer';
 import { initialAppState } from '../../context/state';
 import { ActionType } from '../../context/actions';
 import { YelpBusiness } from '../../types/yelp';
@@ -162,6 +162,42 @@ describe('appReducer', () => {
       // A later unblock must not repopulate the old city's results from stale raw.
       const afterUnblock = appReducer(moved, removeBlocked('b'));
       expect(afterUnblock.results).toEqual([]);
+    });
+  });
+
+  describe('dealbreakers exclusion', () => {
+    const biz = (id: string, cats: string[] = []) =>
+      ({ id, name: id, distance: 100, rating: 4, categories: cats.map(a => ({ alias: a, title: a })) } as any);
+    const [pizza, sushi, tacos] = [biz('a', ['pizza']), biz('b', ['sushi']), biz('c', ['tacos'])];
+
+    it('excludes dealbreaker cuisines from results but keeps rawResults', () => {
+      const seeded = { ...initialAppState, dealbreakerCategoryIds: ['sushi'] };
+      const next = appReducer(seeded, setResults([pizza, sushi, tacos]));
+      expect(next.results.map((r: any) => r.id)).toEqual(['a', 'c']);
+      expect(next.rawResults.map((r: any) => r.id)).toEqual(['a', 'b', 'c']);
+    });
+
+    it('lets a per-search include override a dealbreaker for that search', () => {
+      const seeded = { ...initialAppState, dealbreakerCategoryIds: ['sushi'], filters: { ...initialAppState.filters, categoryIds: ['sushi'] } };
+      const next = appReducer(seeded, setResults([pizza, sushi, tacos]));
+      expect(next.results.map((r: any) => r.id)).toEqual(['b']);
+    });
+
+    it('ToggleDealbreaker adds then removes and re-filters live', () => {
+      const withResults = appReducer(initialAppState, setResults([pizza, sushi, tacos]));
+      expect(withResults.results.map((r: any) => r.id)).toEqual(['a', 'b', 'c']);
+      const added = appReducer(withResults, toggleDealbreaker('sushi'));
+      expect(added.dealbreakerCategoryIds).toEqual(['sushi']);
+      expect(added.results.map((r: any) => r.id)).toEqual(['a', 'c']);
+      const removed = appReducer(added, toggleDealbreaker('sushi'));
+      expect(removed.dealbreakerCategoryIds).toEqual([]);
+      expect(removed.results.map((r: any) => r.id)).toEqual(['a', 'b', 'c']);
+    });
+
+    it('HydrateDealbreakers re-filters results set before hydration', () => {
+      const withResults = appReducer(initialAppState, setResults([pizza, sushi, tacos]));
+      const next = appReducer(withResults, hydrateDealbreakers(['pizza']));
+      expect(next.results.map((r: any) => r.id)).toEqual(['b', 'c']);
     });
   });
 
