@@ -167,7 +167,7 @@ const styles = StyleSheet.create({
   title: {
     fontSize: 28,
     fontFamily: AppStyles.fonts.bold,
-    color: '#FFFFFF',
+    color: supperClub.textPrimary,
     marginBottom: 4,
   },
   subtitle: {
