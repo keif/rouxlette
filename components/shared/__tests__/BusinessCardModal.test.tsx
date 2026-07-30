@@ -140,6 +140,27 @@ describe('BusinessCardModal', () => {
     expect(queryByTestId('modal-backdrop')).toBeNull();
   });
 
+  it('opens without a rules-of-hooks error on the null → selected transition', () => {
+    // Regression: a useEffect sat after the `if (!selectedBusiness) return null`
+    // early return, so opening the modal (null → set) rendered more hooks than
+    // the closed render and threw "Rendered more hooks than during the previous
+    // render." The rerender below throws if that regresses.
+    const wrap = (state: any) => (
+      <SafeAreaProvider initialMetrics={{ insets: { top: 0, left: 0, right: 0, bottom: 0 }, frame: { x: 0, y: 0, width: 0, height: 0 } }}>
+        <RootContext.Provider value={{ state, dispatch: jest.fn() }}>
+          <BusinessCardModal />
+        </RootContext.Provider>
+      </SafeAreaProvider>
+    );
+    const { rerender, queryByTestId, getByTestId } = render(
+      wrap({ ...initialAppState, selectedBusiness: null, isBusinessModalOpen: false })
+    );
+    expect(queryByTestId('modal-backdrop')).toBeNull();
+
+    rerender(wrap({ ...initialAppState, selectedBusiness: sampleBusiness, isBusinessModalOpen: true }));
+    expect(getByTestId('modal-backdrop')).toBeTruthy();
+  });
+
   it('should render BusinessQuickInfo by default', () => {
     const { getAllByText } = render(
       <TestHarness>
