@@ -13,7 +13,8 @@ import { MaterialIcons as Icon } from '@expo/vector-icons';
 import Slider from '@react-native-community/slider';
 import Config from '../../Config';
 import { RootContext } from '../../context/RootContext';
-import { setFilters, resetFilters } from '../../context/reducer';
+import { setFilters, resetFilters, toggleDealbreaker } from '../../context/reducer';
+import { COMMON_CUISINES } from '../../constants/foodCategories';
 import AppStyles from '../../AppStyles';
 import { supperClub } from '../../theme/supperClub';
 import { Text } from '../Themed';
@@ -413,6 +414,51 @@ const FiltersSheet: React.FC<FiltersSheetProps> = ({ visible, onClose, testID })
               ))}
             </View>
           </View>
+
+          <Divider />
+
+          {/* Never show me — standing "dealbreaker" preference. Unlike the
+              per-search cuisine chips above, tapping here dispatches immediately
+              and persists; it is NOT routed through the local Apply flow. */}
+          <View>
+            <View style={styles.sectionTitleWrapper}>
+              <Text style={styles.sectionTitle}>Never show me</Text>
+              <Text style={styles.sectionSubtitle}>Always hidden</Text>
+            </View>
+            <View style={styles.categoryContainer}>
+              {COMMON_CUISINES.map(cuisine => {
+                const isActive = state.dealbreakerCategoryIds.includes(cuisine.alias);
+                return (
+                  <Pressable
+                    key={cuisine.alias}
+                    testID={`dealbreaker-${cuisine.alias}`}
+                    onPress={() => dispatch(toggleDealbreaker(cuisine.alias))}
+                    style={({ pressed }) => [
+                      styles.categoryChip,
+                      isActive && styles.dealbreakerChipActive,
+                      { opacity: !Config.isAndroid && pressed ? 0.6 : 1 },
+                    ]}
+                    android_ripple={{ color: 'lightgrey' }}
+                  >
+                    <Icon
+                      name="block"
+                      size={14}
+                      color={isActive ? '#FFFFFF' : supperClub.textMuted}
+                      style={styles.categoryIcon}
+                    />
+                    <Text
+                      style={[
+                        styles.categoryChipText,
+                        isActive && styles.categoryChipTextSelected,
+                      ]}
+                    >
+                      {cuisine.label}
+                    </Text>
+                  </Pressable>
+                );
+              })}
+            </View>
+          </View>
         </ScrollView>
 
         <Divider />
@@ -540,6 +586,10 @@ const styles = StyleSheet.create({
     borderColor: supperClub.success,
   },
   categoryChipExcluded: {
+    backgroundColor: supperClub.error,
+    borderColor: supperClub.error,
+  },
+  dealbreakerChipActive: {
     backgroundColor: supperClub.error,
     borderColor: supperClub.error,
   },

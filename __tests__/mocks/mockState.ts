@@ -1,6 +1,10 @@
-import { AppState, initialFilters } from '../../context/state';
+import { AppState, initialAppState, initialFilters } from '../../context/state';
 
 export const mockInitialState: AppState = {
+  // Start from the real initial state so newly-added AppState fields (e.g.
+  // dealbreakerCategoryIds, blocked, rawResults) are always present, then keep
+  // the test-specific overrides below.
+  ...initialAppState,
   categories: [],
   detail: null,
   filter: {},

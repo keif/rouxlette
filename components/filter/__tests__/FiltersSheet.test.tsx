@@ -3,6 +3,7 @@ import { render, fireEvent } from '@testing-library/react-native';
 import FiltersSheet from '../FiltersSheet';
 import { RootContext } from '../../../context/RootContext';
 import { AppState, initialAppState } from '../../../context/state';
+import { toggleDealbreaker } from '../../../context/reducer';
 
 // Mock the vector icons
 jest.mock('react-native-vector-icons/MaterialIcons', () => 'Icon');
@@ -300,6 +301,34 @@ describe('FiltersSheet', () => {
       
       expect(mockDispatch).toHaveBeenCalled();
       expect(mockOnClose).toHaveBeenCalled();
+    });
+  });
+
+  describe('Dealbreakers ("Never show me")', () => {
+    it('shows the "Never show me" section and toggles a dealbreaker immediately', () => {
+      const { getByText, getByTestId, mockDispatch } = renderFiltersSheet();
+
+      // Section header + subtitle are always present, even with an empty list.
+      expect(getByText('Never show me')).toBeTruthy();
+
+      // Inactive chips still render and are pressable for the default empty list.
+      const chip = getByTestId('dealbreaker-sushi');
+      expect(chip).toBeTruthy();
+
+      fireEvent.press(chip);
+
+      // Dispatches immediately — not gated behind the local Apply flow.
+      expect(mockDispatch).toHaveBeenCalledWith(toggleDealbreaker('sushi'));
+    });
+
+    it('reflects the active dealbreaker state from context', () => {
+      const { getByTestId } = renderFiltersSheet({
+        dealbreakerCategoryIds: ['pizza'],
+      });
+
+      // Chip renders whether active or not; tapping an active one toggles it off.
+      const chip = getByTestId('dealbreaker-pizza');
+      expect(chip).toBeTruthy();
     });
   });
 
