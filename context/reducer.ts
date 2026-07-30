@@ -96,7 +96,7 @@ function normalizeHistory(items: HistoryItem[]): HistoryItem[] {
 // a user can deliberately search a cuisine they normally never want. Blocked
 // places (by id) are removed on top. Provider-agnostic: reads only
 // business.categories[].alias via applyFilters.
-function computeVisibleResults(
+export function computeVisibleResults(
 	rawResults: BusinessProps[],
 	filters: Filters,
 	blocked: FavoriteItem[],

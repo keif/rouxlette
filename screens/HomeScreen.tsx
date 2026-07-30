@@ -17,7 +17,7 @@ import { LinearGradient } from 'expo-linear-gradient';
 import { spacing, radius, typography } from '../theme';
 import { supperClub, supperClubPalette, supperClubGlow } from '../theme/supperClub';
 import { RootContext } from '../context/RootContext';
-import { setResults, setLastSearch, setShowFilter, addSpinHistory, setSelectedBusiness, showBusinessModal, setFilters, setCategories, setLocation, setCoords } from '../context/reducer';
+import { setResults, setLastSearch, setShowFilter, addSpinHistory, setSelectedBusiness, showBusinessModal, setFilters, setCategories, setLocation, setCoords, computeVisibleResults } from '../context/reducer';
 import useResults, { BusinessProps } from '../hooks/useResults';
 import { useRadiusReconcile } from '../hooks/useRadiusReconcile';
 import useLocation from '../hooks/useLocation';
@@ -168,11 +168,17 @@ export const HomeScreen: React.FC = () => {
         businesses = await searchApi(term, state.location || 'Current Location', coords, radiusMeters);
       }
 
-      // Dispatch the raw set; the reducer excludes blocked from the visible
-      // results. Keep a blocked-excluded set locally so the wheel never lands on
-      // a blocked restaurant.
-      const blockedIds = new Set(blocked.map(b => b.id));
-      const spinnable = businesses.filter(b => !blockedIds.has(b.id));
+      // Dispatch the RAW set; the reducer filters it for the visible results.
+      // The local spin pool must use the SAME filtering authority as the visible
+      // results (dealbreakers + per-search excludes/price/rating + blocked) so
+      // the wheel's first spin after a search can never land on an excluded
+      // restaurant (e.g. a "Never show me" cuisine).
+      const spinnable = computeVisibleResults(
+        businesses,
+        state.filters,
+        blocked,
+        state.dealbreakerCategoryIds,
+      );
 
       dispatch(setResults(businesses));
       // Record the committed search identity for cross-screen radius
