@@ -1,8 +1,7 @@
 import React, { useState, useMemo } from 'react';
-import { StyleSheet, ScrollView, Text, FlatList, TextInput, Pressable } from 'react-native';
+import { StyleSheet, ScrollView, Text, FlatList, TextInput, Pressable, View } from 'react-native';
 import { SafeAreaProvider, SafeAreaView } from 'react-native-safe-area-context';
 import { StatusBar } from 'expo-status-bar';
-import { View } from '../components/Themed';
 import FavoriteCard from '../components/shared/FavoriteCard';
 import AppStyles from '../AppStyles';
 import { supperClub } from '../theme/supperClub';
