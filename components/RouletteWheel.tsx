@@ -1,8 +1,7 @@
 import React, { useRef, useState, useEffect } from 'react';
-import { View, StyleSheet, Pressable, Animated, Platform } from 'react-native';
+import { View, StyleSheet, Pressable, Animated } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import Svg, { Path, Circle, G } from 'react-native-svg';
-import * as Haptics from 'expo-haptics';
 import {
   supperClub,
   supperClubPalette,
@@ -61,14 +60,7 @@ export const RouletteWheel: React.FC<RouletteWheelProps> = ({
       toValue: 1,
       duration: 1400,
       useNativeDriver: true,
-    }).start(async () => {
-      // Haptics can reject/throw on some devices; never let it abort the spin
-      // completion (which would leave the wheel stuck and never open the result).
-      if (Platform.OS === 'ios') {
-        try {
-          await Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
-        } catch {}
-      }
+    }).start(() => {
       setIsSpinning(false);
       spinAnim.setValue(0);
       onDone?.();
@@ -82,15 +74,13 @@ export const RouletteWheel: React.FC<RouletteWheelProps> = ({
     }
   }, [isAutoSpinning]);
 
-  const handlePress = async () => {
+  const handlePress = () => {
     if (disabled || isSpinning) return;
 
-    if (Platform.OS === 'ios') {
-      try {
-        await Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
-      } catch {}
-    }
-
+    // NOTE: expo-haptics was removed here — on iOS 26 (iPhone 17) the CoreHaptics
+    // call threw an Obj-C exception that React Native's New-Arch TurboModule
+    // bridge rethrew uncaught, aborting the app (SIGABRT) the instant spin was
+    // tapped. A JS try/catch can't catch a native abort, so the call is gone.
     Animated.sequence([
       Animated.timing(scaleAnim, { toValue: 0.95, duration: 100, useNativeDriver: true }),
       Animated.timing(scaleAnim, { toValue: 1, duration: 100, useNativeDriver: true }),
