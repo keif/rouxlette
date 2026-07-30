@@ -492,31 +492,33 @@ export function BusinessCardModal() {
                         always visible and tappable above the (tall) card, regardless
                         of card height. modalContainer reserves paddingBottom for them. */}
                     {isSpinWinner && !respinning && (
-                        <Pressable
-                            onPress={(e) => e.stopPropagation()}
-                            style={[styles.pinnedActionBar, {bottom: insets.bottom + 16, left: H_PADDING, right: H_PADDING}]}
-                        >
+                        <View style={[styles.pinnedActionBarWrap, {bottom: insets.bottom + 16}]} pointerEvents="box-none">
                             <Pressable
-                                style={({pressed}) => [styles.winnerActionButton, styles.winnerActionPrimary, pressed && styles.winnerActionPressed]}
-                                onPress={handleSpinAgain}
-                                testID="modal-spin-again"
-                                accessibilityRole="button"
-                                accessibilityLabel="Spin again"
+                                onPress={(e) => e.stopPropagation()}
+                                style={[styles.pinnedActionBar, {width: modalMaxWidth}]}
                             >
-                                <Ionicons name="refresh" size={18} color="#FFFFFF"/>
-                                <Text style={styles.winnerActionPrimaryText}>Spin Again</Text>
+                                <Pressable
+                                    style={({pressed}) => [styles.winnerActionButton, styles.winnerActionPrimary, pressed && styles.winnerActionPressed]}
+                                    onPress={handleSpinAgain}
+                                    testID="modal-spin-again"
+                                    accessibilityRole="button"
+                                    accessibilityLabel="Spin again"
+                                >
+                                    <Ionicons name="refresh" size={18} color="#FFFFFF"/>
+                                    <Text style={styles.winnerActionPrimaryText}>Spin Again</Text>
+                                </Pressable>
+                                <Pressable
+                                    style={({pressed}) => [styles.winnerActionButton, styles.winnerActionSecondary, pressed && styles.winnerActionPressed]}
+                                    onPress={handleViewAll}
+                                    testID="modal-view-all"
+                                    accessibilityRole="button"
+                                    accessibilityLabel="View all results"
+                                >
+                                    <Ionicons name="list" size={18} color={supperClub.gold}/>
+                                    <Text style={styles.winnerActionSecondaryText}>View All</Text>
+                                </Pressable>
                             </Pressable>
-                            <Pressable
-                                style={({pressed}) => [styles.winnerActionButton, styles.winnerActionSecondary, pressed && styles.winnerActionPressed]}
-                                onPress={handleViewAll}
-                                testID="modal-view-all"
-                                accessibilityRole="button"
-                                accessibilityLabel="View all results"
-                            >
-                                <Ionicons name="list" size={18} color={supperClub.gold}/>
-                                <Text style={styles.winnerActionSecondaryText}>View All</Text>
-                            </Pressable>
-                        </Pressable>
+                        </View>
                     )}
                 </Pressable>
             </Modal>
@@ -571,8 +573,14 @@ const styles = StyleSheet.create({
     contentColumn: {
         alignItems: 'center',
     },
-    pinnedActionBar: {
+    pinnedActionBarWrap: {
         position: 'absolute',
+        left: 0,
+        right: 0,
+        alignItems: 'center',
+        paddingHorizontal: 12,
+    },
+    pinnedActionBar: {
         flexDirection: 'row',
         gap: 10,
     },
