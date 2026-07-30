@@ -589,6 +589,10 @@ const styles = StyleSheet.create({
     backgroundColor: supperClub.error,
     borderColor: supperClub.error,
   },
+  // Intentionally shares the error tint with categoryChipExcluded but kept
+  // separate: they express different domain concepts (a standing dealbreaker vs
+  // a per-search exclude), so a future restyle of one must not silently change
+  // the other. Do not merge these two styles.
   dealbreakerChipActive: {
     backgroundColor: supperClub.error,
     borderColor: supperClub.error,

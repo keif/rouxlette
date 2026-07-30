@@ -3,7 +3,9 @@ import { render, fireEvent } from '@testing-library/react-native';
 import FiltersSheet from '../FiltersSheet';
 import { RootContext } from '../../../context/RootContext';
 import { AppState, initialAppState } from '../../../context/state';
+import { StyleSheet } from 'react-native';
 import { toggleDealbreaker } from '../../../context/reducer';
+import { supperClub } from '../../../theme/supperClub';
 
 // Mock the vector icons
 jest.mock('react-native-vector-icons/MaterialIcons', () => 'Icon');
@@ -326,9 +328,21 @@ describe('FiltersSheet', () => {
         dealbreakerCategoryIds: ['pizza'],
       });
 
-      // Chip renders whether active or not; tapping an active one toggles it off.
-      const chip = getByTestId('dealbreaker-pizza');
-      expect(chip).toBeTruthy();
+      // Prove the active branch actually fired: an active chip carries the
+      // error-tinted background. Pressable's style may be a function of press
+      // state or an already-resolved array on the host node, so normalize both
+      // then flatten before asserting. This must FAIL if isActive were hardcoded
+      // to a constant.
+      const bgFor = (testID: string): string | undefined => {
+        const raw = getByTestId(testID).props.style;
+        const resolved = typeof raw === 'function' ? raw({ pressed: false }) : raw;
+        return (StyleSheet.flatten(resolved) as { backgroundColor?: string })
+          .backgroundColor;
+      };
+
+      expect(bgFor('dealbreaker-pizza')).toBe(supperClub.error);
+      // An inactive chip must NOT carry the error tint.
+      expect(bgFor('dealbreaker-sushi')).not.toBe(supperClub.error);
     });
   });
 
