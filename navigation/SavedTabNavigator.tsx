@@ -4,6 +4,7 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { createMaterialTopTabNavigator } from '@react-navigation/material-top-tabs';
 import { SavedTabParamList } from '../types';
 import AppStyles from '../AppStyles';
+import { supperClub } from '../theme/supperClub';
 import FavoritesScreen from '../screens/FavoritesScreen';
 import BlockedScreen from '../screens/BlockedScreen';
 import HistoryScreen from '../screens/HistoryScreen';
@@ -13,19 +14,19 @@ const SavedTabs = createMaterialTopTabNavigator<SavedTabParamList>();
 
 export function SavedTabNavigator() {
   return (
-    <SafeAreaView style={{ flex: 1, backgroundColor: AppStyles.color.white }} edges={['top']}>
+    <SafeAreaView style={{ flex: 1, backgroundColor: supperClub.background }} edges={['top']}>
       <SavedTabs.Navigator
         initialRouteName="Favorites"
         screenOptions={{
-          tabBarActiveTintColor: AppStyles.color.roulette.accent,
-          tabBarInactiveTintColor: AppStyles.color.greylight,
+          tabBarActiveTintColor: supperClub.gold,
+          tabBarInactiveTintColor: supperClub.textMuted,
           tabBarStyle: {
-            backgroundColor: AppStyles.color.white,
+            backgroundColor: supperClub.background,
             borderBottomWidth: 1,
-            borderBottomColor: AppStyles.color.background,
+            borderBottomColor: supperClub.borderSoft,
           },
         tabBarIndicatorStyle: {
-          backgroundColor: AppStyles.color.roulette.accent,
+          backgroundColor: supperClub.gold,
           height: 3,
         },
         tabBarLabelStyle: {
