@@ -7,6 +7,10 @@ import { COMMON_CUISINES } from '../constants/foodCategories';
 interface AvoidingBarProps {
   dealbreakers: string[];
   perSearchExcludes: string[];
+  // Per-search category inclusions. A cuisine that is both a standing dealbreaker
+  // and an explicit include is SHOWN by the reducer (include wins), so it must be
+  // dropped from the avoided list here to mirror that override.
+  includes?: string[];
   blockedCount: number;
   onPress: () => void;
 }
@@ -14,8 +18,9 @@ interface AvoidingBarProps {
 const labelFor = (alias: string) =>
   COMMON_CUISINES.find(c => c.alias === alias)?.label ?? alias;
 
-export const AvoidingBar: React.FC<AvoidingBarProps> = ({ dealbreakers, perSearchExcludes, blockedCount, onPress }) => {
-  const cuisineAliases = [...new Set([...dealbreakers, ...perSearchExcludes])];
+export const AvoidingBar: React.FC<AvoidingBarProps> = ({ dealbreakers, perSearchExcludes, includes = [], blockedCount, onPress }) => {
+  const cuisineAliases = [...new Set([...dealbreakers, ...perSearchExcludes])]
+    .filter(a => !includes.includes(a));
   if (cuisineAliases.length === 0 && blockedCount === 0) return null;
 
   const cuisineLabels = cuisineAliases.map(labelFor).join(', ');

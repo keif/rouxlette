@@ -394,6 +394,7 @@ export const HomeScreen: React.FC = () => {
           <AvoidingBar
             dealbreakers={state.dealbreakerCategoryIds}
             perSearchExcludes={state.filters.excludedCategoryIds}
+            includes={state.filters.categoryIds}
             blockedCount={0}
             onPress={handleFiltersPress}
           />

@@ -84,6 +84,22 @@ export const SearchScreen: React.FC = () => {
         ? applyFilters(rawResults, state.filters).filter(b => isBlocked(b.id)).length
         : 0;
 
+    // "All avoided" empty state: the search returned raw matches, but the user's
+    // exclusions (dealbreakers or per-search excludes) hid every visible result.
+    // Distinct from the blocked-only empty state (handled separately) and from
+    // the truly-no-results case (rawResults empty → keep the generic prompt).
+    const isAvoidingSomething =
+        state.dealbreakerCategoryIds.length > 0 || state.filters.excludedCategoryIds.length > 0;
+    const showAllAvoidedEmpty =
+        restaurants.length === 0 &&
+        state.results.length === 0 &&
+        blockedHiddenCount === 0 &&
+        rawResults.length > 0 &&
+        isAvoidingSomething;
+    // How many raw matches the avoidance settings hid (raw minus anything still
+    // visible). Clamped so the copy always reads sensibly in this branch.
+    const avoidedHiddenCount = Math.max(rawResults.length - state.results.length, 1);
+
     // The results hero is the wheel's ACTUAL pick (most recent spin), not just
     // the first result — otherwise the "The wheel picked" badge lands on the
     // wrong restaurant (#48). Gate it on the pick being present in the CURRENT
@@ -472,6 +488,7 @@ export const SearchScreen: React.FC = () => {
                                     <AvoidingBar
                                         dealbreakers={state.dealbreakerCategoryIds}
                                         perSearchExcludes={state.filters.excludedCategoryIds}
+                                        includes={state.filters.categoryIds}
                                         blockedCount={blockedHiddenCount}
                                         onPress={handleFiltersPress}
                                     />
@@ -513,8 +530,29 @@ export const SearchScreen: React.FC = () => {
                 </View>
             )}
 
+            {/* All matches hidden by the user's "Never show me" / exclusion settings.
+                The Avoiding bar is tappable so they can open Filters and adjust. */}
+            {!isLoading && showAllAvoidedEmpty && (
+                <View style={styles.emptyContainer} testID="all-avoided-empty">
+                    <Ionicons name="eye-off-outline" size={64} color={supperClub.textMuted}/>
+                    <Text style={styles.emptyTitle}>Everything was filtered out</Text>
+                    <Text style={styles.emptySubtitle}>
+                        Your "Never show me" settings hid {avoidedHiddenCount} {avoidedHiddenCount === 1 ? 'match' : 'matches'}. Tap below to adjust.
+                    </Text>
+                    <View style={styles.avoidedBarWrap}>
+                        <AvoidingBar
+                            dealbreakers={state.dealbreakerCategoryIds}
+                            perSearchExcludes={state.filters.excludedCategoryIds}
+                            includes={state.filters.categoryIds}
+                            blockedCount={0}
+                            onPress={handleFiltersPress}
+                        />
+                    </View>
+                </View>
+            )}
+
             {/* Empty State */}
-            {!isLoading && restaurants.length === 0 && state.results.length === 0 && blockedHiddenCount === 0 && (
+            {!isLoading && restaurants.length === 0 && state.results.length === 0 && blockedHiddenCount === 0 && !showAllAvoidedEmpty && (
                 <View style={styles.emptyContainer}>
                     <Ionicons name="search-outline" size={64} color={supperClub.textMuted}/>
                     <Text style={styles.emptyTitle}>Search for restaurants</Text>
@@ -751,5 +789,9 @@ const styles = StyleSheet.create({
         color: supperClub.textMuted,
         marginTop: spacing.sm,
         textAlign: 'center',
+    },
+    avoidedBarWrap: {
+        marginTop: spacing.lg,
+        alignSelf: 'stretch',
     },
 });

@@ -48,4 +48,33 @@ describe('AvoidingBar', () => {
     expect(getByTestId('avoiding-bar')).toBeTruthy();
     expect(getByText(/2 blocked/)).toBeTruthy();
   });
+
+  it('renders null when the only avoided cuisine is overridden by a per-search include', () => {
+    // sushi is a standing dealbreaker but this search explicitly includes it →
+    // the reducer shows it, so the bar must not claim it's avoided.
+    const { queryByTestId } = render(
+      <AvoidingBar
+        dealbreakers={['sushi']}
+        perSearchExcludes={[]}
+        includes={['sushi']}
+        blockedCount={0}
+        onPress={jest.fn()}
+      />
+    );
+    expect(queryByTestId('avoiding-bar')).toBeNull();
+  });
+
+  it('excludes per-search includes from the avoided list but keeps the rest', () => {
+    const { getByText, queryByText } = render(
+      <AvoidingBar
+        dealbreakers={['sushi', 'pizza']}
+        perSearchExcludes={[]}
+        includes={['sushi']}
+        blockedCount={0}
+        onPress={jest.fn()}
+      />
+    );
+    expect(getByText(/Pizza/)).toBeTruthy();
+    expect(queryByText(/Sushi/)).toBeNull();
+  });
 });

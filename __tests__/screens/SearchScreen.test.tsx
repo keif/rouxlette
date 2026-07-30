@@ -184,6 +184,26 @@ describe('SearchScreen', () => {
     expect(getByTestId('avoiding-bar')).toBeTruthy();
   });
 
+  it('surfaces an all-avoided empty state (with a tappable Avoiding bar) when dealbreakers hide every match', () => {
+    // The reducer already dropped the sushi place from results (dealbreaker),
+    // but rawResults still holds it — the user searched and got matches, then
+    // their "Never show me" settings hid them all.
+    const state = {
+      ...mockInitialState,
+      dealbreakerCategoryIds: ['sushi'],
+      results: [] as any,
+      rawResults: [{ id: 's', name: 'Sushi Spot', categories: [{ alias: 'sushi', title: 'Sushi' }] }] as any,
+    };
+    const { getByTestId } = render(
+      <RootContext.Provider value={{ state, dispatch: mockDispatch }}>
+        <SearchScreen />
+      </RootContext.Provider>
+    );
+    expect(getByTestId('all-avoided-empty')).toBeTruthy();
+    // The bar is present so the user can tap to adjust their exclusions.
+    expect(getByTestId('avoiding-bar')).toBeTruthy();
+  });
+
   it('shows an all-blocked empty state when every match is blocked', () => {
     mockBlockedIds.add('a');
     mockBlockedIds.add('b');
