@@ -464,7 +464,7 @@ export function BusinessCardModal() {
                     onPress={handleBackdropPress}
                     testID="modal-backdrop"
                 >
-                    <View style={styles.modalContainer}>
+                    <View style={[styles.modalContainer, isSpinWinner && !respinning && {paddingBottom: insets.bottom + 96}]}>
                         {respinning ? (
                             // Card fades to a translucent backdrop so Home's wheel
                             // is visible spinning behind; a hint sits at the bottom.
@@ -484,33 +484,40 @@ export function BusinessCardModal() {
                                     disableSwipeToFlip={true}
                                 />
                             </View>
-                            {isSpinWinner && (
-                                <View style={[styles.actionBar, {maxWidth: modalMaxWidth, width: modalMaxWidth}]}>
-                                    <Pressable
-                                        style={({pressed}) => [styles.winnerActionButton, styles.winnerActionPrimary, pressed && styles.winnerActionPressed]}
-                                        onPress={handleSpinAgain}
-                                        testID="modal-spin-again"
-                                        accessibilityRole="button"
-                                        accessibilityLabel="Spin again"
-                                    >
-                                        <Ionicons name="refresh" size={18} color="#FFFFFF"/>
-                                        <Text style={styles.winnerActionPrimaryText}>Spin Again</Text>
-                                    </Pressable>
-                                    <Pressable
-                                        style={({pressed}) => [styles.winnerActionButton, styles.winnerActionSecondary, pressed && styles.winnerActionPressed]}
-                                        onPress={handleViewAll}
-                                        testID="modal-view-all"
-                                        accessibilityRole="button"
-                                        accessibilityLabel="View all results"
-                                    >
-                                        <Ionicons name="list" size={18} color={supperClub.gold}/>
-                                        <Text style={styles.winnerActionSecondaryText}>View All</Text>
-                                    </Pressable>
-                                </View>
-                            )}
                         </Pressable>
                         )}
                     </View>
+
+                    {/* Winner actions pinned to the bottom of the overlay so they're
+                        always visible and tappable above the (tall) card, regardless
+                        of card height. modalContainer reserves paddingBottom for them. */}
+                    {isSpinWinner && !respinning && (
+                        <Pressable
+                            onPress={(e) => e.stopPropagation()}
+                            style={[styles.pinnedActionBar, {bottom: insets.bottom + 16, left: H_PADDING, right: H_PADDING}]}
+                        >
+                            <Pressable
+                                style={({pressed}) => [styles.winnerActionButton, styles.winnerActionPrimary, pressed && styles.winnerActionPressed]}
+                                onPress={handleSpinAgain}
+                                testID="modal-spin-again"
+                                accessibilityRole="button"
+                                accessibilityLabel="Spin again"
+                            >
+                                <Ionicons name="refresh" size={18} color="#FFFFFF"/>
+                                <Text style={styles.winnerActionPrimaryText}>Spin Again</Text>
+                            </Pressable>
+                            <Pressable
+                                style={({pressed}) => [styles.winnerActionButton, styles.winnerActionSecondary, pressed && styles.winnerActionPressed]}
+                                onPress={handleViewAll}
+                                testID="modal-view-all"
+                                accessibilityRole="button"
+                                accessibilityLabel="View all results"
+                            >
+                                <Ionicons name="list" size={18} color={supperClub.gold}/>
+                                <Text style={styles.winnerActionSecondaryText}>View All</Text>
+                            </Pressable>
+                        </Pressable>
+                    )}
                 </Pressable>
             </Modal>
 
@@ -564,10 +571,10 @@ const styles = StyleSheet.create({
     contentColumn: {
         alignItems: 'center',
     },
-    actionBar: {
+    pinnedActionBar: {
+        position: 'absolute',
         flexDirection: 'row',
         gap: 10,
-        marginTop: 14,
     },
     winnerActionButton: {
         flex: 1,
