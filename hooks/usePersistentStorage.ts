@@ -1,4 +1,4 @@
-import { useRef, useCallback, useMemo } from 'react';
+import { useRef, useCallback, useMemo, useEffect } from 'react';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { logSafe, safeStringify } from '../utils/log';
 
@@ -60,7 +60,7 @@ export default function usePersistentStorage(options: PersistentStorageOptions =
   // Track hydration status and last saved values to prevent loops
   const hydratedKeysRef = useRef<Set<string>>(new Set());
   const lastSavedRef = useRef<Map<string, any>>(new Map());
-  const pendingWritesRef = useRef<Map<string, NodeJS.Timeout>>(new Map());
+  const pendingWritesRef = useRef<Map<string, { timeout: NodeJS.Timeout; value: any }>>(new Map());
 
   const log = useCallback((message: string, ...args: any[]) => {
     if (debug) {
@@ -140,14 +140,14 @@ export default function usePersistentStorage(options: PersistentStorageOptions =
     log(`Scheduling save for key: ${key}`, value);
     
     // Cancel any pending write for this key
-    const existingTimeout = pendingWritesRef.current.get(key);
-    if (existingTimeout) {
-      clearTimeout(existingTimeout);
+    const existing = pendingWritesRef.current.get(key);
+    if (existing) {
+      clearTimeout(existing.timeout);
     }
 
-    // Schedule the debounced write
+    // Schedule the debounced write, tracking the value so it can be flushed on unmount
     const timeout = setTimeout(() => debouncedSetItem(key, value), debounceMs);
-    pendingWritesRef.current.set(key, timeout);
+    pendingWritesRef.current.set(key, { timeout, value });
   }, [debouncedSetItem, debounceMs, log]);
 
   const deleteItem = useCallback(async (key: string): Promise<void> => {
@@ -157,7 +157,7 @@ export default function usePersistentStorage(options: PersistentStorageOptions =
       // Cancel any pending writes
       const pendingWrite = pendingWritesRef.current.get(key);
       if (pendingWrite) {
-        clearTimeout(pendingWrite);
+        clearTimeout(pendingWrite.timeout);
         pendingWritesRef.current.delete(key);
       }
 
@@ -225,7 +225,7 @@ export default function usePersistentStorage(options: PersistentStorageOptions =
       // Cancel any pending debounced write
       const pendingWrite = pendingWritesRef.current.get(key);
       if (pendingWrite) {
-        clearTimeout(pendingWrite);
+        clearTimeout(pendingWrite.timeout);
         pendingWritesRef.current.delete(key);
       }
 
@@ -240,6 +240,24 @@ export default function usePersistentStorage(options: PersistentStorageOptions =
       handleError('forceSetItem', key, error);
     }
   }, [keyPrefix, log, handleError]);
+
+  // Flush pending debounced writes on unmount: persist the last value rather than
+  // dropping it (a component that unmounts within the debounce window would
+  // otherwise lose the user's last change), and clear the timer so nothing fires
+  // after teardown. Unmount-only by design — deps intentionally empty.
+  useEffect(() => {
+    const pending = pendingWritesRef.current;
+    return () => {
+      pending.forEach(({ timeout, value }, key) => {
+        clearTimeout(timeout);
+        void AsyncStorage.setItem(`${keyPrefix}:${key}`, safeStringify(value)).catch(
+          (error) => handleError('flushOnUnmount', key, error)
+        );
+      });
+      pending.clear();
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   return useMemo(() => ({
     getItem,
