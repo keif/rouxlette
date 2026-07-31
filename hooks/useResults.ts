@@ -1,13 +1,12 @@
 import "react-native-get-random-values";
 import { useState, useEffect, useCallback } from "react";
-import yelp from "../api/yelp";
-import { AxiosResponse } from "axios";
 import useResultsPersistence from "./useResultsPersistence";
 import { v4 as uuid } from "uuid";
-import { logSafe, logArray, logNetwork } from "../utils/log";
+import { logSafe, logArray } from "../utils/log";
 import { LocationObjectCoords } from "expo-location";
 import { ResolvedLocation } from "./useLocation";
 import { hasBlockedCategory } from "../constants/foodCategories";
+import { DEFAULT_PROVIDERS, searchRestaurants } from "../providers";
 
 export const PRICE_OPTIONS = [`$`, `$$`, `$$$`, `$$$$`];
 
@@ -18,6 +17,21 @@ const DEFAULT_RADIUS_METERS = 1600; // ~1 mile
 
 const clampRadius = (radiusMeters: number): number =>
 	Math.min(YELP_MAX_RADIUS_METERS, Math.max(1, Math.round(radiusMeters)));
+
+/**
+ * Uniform post-filter applied to whatever provider the registry used: drop
+ * permanently-closed businesses and non-food categories (body shops, etc.).
+ * This preserves the behavior the inline Yelp path had before the provider
+ * abstraction, now applied to any provider's results.
+ */
+function keepFoodAndOpen(businesses: BusinessProps[]): BusinessProps[] {
+	return businesses.filter(business => {
+		if (business.is_closed) return false;
+		const categoryAliases = business.categories?.map(c => c.alias) || [];
+		if (hasBlockedCategory(categoryAliases)) return false;
+		return true;
+	});
+}
 
 export interface ResultsProps {
 	id: string;
@@ -119,81 +133,47 @@ export default function useResults() {
 				return businesses;
 			}
 
-			devLog('No cache found, making API request...');
+			devLog('No cache found, routing through provider registry...');
 
-			// Determine search parameters
-			// Include categories to ensure we only get food/restaurant results
-			let searchParams: any = {
-				term: searchTerm,
-				limit: 50,
-				categories: 'restaurants,food,bars,cafes,bakeries,desserts,coffee',
-			};
-
-			if (coords?.latitude && coords?.longitude) {
-				// Use coordinates for more accurate search
-				searchParams.latitude = coords.latitude;
-				searchParams.longitude = coords.longitude;
-				searchParams.radius = radius; // slider-driven, clamped to Yelp max (#55)
-				devLog('Using coordinates for search:', coords);
-			} else if (location.trim() !== '') {
-				// Fallback to location string. Yelp supports `radius` with
-				// `location`, so the slider applies on this path too (#55).
-				searchParams.location = location;
-				searchParams.radius = radius;
-				devLog('Using location string for search:', location);
-			} else {
+			// Guard: without coordinates or a usable location string there is
+			// nothing to search. Preserves the prior invalid-params early return.
+			const hasCoords = !!(coords?.latitude && coords?.longitude);
+			if (!hasCoords && location.trim() === '') {
 				devLog('Invalid search parameters');
 				setResults(INIT_RESULTS);
 				return;
 			}
 
-			// Make the API call
-			const response: AxiosResponse = await yelp.get('/businesses/search', {
-				params: searchParams
+			// Try Yelp, then fall back to OpenStreetMap. clampRadius stays in the
+			// hook: the Yelp adapter forwards radius raw, so we pass the already
+			// clamped value to preserve the Yelp 40km max guard (#55).
+			const outcome = await searchRestaurants(DEFAULT_PROVIDERS, {
+				term: searchTerm,
+				coordinates: hasCoords ? coords : null,
+				locationLabel: location,
+				radiusMeters: radius,
 			});
 
-			logNetwork('GET', '/businesses/search', searchParams, {
-				status: response.status,
-				data: response.data,
-			});
+			// Apply the closed/non-food post-filter uniformly to whatever the
+			// used provider returned.
+			const filteredBusinesses = keepFoodAndOpen(outcome.results);
+			logArray('useResults filtered businesses', filteredBusinesses, 3);
 
-			if (response.data && response.data.businesses) {
-				// Ensure businesses is an array and filter out closed businesses
-				const businessesArray = Array.isArray(response.data.businesses) ? response.data.businesses : [];
+			const finalResults: ResultsProps = {
+				id: uuid(),
+				businesses: filteredBusinesses,
+			};
 
-				// Filter out closed businesses and non-food categories
-				const filteredBusinesses = businessesArray.filter((business: BusinessProps) => {
-					// Exclude permanently closed businesses
-					if (business.is_closed) return false;
-
-					// Exclude non-food businesses (body shops, etc.)
-					const categoryAliases = business.categories?.map(c => c.alias) || [];
-					if (hasBlockedCategory(categoryAliases)) {
-						devLog('Filtered out non-food business:', { name: business.name, categories: categoryAliases });
-						return false;
-					}
-
-					return true;
-				});
-
-				logArray('useResults filtered businesses', filteredBusinesses, 3);
-
-				// Create final results object
-				const finalResults: ResultsProps = {
-					id: uuid(),
-					businesses: filteredBusinesses,
-				};
-
-				// Cache the results (this is debounced and change-detected automatically)
+			// Cache only when the used provider allows it.
+			const usedCacheable =
+				DEFAULT_PROVIDERS.find(p => p.id === outcome.usedProvider)?.cachePolicy === 'cacheable';
+			if (usedCacheable) {
+				// Debounced and change-detected automatically.
 				await resultsPersistence.cacheResults(location, searchTerm, filteredBusinesses, coords, radius);
-
-				setResults(finalResults);
-				return filteredBusinesses;
-			} else {
-				devLog('No businesses in API response');
-				setResults(INIT_RESULTS);
-				return [];
 			}
+
+			setResults(finalResults);
+			return filteredBusinesses;
 		} catch (err: any) {
 			logSafe(`[useResults] searchApi error`, {
 				message: err?.message,
@@ -268,79 +248,44 @@ export default function useResults() {
 				return businesses;
 			}
 
-			devLog('No cache found, making API request with resolved location...');
+			devLog('No cache found, routing through provider registry...');
 
-			// Build Yelp search parameters - prefer coordinates over location string
-			// Include categories to ensure we only get food/restaurant results
-			const searchParams: any = {
-				term: searchTerm,
-				limit: 50,
-				categories: 'restaurants,food,bars,cafes,bakeries,desserts,coffee',
-			};
-
-			if (resolvedLocation.coords?.latitude && resolvedLocation.coords?.longitude) {
-				// PREFERRED: Use coordinates for most accurate search
-				searchParams.latitude = resolvedLocation.coords.latitude;
-				searchParams.longitude = resolvedLocation.coords.longitude;
-				searchParams.radius = radius; // slider-driven, clamped to Yelp max (#55)
-				devLog('Using coordinates for Yelp search:', resolvedLocation.coords);
-			} else if (resolvedLocation.label) {
-				// FALLBACK: Use canonical location string (e.g., "Powell, OH").
-				// Yelp supports `radius` with `location`, so apply it here too (#55).
-				searchParams.location = resolvedLocation.label;
-				searchParams.radius = radius;
-				devLog('Using canonical location string for Yelp search:', resolvedLocation.label);
-			} else {
+			// Prefer coordinates over the location label; the OSM fallback requires
+			// coordinates. clampRadius stays in the hook (see searchApi note) so the
+			// Yelp adapter receives an already-clamped radius (#55).
+			const hasCoords = !!(resolvedLocation.coords?.latitude && resolvedLocation.coords?.longitude);
+			if (!hasCoords && !resolvedLocation.label) {
 				devLog('No valid search location available');
 				setResults(INIT_RESULTS);
 				return;
 			}
 
-			// Make the Yelp API call
-			const response: AxiosResponse = await yelp.get('/businesses/search', {
-				params: searchParams
+			const outcome = await searchRestaurants(DEFAULT_PROVIDERS, {
+				term: searchTerm,
+				coordinates: hasCoords ? resolvedLocation.coords : null,
+				locationLabel: resolvedLocation.label,
+				radiusMeters: radius,
 			});
 
-			logNetwork('GET', '/businesses/search', searchParams, {
-				status: response.status,
-				data: response.data,
-			});
+			// Apply the closed/non-food post-filter uniformly to whatever the used
+			// provider returned.
+			const filteredBusinesses = keepFoodAndOpen(outcome.results);
+			logArray('Enhanced search filtered businesses', filteredBusinesses, 3);
 
-			if (response.data && response.data.businesses) {
-				// Ensure businesses is an array and filter out closed/non-food businesses
-				const businessesArray = Array.isArray(response.data.businesses) ? response.data.businesses : [];
-				const filteredBusinesses = businessesArray.filter((business: BusinessProps) => {
-					// Exclude permanently closed businesses
-					if (business.is_closed) return false;
+			const finalResults: ResultsProps = {
+				id: uuid(),
+				businesses: filteredBusinesses,
+			};
 
-					// Exclude non-food businesses (body shops, etc.)
-					const categoryAliases = business.categories?.map(c => c.alias) || [];
-					if (hasBlockedCategory(categoryAliases)) {
-						devLog('Filtered out non-food business:', { name: business.name, categories: categoryAliases });
-						return false;
-					}
-
-					return true;
-				});
-
-				logArray('Enhanced search filtered businesses', filteredBusinesses, 3);
-
-				// Create final results object
-				const finalResults: ResultsProps = {
-					id: uuid(),
-					businesses: filteredBusinesses,
-				};
-
-				// Cache the results with the specific cache key
+			// Cache (by the versioned key) only when the used provider allows it.
+			const usedCacheable =
+				DEFAULT_PROVIDERS.find(p => p.id === outcome.usedProvider)?.cachePolicy === 'cacheable';
+			if (usedCacheable) {
 				await resultsPersistence.cacheResultsByKey(cacheKey, filteredBusinesses);
-
-				setResults(finalResults);
-				return filteredBusinesses;
-			} else {
-				devLog('No businesses in API response');
-				setResults(INIT_RESULTS);
-				return [];
 			}
+
+			setResults(finalResults);
+			return filteredBusinesses;
 		} catch (err: any) {
 			logSafe(`[useResults] searchApiWithResolver error`, {
 				message: err?.message,
