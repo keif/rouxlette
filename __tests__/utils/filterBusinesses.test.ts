@@ -188,36 +188,42 @@ describe('filterBusinesses', () => {
     });
 
     describe('price level filtering', () => {
-      it('should filter by single price level', () => {
+      it('should filter by single price level (unknown price also passes)', () => {
         const filters: Filters = {
           ...initialFilters,
           priceLevels: [2] // $$
         };
         const result = applyFilters(mockBusinesses, filters);
-        expect(result).toHaveLength(1);
-        expect(result[0].name).toBe('Pizza Palace');
+        // Pizza Palace ($$) matches; No Price Restaurant (unknown price) passes
+        // because a price filter only drops businesses with a KNOWN, unselected
+        // price (#providers).
+        expect(result).toHaveLength(2);
+        expect(result.map(b => b.name)).toEqual(['Pizza Palace', 'No Price Restaurant']);
       });
 
-      it('should filter by multiple price levels', () => {
+      it('should filter by multiple price levels (unknown price also passes)', () => {
         const filters: Filters = {
           ...initialFilters,
           priceLevels: [1, 3] // $ and $$$
         };
         const result = applyFilters(mockBusinesses, filters);
-        expect(result).toHaveLength(2);
-        expect(result.map(b => b.name)).toEqual(['Sushi Spot', 'Budget Burgers']);
+        // Sushi Spot ($$$) and Budget Burgers ($) match; No Price Restaurant
+        // (unknown price) passes too (#providers).
+        expect(result).toHaveLength(3);
+        expect(result.map(b => b.name)).toEqual(['Sushi Spot', 'Budget Burgers', 'No Price Restaurant']);
       });
 
-      it('should exclude businesses without price information', () => {
+      it('should keep businesses without price information (missing != fail)', () => {
+        // Multi-provider intent (#providers): a business with an unknown price
+        // (e.g. OSM, which has no price level) must not be dropped by a price
+        // filter. Only businesses whose KNOWN price is unselected are excluded.
         const filters: Filters = {
           ...initialFilters,
           priceLevels: [1]
         };
         const result = applyFilters(mockBusinesses, filters);
-        expect(result).toHaveLength(1);
-        expect(result[0].name).toBe('Budget Burgers');
-        // 'No Price Restaurant' should be excluded
-        expect(result.find(b => b.name === 'No Price Restaurant')).toBeUndefined();
+        expect(result).toHaveLength(2);
+        expect(result.map(b => b.name)).toEqual(['Budget Burgers', 'No Price Restaurant']);
       });
     });
 
@@ -297,7 +303,10 @@ describe('filterBusinesses', () => {
         expect(result).toHaveLength(5);
       });
 
-      it('should exclude businesses without rating data when minRating > 0', () => {
+      it('should keep businesses without rating data when minRating > 0 (missing != fail)', () => {
+        // Multi-provider intent (#providers): an unknown rating (undefined / 0,
+        // e.g. OSM which has no crowd rating) must not be dropped by a minRating
+        // filter. Only a KNOWN rating below the threshold is excluded.
         const businessesWithoutRating = [
           { ...mockBusinesses[0], rating: undefined },
           mockBusinesses[1]
@@ -307,8 +316,8 @@ describe('filterBusinesses', () => {
           minRating: 3.0
         };
         const result = applyFilters(businessesWithoutRating, filters);
-        expect(result).toHaveLength(1);
-        expect(result[0].name).toBe('Sushi Spot');
+        expect(result).toHaveLength(2);
+        expect(result.map(b => b.name)).toEqual(['Pizza Palace', 'Sushi Spot']);
       });
     });
 
@@ -338,6 +347,40 @@ describe('filterBusinesses', () => {
         };
         const result = applyFilters(mockBusinesses, filters);
         expect(result).toHaveLength(0);
+      });
+    });
+
+    describe('missing data is not excluded (#providers)', () => {
+      const base = {
+        categoryIds: [],
+        excludedCategoryIds: [],
+        priceLevels: [],
+        openNow: false,
+        radiusMeters: 40000,
+        minRating: 0,
+      } as Filters;
+      const biz = (over: Partial<BusinessProps>) => ({
+        id: 'x',
+        name: 'x',
+        categories: [],
+        distance: 100,
+        price: '',
+        rating: 0,
+        is_closed: false,
+        ...over,
+      } as BusinessProps);
+
+      it('keeps a business with unknown price when a price filter is active', () => {
+        expect(applyFilters([biz({ price: '' })], { ...base, priceLevels: [2] })).toHaveLength(1);
+      });
+      it('still excludes a business whose known price is not selected', () => {
+        expect(applyFilters([biz({ price: '$$$$' })], { ...base, priceLevels: [1] })).toHaveLength(0);
+      });
+      it('keeps a business with unknown rating when a minRating filter is active', () => {
+        expect(applyFilters([biz({ rating: 0 })], { ...base, minRating: 4 })).toHaveLength(1);
+      });
+      it('still excludes a business whose known rating is below minRating', () => {
+        expect(applyFilters([biz({ rating: 3 })], { ...base, minRating: 4 })).toHaveLength(0);
       });
     });
   });
