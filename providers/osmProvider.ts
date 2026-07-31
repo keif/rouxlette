@@ -16,7 +16,12 @@ function haversineMeters(a: CoordinatesProps, lat: number, lon: number): number 
 
 function buildQuery(coords: CoordinatesProps, radiusMeters: number): string {
   const around = `(around:${radiusMeters},${coords.latitude},${coords.longitude})`;
-  return `[out:json][timeout:25];(node["amenity"="restaurant"]${around};way["amenity"="restaurant"]${around};);out center 50;`;
+  // Fetch up to 200 (was 50). The result set is unfiltered by term server-side,
+  // so client-side term filtering runs on whatever comes back; a higher cap
+  // gives that filter more candidates to match against and cuts the miss rate
+  // in dense areas (a term like "pizza" was starved by the old 50 cap). Pushing
+  // the term into the Overpass query itself is a documented follow-up.
+  return `[out:json][timeout:25];(node["amenity"="restaurant"]${around};way["amenity"="restaurant"]${around};);out center 200;`;
 }
 
 function elementCoords(el: any): { lat: number; lon: number } | null {
@@ -34,7 +39,14 @@ export const osmProvider: RestaurantProvider = {
   id: 'osm',
   cachePolicy: 'cacheable',
   async search({ term, coordinates, radiusMeters, signal }: ProviderSearchParams): Promise<BusinessProps[]> {
-    if (!coordinates?.latitude || !coordinates?.longitude) return [];
+    // Without usable coordinates OSM cannot run. THROW rather than returning []
+    // so the registry records this in outcome.errors.osm. If we returned [],
+    // a location-label-only search where Yelp also failed would read as "OSM
+    // ran and found nothing" — a valid empty result — masking a real network
+    // outage instead of surfacing it (#58).
+    if (!coordinates?.latitude || !coordinates?.longitude) {
+      throw new Error('OSM provider requires coordinates');
+    }
 
     const response = await overpass.post('', buildQuery(coordinates, radiusMeters), { signal });
     const elements: any[] = Array.isArray(response?.data?.elements) ? response.data.elements : [];

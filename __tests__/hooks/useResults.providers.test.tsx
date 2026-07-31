@@ -116,8 +116,8 @@ describe('useResults routes through the provider registry', () => {
     expect(businesses.map((b: any) => b.id)).toEqual(['osm:node/1']);
   });
 
-  it('caches when the used provider is cacheable', async () => {
-    mockSearch.mockResolvedValue({ results: [food], usedProvider: 'osm', errors: {} });
+  it('caches when the PRIMARY (yelp) provider is cacheable', async () => {
+    mockSearch.mockResolvedValue({ results: [food], usedProvider: 'yelp', errors: {} });
 
     const { result } = renderHook(() => useResults());
     await act(async () => {
@@ -125,6 +125,20 @@ describe('useResults routes through the provider registry', () => {
     });
 
     expect(mockStorage.setItem).toHaveBeenCalled();
+  });
+
+  it('does NOT cache a FALLBACK (osm) result even though osm is cacheable', async () => {
+    // OSM is the fallback (not DEFAULT_PROVIDERS[0]). Caching its results under
+    // the plain search key would short-circuit the registry on the next
+    // identical search and stop Yelp from being retried after it recovers.
+    mockSearch.mockResolvedValue({ results: [food], usedProvider: 'osm', errors: { yelp: 'net' } });
+
+    const { result } = renderHook(() => useResults());
+    await act(async () => {
+      await result.current[2]('coffee', 'Columbus', coords, 1600);
+    });
+
+    expect(mockStorage.setItem).not.toHaveBeenCalled();
   });
 
   it('rethrows on a total outage (every provider threw, no results) — #58', async () => {

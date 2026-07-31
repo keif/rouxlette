@@ -173,10 +173,15 @@ export default function useResults() {
 				businesses: filteredBusinesses,
 			};
 
-			// Cache only when the used provider allows it.
-			const usedCacheable =
-				DEFAULT_PROVIDERS.find(p => p.id === outcome.usedProvider)?.cachePolicy === 'cacheable';
-			if (usedCacheable) {
+			// Cache only PRIMARY-provider (Yelp) results, and only when its policy
+			// allows it. Caching a fallback (e.g. OSM) under the plain search key
+			// would short-circuit the registry on the next identical search and
+			// prevent the primary from being retried after it recovers.
+			const primaryId = DEFAULT_PROVIDERS[0]?.id;
+			const used = DEFAULT_PROVIDERS.find(p => p.id === outcome.usedProvider);
+			const shouldCache =
+				!!used && used.cachePolicy === 'cacheable' && outcome.usedProvider === primaryId;
+			if (shouldCache) {
 				// Debounced and change-detected automatically.
 				await resultsPersistence.cacheResults(location, searchTerm, filteredBusinesses, coords, radius);
 			}
@@ -295,10 +300,15 @@ export default function useResults() {
 				businesses: filteredBusinesses,
 			};
 
-			// Cache (by the versioned key) only when the used provider allows it.
-			const usedCacheable =
-				DEFAULT_PROVIDERS.find(p => p.id === outcome.usedProvider)?.cachePolicy === 'cacheable';
-			if (usedCacheable) {
+			// Cache (by the versioned key) only PRIMARY-provider (Yelp) results, and
+			// only when its policy allows it. Caching a fallback (e.g. OSM) here
+			// would short-circuit the registry on the next identical search and
+			// prevent the primary from being retried after it recovers.
+			const primaryId = DEFAULT_PROVIDERS[0]?.id;
+			const used = DEFAULT_PROVIDERS.find(p => p.id === outcome.usedProvider);
+			const shouldCache =
+				!!used && used.cachePolicy === 'cacheable' && outcome.usedProvider === primaryId;
+			if (shouldCache) {
 				await resultsPersistence.cacheResultsByKey(cacheKey, filteredBusinesses);
 			}
 

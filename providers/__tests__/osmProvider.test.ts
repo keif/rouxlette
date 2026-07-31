@@ -47,9 +47,15 @@ describe('osmProvider', () => {
     expect(out.map(b => b.name)).toEqual(['Pizza Palace']);
   });
 
-  it('returns [] when no coordinates are provided', async () => {
-    const out = await osmProvider.search({ term: 'x', coordinates: null, radiusMeters: 1600 });
-    expect(out).toEqual([]);
+  it('throws when no coordinates are provided', async () => {
+    // Without usable coordinates OSM cannot run. It must THROW (not return [])
+    // so the registry records it in outcome.errors.osm. Otherwise a
+    // location-label-only search where Yelp also throws would look like OSM
+    // "ran and returned empty", masking a real network outage as a valid empty
+    // result set (see #58).
+    await expect(
+      osmProvider.search({ term: 'x', coordinates: null, radiusMeters: 1600 } as any),
+    ).rejects.toThrow();
     expect(mockPost).not.toHaveBeenCalled();
   });
 
@@ -69,6 +75,13 @@ describe('osmProvider', () => {
     ] } });
     const out = await osmProvider.search({ term: '', coordinates: { latitude: 40, longitude: -83 }, radiusMeters: 1600 });
     expect(out).toEqual([]);
+  });
+
+  it('requests a raised result cap so term filtering has candidates to match', async () => {
+    mockPost.mockResolvedValue({ data: { elements: [] } });
+    await osmProvider.search({ term: '', coordinates: coords, radiusMeters: 1600 });
+    const query = mockPost.mock.calls[0][1] as string;
+    expect(query).toContain('out center 200;');
   });
 
   it('is cacheable with id osm', () => {
