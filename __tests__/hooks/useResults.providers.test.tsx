@@ -141,6 +141,9 @@ describe('useResults routes through the provider registry', () => {
     // Nothing was cached, and results were reset to the empty INIT state.
     expect(mockStorage.setItem).not.toHaveBeenCalled();
     expect(result.current[1].businesses).toEqual([]);
+    // #58 UX contract: the synthetic Error has no `.response`, so the catch
+    // maps it to the network-error message shown to the user.
+    expect(result.current[0]).toMatch(/network/i);
   });
 
   it('does not throw on a genuine empty result (a provider ran without throwing) — #58', async () => {
@@ -156,6 +159,28 @@ describe('useResults routes through the provider registry', () => {
     });
 
     expect(out).toEqual([]);
+  });
+
+  it('rethrows on a total outage via the resolver path (searchApiWithResolver) — #58', async () => {
+    // Mirror of the searchApi total-outage case but through index 3. Guards the
+    // two near-identical tails from drifting apart.
+    mockSearch.mockResolvedValue({ results: [], usedProvider: 'osm', errors: { yelp: 'net', osm: 'net' } });
+
+    const resolvedLocation = {
+      label: 'Columbus, OH',
+      coords,
+      source: 'geocoded' as const,
+    };
+
+    const { result } = renderHook(() => useResults());
+    await act(async () => {
+      await expect(result.current[3]('coffee', resolvedLocation as any, 1600)).rejects.toThrow();
+    });
+
+    // The resolver path caches via cacheResultsByKey -> storage.setItem; on a
+    // total outage nothing is cached and the network message is surfaced (#58).
+    expect(mockStorage.setItem).not.toHaveBeenCalled();
+    expect(result.current[0]).toMatch(/network/i);
   });
 
   it('rethrows when the registry itself rejects, preserving #58 semantics', async () => {
