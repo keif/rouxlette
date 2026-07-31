@@ -8,10 +8,20 @@ import useResults from '../../hooks/useResults';
 import useResultsPersistence from '../../hooks/useResultsPersistence';
 import yelp from '../../api/yelp';
 
-// Mock the Yelp axios client so we can assert the request params.
+// Mock the Yelp axios client so we can assert the request params. useResults now
+// routes through the provider registry (Yelp primary), but the Yelp adapter still
+// calls this client, so the param assertions below exercise the real path.
 jest.mock('../../api/yelp', () => ({
   __esModule: true,
   default: { get: jest.fn() },
+}));
+
+// Mock the Overpass client so the OSM fallback never touches the network. When
+// Yelp returns an empty list the registry falls through to OSM; without this the
+// suite would make a real Overpass request and hang.
+jest.mock('../../api/overpass', () => ({
+  __esModule: true,
+  default: { post: jest.fn(async () => ({ data: { elements: [] } })) },
 }));
 
 // Cache-miss storage so searchApi always reaches the network path.
@@ -91,12 +101,25 @@ describe('useResults radius wiring (#55)', () => {
 });
 
 describe('useResults failure propagation (#58)', () => {
-  it('rejects when the Yelp request fails, so callers can clear committed state', async () => {
+  // With the provider registry in place a single-provider failure is no longer a
+  // hard error: the registry catches it and falls back to OSM. The #58 rethrow
+  // now fires only when the search operation as a whole rejects (e.g. an
+  // unexpected error inside the hook), which we cover via a registry-level throw
+  // in useResults.providers.test.tsx. Here we assert the resilient behavior: a
+  // Yelp outage degrades to the OSM fallback rather than rejecting.
+  it('falls back to OSM when the Yelp request fails (no reject)', async () => {
     mockedGet.mockRejectedValueOnce(new Error('network down'));
+    const overpass = require('../../api/overpass').default;
+    overpass.post.mockResolvedValueOnce({ data: { elements: [] } });
+
     const { result } = renderHook(() => useResults());
+    let out: any;
     await act(async () => {
-      await expect(result.current[2]('pizza', 'Columbus', coords, 1600)).rejects.toThrow('network down');
+      out = await result.current[2]('pizza', 'Columbus', coords, 1600);
     });
+    // Yelp threw, OSM returned nothing → a valid (empty) result set, not a throw.
+    expect(out).toEqual([]);
+    expect(overpass.post).toHaveBeenCalled();
   });
 
   it('still resolves an empty array for a genuine no-results response', async () => {

@@ -31,12 +31,10 @@ export function applyFilters(businesses: BusinessProps[], filters: Filters): Bus
       }
     }
 
-    // Price filter
-    if (filters.priceLevels.length > 0) {
-      if (!business.price) {
-        return false; // Exclude businesses without price information
-      }
-      const businessPriceLevel = business.price.length as 1|2|3|4;
+    // Price filter — only exclude a business that HAS a price not in the
+    // selected levels. Unknown price (e.g. OSM) passes (#providers).
+    if (filters.priceLevels.length > 0 && business.price) {
+      const businessPriceLevel = business.price.length as 1 | 2 | 3 | 4;
       if (!filters.priceLevels.includes(businessPriceLevel)) {
         return false;
       }
@@ -69,11 +67,10 @@ export function applyFilters(businesses: BusinessProps[], filters: Filters): Bus
       return false;
     }
 
-    // Minimum rating filter
-    if (filters.minRating > 0) {
-      if (!business.rating || business.rating < filters.minRating) {
-        return false;
-      }
+    // Minimum rating filter — only exclude a business that HAS a rating below
+    // the threshold. Unknown rating (0 / null, e.g. OSM) passes (#providers).
+    if (filters.minRating > 0 && business.rating && business.rating < filters.minRating) {
+      return false;
     }
 
     return true;

@@ -28,6 +28,7 @@ import {useBlockFavorite} from '../hooks/useBlockFavorite';
 import {useBlocked} from '../hooks/useBlocked';
 import {useDealbreakers} from '../hooks/useDealbreakers';
 import {AvoidingBar} from '../components/AvoidingBar';
+import {ProviderAttribution} from '../components/shared/ProviderAttribution';
 import FiltersSheet from '../components/filter/FiltersSheet';
 import {applyFilters, countActiveFilters} from '../utils/filterBusinesses';
 import {RootTabScreenProps} from '../types';
@@ -514,6 +515,7 @@ export const SearchScreen: React.FC = () => {
                             onFavoriteToggle={() => handleFavoriteToggle(item.id)}
                         />
                     )}
+                    ListFooterComponent={<ProviderAttribution businesses={state.results}/>}
                     contentContainerStyle={styles.listContent}
                     showsVerticalScrollIndicator={false}
                 />

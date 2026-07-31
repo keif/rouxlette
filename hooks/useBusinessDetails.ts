@@ -6,6 +6,17 @@ import { logSafe } from '../utils/log';
 // In-memory cache for business details during the app session
 const detailsCache = new Map<string, any>();
 
+/**
+ * Yelp detail enrichment only knows Yelp entities and carries the Yelp API key.
+ * Provider-adapter businesses use a `provider:` prefix in their id (e.g.
+ * `osm:node/123`). Sending those to the Yelp detail endpoint always 404s while
+ * misrouting a key-bearing request and burning Yelp rate limit, so we skip
+ * enrichment for any non-Yelp id. Yelp ids are bare (no provider prefix).
+ */
+function isYelpBusinessId(id: string): boolean {
+  return !id.includes(':');
+}
+
 interface UseBusinessDetailsResult {
   business: BusinessProps;
   loading: boolean;
@@ -62,6 +73,17 @@ export function useBusinessDetails(basicBusiness: BusinessProps, autoFetch = fal
     // Skip if already cached
     if (detailsCache.has(basicBusiness.id)) {
       logSafe('[useBusinessDetails] Already have cached details');
+      return;
+    }
+
+    // Skip Yelp detail enrichment for non-Yelp providers (e.g. `osm:` ids).
+    // Yelp has no data for them; keep the basic search data as-is with no
+    // network call. This is a deliberate skip, not a failure — leave loading
+    // false and surface no error.
+    if (!isYelpBusinessId(basicBusiness.id)) {
+      logSafe('[useBusinessDetails] Skipping Yelp enrichment for non-Yelp business', {
+        id: basicBusiness.id,
+      });
       return;
     }
 
