@@ -1,3 +1,13 @@
+// NOTE: `yarn test` runs Jest in watch mode (--watchAll) and never exits.
+// For a one-shot / CI run use `yarn jest --watchAll=false` (add `--ci` on CI).
+//
+// The full parallel run occasionally prints "A worker process has failed to exit
+// gracefully" once at the end. This is benign — `--detectOpenHandles` reports zero
+// open handles, it never appears under `--runInBand`, and it vanishes when the
+// suite is sharded. The cause is a short-lived UI timer (e.g. the error-message
+// setTimeout in useLocation/HomeScreen) that is very occasionally still queued when
+// a worker is torn down; it always fires and cleans up given a few more ms, which
+// is why open-handle detection never catches it. Scheduling-dependent, not a leak.
 export default {
     preset: "jest-expo",
     verbose: true,
