@@ -31,3 +31,6 @@ coverage/
 .claude/
 CLAUDE.md
 end-session-*.md
+
+# gstack skill workspace
+.gstack/
