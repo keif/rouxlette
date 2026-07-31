@@ -127,6 +127,37 @@ describe('useResults routes through the provider registry', () => {
     expect(mockStorage.setItem).toHaveBeenCalled();
   });
 
+  it('rethrows on a total outage (every provider threw, no results) — #58', async () => {
+    // Every provider errored AND nothing came back → treat as a network failure:
+    // throw so the catch sets the network message and rethrows, clearing the
+    // committed search identity rather than silently showing an empty state.
+    mockSearch.mockResolvedValue({ results: [], usedProvider: 'osm', errors: { yelp: 'net', osm: 'net' } });
+
+    const { result } = renderHook(() => useResults());
+    await act(async () => {
+      await expect(result.current[2]('coffee', 'Columbus', coords, 1600)).rejects.toThrow();
+    });
+
+    // Nothing was cached, and results were reset to the empty INIT state.
+    expect(mockStorage.setItem).not.toHaveBeenCalled();
+    expect(result.current[1].businesses).toEqual([]);
+  });
+
+  it('does not throw on a genuine empty result (a provider ran without throwing) — #58', async () => {
+    // Yelp threw but OSM ran and returned empty → OSM is NOT in errors, so this
+    // is a valid empty search, not a total outage. Resolve to [] (no throw); the
+    // empty-state UI handles it.
+    mockSearch.mockResolvedValue({ results: [], usedProvider: 'osm', errors: { yelp: 'net' } });
+
+    const { result } = renderHook(() => useResults());
+    let out: any;
+    await act(async () => {
+      out = await result.current[2]('coffee', 'Columbus', coords, 1600);
+    });
+
+    expect(out).toEqual([]);
+  });
+
   it('rethrows when the registry itself rejects, preserving #58 semantics', async () => {
     // A registry-level failure (not a single provider failing — the registry
     // absorbs those) must still propagate so callers can clear committed state.

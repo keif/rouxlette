@@ -154,6 +154,15 @@ export default function useResults() {
 				radiusMeters: radius,
 			});
 
+			// Total outage: every provider threw and nothing came back. Surface it
+			// as an error (the catch below sets the network message and rethrows so
+			// the committed search identity is cleared, #58) rather than silently
+			// showing an empty "no results" state. A provider that ran and returned
+			// empty (no errors entry) is a valid empty search and must NOT throw.
+			if (outcome.results.length === 0 && DEFAULT_PROVIDERS.every(p => outcome.errors[p.id])) {
+				throw new Error('All restaurant providers failed');
+			}
+
 			// Apply the closed/non-food post-filter uniformly to whatever the
 			// used provider returned.
 			const filteredBusinesses = keepFoodAndOpen(outcome.results);
@@ -266,6 +275,15 @@ export default function useResults() {
 				locationLabel: resolvedLocation.label,
 				radiusMeters: radius,
 			});
+
+			// Total outage: every provider threw and nothing came back. Surface it
+			// as an error (the catch below sets the network message and rethrows so
+			// the committed search identity is cleared, #58) rather than silently
+			// showing an empty "no results" state. A provider that ran and returned
+			// empty (no errors entry) is a valid empty search and must NOT throw.
+			if (outcome.results.length === 0 && DEFAULT_PROVIDERS.every(p => outcome.errors[p.id])) {
+				throw new Error('All restaurant providers failed');
+			}
 
 			// Apply the closed/non-food post-filter uniformly to whatever the used
 			// provider returned.
