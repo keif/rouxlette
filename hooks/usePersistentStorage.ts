@@ -2,19 +2,6 @@ import { useRef, useCallback, useMemo, useEffect } from 'react';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { logSafe, safeStringify } from '../utils/log';
 
-// Debounce utility for batching writes
-function debounce<T extends (...args: any[]) => any>(
-  func: T,
-  delay: number
-): (...args: Parameters<T>) => void {
-  let timeoutId: NodeJS.Timeout;
-  
-  return (...args: Parameters<T>) => {
-    clearTimeout(timeoutId);
-    timeoutId = setTimeout(() => func(...args), delay);
-  };
-}
-
 // Deep comparison utility to detect actual changes
 function deepEqual(obj1: any, obj2: any): boolean {
   if (obj1 === obj2) return true;
@@ -101,15 +88,17 @@ export default function usePersistentStorage(options: PersistentStorageOptions =
     }
   }, [keyPrefix, log, handleError]);
 
-  // Debounced setItem with change detection
-  const debouncedSetItem = useCallback(
-    debounce(async (key: string, value: any) => {
+  // Perform the actual write. Debouncing is handled by the single tracked timer
+  // in setItem below, so this must NOT be debounced again — a second debounce
+  // layer would leave an untracked timer that can fire (and write) after unmount.
+  const writeNow = useCallback(
+    async (key: string, value: any) => {
       const storageKey = `${keyPrefix}:${key}`;
-      
+
       try {
         const serializedValue = safeStringify(value);
         await AsyncStorage.setItem(storageKey, serializedValue);
-        
+
         // Update our tracking
         lastSavedRef.current.set(key, value);
         log(`Saved key: ${key}`, value);
@@ -119,8 +108,8 @@ export default function usePersistentStorage(options: PersistentStorageOptions =
         // Clear pending write
         pendingWritesRef.current.delete(key);
       }
-    }, debounceMs),
-    [keyPrefix, debounceMs, log, handleError]
+    },
+    [keyPrefix, log, handleError]
   );
 
   const setItem = useCallback(async (key: string, value: any): Promise<void> => {
@@ -145,10 +134,11 @@ export default function usePersistentStorage(options: PersistentStorageOptions =
       clearTimeout(existing.timeout);
     }
 
-    // Schedule the debounced write, tracking the value so it can be flushed on unmount
-    const timeout = setTimeout(() => debouncedSetItem(key, value), debounceMs);
+    // Schedule the write on a single tracked timer, keeping the value so it can
+    // be flushed (or cleared) on unmount.
+    const timeout = setTimeout(() => writeNow(key, value), debounceMs);
     pendingWritesRef.current.set(key, { timeout, value });
-  }, [debouncedSetItem, debounceMs, log]);
+  }, [writeNow, debounceMs, log]);
 
   const deleteItem = useCallback(async (key: string): Promise<void> => {
     const storageKey = `${keyPrefix}:${key}`;
@@ -250,9 +240,7 @@ export default function usePersistentStorage(options: PersistentStorageOptions =
     return () => {
       pending.forEach(({ timeout, value }, key) => {
         clearTimeout(timeout);
-        void AsyncStorage.setItem(`${keyPrefix}:${key}`, safeStringify(value)).catch(
-          (error) => handleError('flushOnUnmount', key, error)
-        );
+        void writeNow(key, value);
       });
       pending.clear();
     };

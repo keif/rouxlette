@@ -67,4 +67,30 @@ describe('usePersistentStorage teardown', () => {
     });
     expect(mockAsyncStorage.setItem).not.toHaveBeenCalled();
   });
+
+  test('does not double-write when unmounted mid-debounce-chain', async () => {
+    const { result, unmount } = renderHook(() => usePersistentStorage());
+
+    await act(async () => {
+      result.current.markAsHydrated('favorites');
+      await result.current.setItem('favorites', ['pizza-place']);
+    });
+
+    // Advance far enough to fire the scheduled write timer, then unmount.
+    // A single debounce layer must have written exactly once by now; a lingering
+    // inner timer would fire again after teardown and write a second time.
+    await act(async () => {
+      jest.advanceTimersByTime(300);
+    });
+
+    act(() => {
+      unmount();
+    });
+
+    await act(async () => {
+      jest.runOnlyPendingTimers();
+    });
+
+    expect(mockAsyncStorage.setItem).toHaveBeenCalledTimes(1);
+  });
 });
