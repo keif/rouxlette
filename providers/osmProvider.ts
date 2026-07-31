@@ -21,7 +21,12 @@ function buildQuery(coords: CoordinatesProps, radiusMeters: number): string {
 
 function elementCoords(el: any): { lat: number; lon: number } | null {
   if (typeof el.lat === 'number' && typeof el.lon === 'number') return { lat: el.lat, lon: el.lon };
-  if (el.center) return { lat: el.center.lat, lon: el.center.lon };
+  // Guard the way `center` the same way as the node branch: Overpass can return
+  // a way with a center object that has missing/non-numeric lat/lon (unresolved
+  // geometry). Returning null there drops the element instead of leaking NaN
+  // coordinates (and a NaN distance) into a BusinessProps.
+  if (el.center && typeof el.center.lat === 'number' && typeof el.center.lon === 'number')
+    return { lat: el.center.lat, lon: el.center.lon };
   return null;
 }
 
@@ -47,6 +52,8 @@ export const osmProvider: RestaurantProvider = {
       const aliases = mapCuisineToAliases(tags.cuisine);
 
       if (q) {
+        // Term filter matches the RAW OSM `cuisine` value + name, not the mapped
+        // canonical aliases (e.g. searching "indpak" won't match `cuisine=indian`).
         const haystack = `${name} ${tags.cuisine || ''}`.toLowerCase();
         if (!haystack.includes(q)) continue;
       }

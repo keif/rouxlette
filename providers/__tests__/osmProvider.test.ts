@@ -62,6 +62,15 @@ describe('osmProvider', () => {
     expect(out[0].coordinates).toEqual({ latitude: 40.01, longitude: -83.01 });
   });
 
+  it('drops way elements whose center has non-numeric coords', async () => {
+    mockPost.mockResolvedValue({ data: { elements: [
+      { type: 'way', id: 7, center: { lat: undefined, lon: undefined }, tags: { name: 'Broken Way', cuisine: 'pizza' } },
+      { type: 'way', id: 8, tags: { name: 'No Center', cuisine: 'pizza' } },
+    ] } });
+    const out = await osmProvider.search({ term: '', coordinates: { latitude: 40, longitude: -83 }, radiusMeters: 1600 });
+    expect(out).toEqual([]);
+  });
+
   it('is cacheable with id osm', () => {
     expect(osmProvider.id).toBe('osm');
     expect(osmProvider.cachePolicy).toBe('cacheable');
