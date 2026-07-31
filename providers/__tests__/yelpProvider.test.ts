@@ -23,6 +23,8 @@ describe('yelpProvider', () => {
     expect(opts.params.longitude).toBe(-83);
     expect(opts.params.radius).toBe(1600);
     expect(opts.params.term).toBe('pizza');
+    expect(opts.params.limit).toBe(50);
+    expect(opts.params.categories).toBe('restaurants,food,bars,cafes,bakeries,desserts,coffee');
   });
 
   it('searches by location label when no coordinates', async () => {
@@ -37,6 +39,12 @@ describe('yelpProvider', () => {
     mockGet.mockResolvedValue({ data: {} });
     const out = await yelpProvider.search({ term: 'x', coordinates: { latitude: 1, longitude: 2 }, radiusMeters: 1600 });
     expect(out).toEqual([]);
+  });
+
+  it('returns [] without calling the API when neither coordinates nor a location label are given', async () => {
+    const out = await yelpProvider.search({ term: 'x', coordinates: null, radiusMeters: 1600 });
+    expect(out).toEqual([]);
+    expect(mockGet).not.toHaveBeenCalled();
   });
 
   it('has cachePolicy cacheable and id yelp', () => {
